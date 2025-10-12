@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from '@/hooks/use-session';
 import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
@@ -182,7 +182,7 @@ export default function AssessmentTestPage() {
     
     const handlePrev = () => {
         if (currentQuestionIndex > 0) {
-            setCurrentQuestionIndex(prev => prev + 1);
+            setCurrentQuestionIndex(prev => prev - 1);
         }
     };
 
@@ -421,3 +421,4 @@ export default function AssessmentTestPage() {
     );
 }
 
+    
