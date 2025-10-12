@@ -266,7 +266,7 @@ export default function AssessmentTestPage() {
                 </div>
             </header>
             
-            <main className="flex-1 flex flex-col p-4 gap-4">
+            <main className="flex-1 flex flex-col p-2 gap-2">
                 <Card>
                     <CardContent className="p-4 flex items-center justify-between">
                          <div className="flex-1">
@@ -296,7 +296,7 @@ export default function AssessmentTestPage() {
                     </CardContent>
                 </Card>
 
-                <ResizablePanelGroup direction="horizontal" className="flex-1 gap-4">
+                <ResizablePanelGroup direction="horizontal" className="flex-1 gap-2">
                     <ResizablePanel defaultSize={30} minSize={20} maxSize={40}>
                        <Card className="h-full flex flex-col">
                            <CardContent className="p-4 flex-1 flex flex-col">
