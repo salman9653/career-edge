@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { DashboardThemeProvider } from '@/context/dashboard-theme-context';
 import { DashboardLayoutWrapper } from './layout-wrapper';
@@ -11,12 +12,9 @@ import { Toaster } from '@/components/ui/toaster';
 import { JobProvider } from '@/context/job-context';
 import { AssessmentProvider } from '@/context/assessment-context';
 import { QuestionProvider } from '@/context/question-context';
+import { Loader2 } from 'lucide-react';
 
-export default function DashboardLayout({
-    children,
-}: {
-    children: React.ReactNode;
-}) {
+function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -57,5 +55,24 @@ export default function DashboardLayout({
                 </CompanyProvider>
             </DashboardLayoutWrapper>
         </DashboardThemeProvider>
+    )
+}
+
+
+export default function DashboardLayout({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
+    return (
+        <Suspense fallback={
+            <div className="flex h-screen w-full items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+        }>
+            <DashboardLayoutContent>
+                {children}
+            </DashboardLayoutContent>
+        </Suspense>
     );
 }
