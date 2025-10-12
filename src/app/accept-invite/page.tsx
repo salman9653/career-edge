@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { collection, query, where, getDocs, doc, updateDoc, writeBatch, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase/config';
@@ -29,7 +29,7 @@ interface ManagerProfile {
     role: string;
 }
 
-export default function AcceptInvitePage() {
+function AcceptInviteContents() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const { toast } = useToast();
@@ -176,127 +176,135 @@ export default function AcceptInvitePage() {
         return names.length > 1 ? `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase() : name.substring(0, 2).toUpperCase();
     }
 
-    const renderContent = () => {
-        if (loading) {
-            return (
-                <CardContent className="py-12">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                        <p className="text-muted-foreground">Validating your invitation...</p>
-                    </div>
-                </CardContent>
-            )
-        }
-        if (error) {
-            return (
-                <CardContent className="py-12">
-                     <div className="text-center">
-                        <div className="flex justify-center mb-4">
-                            <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center">
-                                 <XCircle className="h-6 w-6 text-destructive"/>
-                            </div>
-                        </div>
-                        <h2 className="text-xl font-semibold">Invitation Invalid</h2>
-                        <p className="text-muted-foreground mt-2">{error}</p>
-                        <Button onClick={() => router.push('/')} className="mt-6">Go to Homepage</Button>
-                    </div>
-                </CardContent>
-            )
-        }
-        if(manager) {
-            if (step === 'details') {
-                return (
-                    <>
-                    <CardHeader className="text-center">
-                        <CardTitle className="font-headline text-2xl">You're Invited!</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                         <div className="flex flex-col items-center gap-2 text-center">
-                             <Avatar className="h-16 w-16 text-xl mb-2">
-                                <AvatarImage src={manager.companyLogo} />
-                                <AvatarFallback>{getInitials(companyName)}</AvatarFallback>
-                            </Avatar>
-                            <p className="text-muted-foreground">You have been invited to join</p>
-                            <p className="font-semibold text-lg">{companyName}</p>
-                         </div>
-                         <div className="flex items-center gap-4 p-4 rounded-lg border bg-secondary/50 mt-4">
-                            <Avatar className="h-16 w-16 text-xl">
-                                <AvatarFallback>{getInitials(manager.name)}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                                <p className="font-semibold">{manager.name}</p>
-                                <p className="text-sm text-muted-foreground">{manager.email}</p>
-                                <p className="text-sm text-muted-foreground">{manager.designation}</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3 p-4 rounded-lg bg-secondary">
-                             <ShieldCheck className="h-5 w-5 text-primary"/>
-                            <div>
-                                <p className="font-semibold">Role: {manager.permissions_role}</p>
-                                <p className="text-xs text-muted-foreground">You are being invited with {manager.permissions_role} permissions.</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                    <CardFooter>
-                        <Button className="w-full" onClick={handleAccept}>Accept Invitation</Button>
-                    </CardFooter>
-                    </>
-                );
-            }
-            if (step === 'password') {
-                return (
-                     <>
-                        <CardHeader>
-                            <CardTitle className="font-headline text-2xl">Create Your Account</CardTitle>
-                            <CardDescription>Set a password to activate your account for {manager.email}.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                             <form onSubmit={handleCreateAccount} className="space-y-4">
-                                <div className="grid gap-2">
-                                    <Label htmlFor="password">Password</Label>
-                                    <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="confirmPassword">Confirm Password</Label>
-                                    <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
-                                </div>
-                                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                                    {isSubmitting ? <Loader2 className="animate-spin" /> : 'Activate Account'}
-                                </Button>
-                             </form>
-                        </CardContent>
-                     </>
-                )
-            }
-             if (step === 'done') {
-                return (
-                    <CardContent className="py-12">
-                        <div className="text-center">
-                            <div className="flex justify-center mb-4">
-                                <div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center">
-                                    <CheckCircle className="h-6 w-6 text-green-500"/>
-                                </div>
-                            </div>
-                            <h2 className="text-xl font-semibold">Account Activated!</h2>
-                            <p className="text-muted-foreground mt-2">You will be redirected to the login page shortly.</p>
-                        </div>
-                    </CardContent>
-                )
-            }
-        }
-        return null;
+    if (loading) {
+        return (
+            <CardContent className="py-12">
+                <div className="flex flex-col items-center justify-center gap-2">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    <p className="text-muted-foreground">Validating your invitation...</p>
+                </div>
+            </CardContent>
+        )
     }
+    if (error) {
+        return (
+            <CardContent className="py-12">
+                 <div className="text-center">
+                    <div className="flex justify-center mb-4">
+                        <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center">
+                             <XCircle className="h-6 w-6 text-destructive"/>
+                        </div>
+                    </div>
+                    <h2 className="text-xl font-semibold">Invitation Invalid</h2>
+                    <p className="text-muted-foreground mt-2">{error}</p>
+                    <Button onClick={() => router.push('/')} className="mt-6">Go to Homepage</Button>
+                </div>
+            </CardContent>
+        )
+    }
+    if(manager) {
+        if (step === 'details') {
+            return (
+                <>
+                <CardHeader className="text-center">
+                    <CardTitle className="font-headline text-2xl">You're Invited!</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                     <div className="flex flex-col items-center gap-2 text-center">
+                         <Avatar className="h-16 w-16 text-xl mb-2">
+                            <AvatarImage src={manager.companyLogo} />
+                            <AvatarFallback>{getInitials(companyName)}</AvatarFallback>
+                        </Avatar>
+                        <p className="text-muted-foreground">You have been invited to join</p>
+                        <p className="font-semibold text-lg">{companyName}</p>
+                     </div>
+                     <div className="flex items-center gap-4 p-4 rounded-lg border bg-secondary/50 mt-4">
+                        <Avatar className="h-16 w-16 text-xl">
+                            <AvatarFallback>{getInitials(manager.name)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <p className="font-semibold">{manager.name}</p>
+                            <p className="text-sm text-muted-foreground">{manager.email}</p>
+                            <p className="text-sm text-muted-foreground">{manager.designation}</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-4 rounded-lg bg-secondary">
+                         <ShieldCheck className="h-5 w-5 text-primary"/>
+                        <div>
+                            <p className="font-semibold">Role: {manager.permissions_role}</p>
+                            <p className="text-xs text-muted-foreground">You are being invited with {manager.permissions_role} permissions.</p>
+                        </div>
+                    </div>
+                </CardContent>
+                <CardFooter>
+                    <Button className="w-full" onClick={handleAccept}>Accept Invitation</Button>
+                </CardFooter>
+                </>
+            );
+        }
+        if (step === 'password') {
+            return (
+                 <>
+                    <CardHeader>
+                        <CardTitle className="font-headline text-2xl">Create Your Account</CardTitle>
+                        <CardDescription>Set a password to activate your account for {manager.email}.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                         <form onSubmit={handleCreateAccount} className="space-y-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="password">Password</Label>
+                                <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                                <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+                            </div>
+                            <Button type="submit" className="w-full" disabled={isSubmitting}>
+                                {isSubmitting ? <Loader2 className="animate-spin" /> : 'Activate Account'}
+                            </Button>
+                         </form>
+                    </CardContent>
+                 </>
+            )
+        }
+         if (step === 'done') {
+            return (
+                <CardContent className="py-12">
+                    <div className="text-center">
+                        <div className="flex justify-center mb-4">
+                            <div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center">
+                                <CheckCircle className="h-6 w-6 text-green-500"/>
+                            </div>
+                        </div>
+                        <h2 className="text-xl font-semibold">Account Activated!</h2>
+                        <p className="text-muted-foreground mt-2">You will be redirected to the login page shortly.</p>
+                    </div>
+                </CardContent>
+            )
+        }
+    }
+    return null;
+}
 
+
+export default function AcceptInvitePage() {
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-secondary p-4">
             <div className="mb-8">
                 <Logo />
             </div>
             <Card className="w-full max-w-md">
-               {renderContent()}
+               <Suspense fallback={
+                    <CardContent className="py-12">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                            <p className="text-muted-foreground">Loading Invitation...</p>
+                        </div>
+                    </CardContent>
+               }>
+                <AcceptInviteContents />
+               </Suspense>
             </Card>
         </div>
     )
 }
-
-    
