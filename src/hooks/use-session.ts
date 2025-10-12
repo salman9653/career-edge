@@ -39,22 +39,27 @@ export function useSession() {
     const [session, setSession] = useState<UserSession | null>(null);
     const [loading, setLoading] = useState(true);
 
-    const updateSessionCookie = useCallback((newSessionData: Partial<UserSession>) => {
-        setSession(prevSession => {
-            if (!prevSession) return null;
+    const updateSession = useCallback((newSessionData: Partial<UserSession>) => {
+        const sessionCookie = Cookies.get('firebase-session');
+        if (sessionCookie) {
+            try {
+                const prevSession = JSON.parse(atob(sessionCookie));
+                const updatedSession = { ...prevSession, ...newSessionData };
 
-            const updatedSession = { ...prevSession, ...newSessionData };
+                if (newSessionData.preferences) {
+                    updatedSession.preferences = {
+                        ...prevSession.preferences,
+                        ...newSessionData.preferences,
+                    };
+                }
+                
+                Cookies.set('firebase-session', btoa(JSON.stringify(updatedSession)), { path: '/' });
+                setSession(updatedSession);
 
-            if (newSessionData.preferences) {
-                updatedSession.preferences = {
-                    ...prevSession.preferences,
-                    ...newSessionData.preferences,
-                };
+            } catch (e) {
+                 console.error("Failed to update session cookie", e);
             }
-            
-            Cookies.set('firebase-session', btoa(JSON.stringify(updatedSession)), { path: '/' });
-            return updatedSession;
-        });
+        }
     }, []);
 
     useEffect(() => {
@@ -71,18 +76,24 @@ export function useSession() {
         setLoading(false);
 
         const unsubscribe = onIdTokenChanged(auth, async (user: User | null) => {
-            if (user && session) {
-                // User is signed in and we have a session
-                await user.reload(); // Force refresh user data
-                if (user.emailVerified !== session.emailVerified) {
-                    // Verification status has changed, update the session
-                    updateSessionCookie({ emailVerified: user.emailVerified });
+            const currentSessionCookie = Cookies.get('firebase-session');
+            if (user && currentSessionCookie) {
+                try {
+                    const currentSession = JSON.parse(atob(currentSessionCookie));
+                    await user.reload(); // Force refresh user data
+                    if (user.emailVerified !== currentSession.emailVerified) {
+                        const updatedSession = { ...currentSession, emailVerified: user.emailVerified };
+                        Cookies.set('firebase-session', btoa(JSON.stringify(updatedSession)), { path: '/' });
+                        setSession(updatedSession);
+                    }
+                } catch(e) {
+                    console.error("Error handling token change:", e);
                 }
             }
         });
 
         return () => unsubscribe();
-    }, [session, updateSessionCookie]);
+    }, []);
 
-    return { session, loading, updateSession: updateSessionCookie };
+    return { session, loading, updateSession };
 }
