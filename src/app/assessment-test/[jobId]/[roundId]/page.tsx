@@ -10,7 +10,7 @@ import { Logo } from '@/components/logo';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, Calendar, Clock, AlertTriangle, Play } from 'lucide-react';
+import { Loader2, Calendar, Clock, AlertTriangle, Play, Link, Briefcase } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Job, Applicant, Schedule, Round } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
@@ -161,10 +161,23 @@ export default function AssessmentStartPage() {
             return (
                 <>
                     <CardHeader className="text-center items-center">
-                        <Avatar className="h-16 w-16 mb-2">
-                           <AvatarImage src={assessmentDetails.companyLogo} />
-                           <AvatarFallback>{getInitials(assessmentDetails.companyName)}</AvatarFallback>
-                        </Avatar>
+                         <div className="flex items-center gap-2 mb-4">
+                            <Avatar className="h-12 w-12">
+                                <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-[#667EEA] to-[#764BA2] text-white">
+                                    <Briefcase className="h-6 w-6" />
+                                </div>
+                            </Avatar>
+                            <div className="relative flex items-center">
+                                <div className="h-px w-8 bg-border"></div>
+                                <Link className="h-6 w-6 rounded-full border bg-background flex items-center justify-center absolute left-1/2 -translate-x-1/2">
+                                    <Link className="h-3 w-3 text-muted-foreground" />
+                                </Link>
+                            </div>
+                            <Avatar className="h-12 w-12">
+                                <AvatarImage src={assessmentDetails.companyLogo} />
+                                <AvatarFallback>{getInitials(assessmentDetails.companyName)}</AvatarFallback>
+                            </Avatar>
+                        </div>
                         <CardTitle className="font-headline text-3xl">{assessmentDetails.assessmentName} - Assessment</CardTitle>
                         <CardDescription>
                             for {assessmentDetails.jobTitle} • at {assessmentDetails.companyName}
