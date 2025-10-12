@@ -1,0 +1,302 @@
+
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { collection, query, where, getDocs, doc, updateDoc, writeBatch, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
+import { db, auth } from '@/lib/firebase/config';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { Logo } from '@/components/logo';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Loader2, CheckCircle, XCircle, ShieldCheck } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+
+
+interface ManagerProfile {
+    id: string;
+    name: string;
+    email: string;
+    designation: string;
+    permissions_role: string;
+    status: 'active' | 'inactive' | 'invited';
+    company_uid: string;
+    companyLogo?: string;
+    createdAt?: any;
+    role: string;
+}
+
+export default function AcceptInvitePage() {
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const { toast } = useToast();
+    const token = searchParams.get('token');
+
+    const [manager, setManager] = useState<ManagerProfile | null>(null);
+    const [companyName, setCompanyName] = useState<string>('');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [step, setStep] = useState<'details' | 'password' | 'done'>('details');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (!token) {
+            setError('Invitation token is missing or invalid.');
+            setLoading(false);
+            return;
+        }
+
+        const fetchInvitation = async () => {
+            try {
+                const q = query(collection(db, 'users'), where('invitationToken', '==', token));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    setError('This invitation is invalid or has already been used.');
+                    setLoading(false);
+                    return;
+                }
+
+                const managerDoc = querySnapshot.docs[0];
+                const managerData = managerDoc.data();
+
+                if (managerData.status !== 'invited') {
+                     setError('This invitation has already been accepted or is no longer valid.');
+                     setLoading(false);
+                     return;
+                }
+
+                // Fetch company name
+                const companyDoc = await getDoc(doc(db, 'users', managerData.company_uid));
+                if (companyDoc.exists()) {
+                    const companyData = companyDoc.data();
+                    setCompanyName(companyData.name);
+                     const managerProfile: ManagerProfile = {
+                        id: managerDoc.id,
+                        name: managerData.name,
+                        email: managerData.email,
+                        designation: managerData.designation,
+                        permissions_role: managerData.permissions_role,
+                        status: managerData.status,
+                        company_uid: managerData.company_uid,
+                        companyLogo: companyData.displayImageUrl,
+                        createdAt: managerData.createdAt,
+                        role: managerData.role,
+                    };
+                    setManager(managerProfile);
+                } else {
+                     setError('The company that invited you no longer exists.');
+                     setLoading(false);
+                     return;
+                }
+
+            } catch (err) {
+                setError('An error occurred while validating your invitation.');
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchInvitation();
+    }, [token]);
+
+    const handleAccept = () => {
+        setStep('password');
+    }
+
+    const handleCreateAccount = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (password !== confirmPassword) {
+            toast({ variant: 'destructive', title: 'Passwords do not match.' });
+            return;
+        }
+        if (!manager) return;
+
+        setIsSubmitting(true);
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, manager.email, password);
+            const user = userCredential.user;
+            
+            await updateProfile(user, { displayName: manager.name });
+
+            // Approach 1: Re-create the document with the Auth UID
+            const batch = writeBatch(db);
+
+            // 1. Define the new document reference with the Auth UID
+            const newManagerRef = doc(db, 'users', user.uid);
+            
+            // 2. Define the data for the new document, copying from the old one
+            const newManagerData = {
+                uid: user.uid,
+                name: manager.name,
+                email: manager.email,
+                role: manager.role,
+                company_uid: manager.company_uid,
+                permissions_role: manager.permissions_role,
+                designation: manager.designation,
+                createdAt: manager.createdAt,
+                status: 'active',
+                preferences: { themeMode: 'system', themeColor: 'Aubergine' } // Default preferences
+            };
+
+            // 3. Create the new document in the batch
+            batch.set(newManagerRef, newManagerData);
+            
+            // 4. Delete the original invitation document
+            const oldManagerRef = doc(db, 'users', manager.id);
+            batch.delete(oldManagerRef);
+
+            // 5. Commit the atomic operation
+            await batch.commit();
+
+            toast({ title: 'Account Activated!', description: 'You will be redirected to the login page.' });
+            setStep('done');
+
+            setTimeout(() => {
+                router.push('/login');
+            }, 3000);
+
+        } catch (err: any) {
+            console.error(err);
+            toast({ variant: 'destructive', title: 'Activation Failed', description: err.message });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+    
+    const getInitials = (name: string) => {
+        if (!name) return '';
+        const names = name.split(' ');
+        return names.length > 1 ? `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase() : name.substring(0, 2).toUpperCase();
+    }
+
+    const renderContent = () => {
+        if (loading) {
+            return (
+                <CardContent className="py-12">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                        <p className="text-muted-foreground">Validating your invitation...</p>
+                    </div>
+                </CardContent>
+            )
+        }
+        if (error) {
+            return (
+                <CardContent className="py-12">
+                     <div className="text-center">
+                        <div className="flex justify-center mb-4">
+                            <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center">
+                                 <XCircle className="h-6 w-6 text-destructive"/>
+                            </div>
+                        </div>
+                        <h2 className="text-xl font-semibold">Invitation Invalid</h2>
+                        <p className="text-muted-foreground mt-2">{error}</p>
+                        <Button onClick={() => router.push('/')} className="mt-6">Go to Homepage</Button>
+                    </div>
+                </CardContent>
+            )
+        }
+        if(manager) {
+            if (step === 'details') {
+                return (
+                    <>
+                    <CardHeader className="text-center">
+                        <CardTitle className="font-headline text-2xl">You're Invited!</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                         <div className="flex flex-col items-center gap-2 text-center">
+                             <Avatar className="h-16 w-16 text-xl mb-2">
+                                <AvatarImage src={manager.companyLogo} />
+                                <AvatarFallback>{getInitials(companyName)}</AvatarFallback>
+                            </Avatar>
+                            <p className="text-muted-foreground">You have been invited to join</p>
+                            <p className="font-semibold text-lg">{companyName}</p>
+                         </div>
+                         <div className="flex items-center gap-4 p-4 rounded-lg border bg-secondary/50 mt-4">
+                            <Avatar className="h-16 w-16 text-xl">
+                                <AvatarFallback>{getInitials(manager.name)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <p className="font-semibold">{manager.name}</p>
+                                <p className="text-sm text-muted-foreground">{manager.email}</p>
+                                <p className="text-sm text-muted-foreground">{manager.designation}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3 p-4 rounded-lg bg-secondary">
+                             <ShieldCheck className="h-5 w-5 text-primary"/>
+                            <div>
+                                <p className="font-semibold">Role: {manager.permissions_role}</p>
+                                <p className="text-xs text-muted-foreground">You are being invited with {manager.permissions_role} permissions.</p>
+                            </div>
+                        </div>
+                    </CardContent>
+                    <CardFooter>
+                        <Button className="w-full" onClick={handleAccept}>Accept Invitation</Button>
+                    </CardFooter>
+                    </>
+                );
+            }
+            if (step === 'password') {
+                return (
+                     <>
+                        <CardHeader>
+                            <CardTitle className="font-headline text-2xl">Create Your Account</CardTitle>
+                            <CardDescription>Set a password to activate your account for {manager.email}.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                             <form onSubmit={handleCreateAccount} className="space-y-4">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="password">Password</Label>
+                                    <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                                    <Input id="confirmPassword" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+                                </div>
+                                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                                    {isSubmitting ? <Loader2 className="animate-spin" /> : 'Activate Account'}
+                                </Button>
+                             </form>
+                        </CardContent>
+                     </>
+                )
+            }
+             if (step === 'done') {
+                return (
+                    <CardContent className="py-12">
+                        <div className="text-center">
+                            <div className="flex justify-center mb-4">
+                                <div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center">
+                                    <CheckCircle className="h-6 w-6 text-green-500"/>
+                                </div>
+                            </div>
+                            <h2 className="text-xl font-semibold">Account Activated!</h2>
+                            <p className="text-muted-foreground mt-2">You will be redirected to the login page shortly.</p>
+                        </div>
+                    </CardContent>
+                )
+            }
+        }
+        return null;
+    }
+
+    return (
+        <div className="flex min-h-screen flex-col items-center justify-center bg-secondary p-4">
+            <div className="mb-8">
+                <Logo />
+            </div>
+            <Card className="w-full max-w-md">
+               {renderContent()}
+            </Card>
+        </div>
+    )
+}
+
+    

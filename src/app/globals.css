@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 40% 98%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 210 40% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 210 40% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 285 99% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 222.2 47.4% 11.2%;
+    --accent: 210 40% 94.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 210 40% 90%;
+    --input: 210 40% 92%;
+    --ring: 285 99% 53%;
+    --radius: 0.8rem;
+    --sidebar: 210 40% 100%;
+    --sidebar-foreground: 222.2 47.4% 11.2%;
+
+    --dash-primary: 262.1 83.3% 57.8%;
+    --dash-primary-foreground: 300 100% 97%;
+    --dash-gradient: linear-gradient(to right, hsl(262.1, 83.3%, 57.8%), hsl(285, 99%, 53%));
+  }
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 285 99% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 285 99% 63%;
+    --radius: 0.8rem;
+    --sidebar: 220 10% 10%;
+    --sidebar-foreground: 210 40% 98%;
+
+    --dash-primary: 262.1 83.3% 67.8%;
+    --dash-primary-foreground: 300 100% 97%;
+    --dash-gradient: linear-gradient(to right, hsl(262.1, 83.3%, 67.8%), hsl(285, 99%, 63%));
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 10px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--accent-foreground));
+  }
+
+  /* Custom utility to color the search input's clear button */
+  .themed-clear-button::-webkit-search-cancel-button {
+    filter: invert(50%) sepia(100%) saturate(1000%) hue-rotate(calc(var(--dash-primary-hue, 262) * 1deg + 140deg));
+  }
+}
+@layer base {
+  :root {
+    --dash-primary-hue: 262.1;
+  }
+}
