@@ -1,10 +1,10 @@
+
 "use client"
 
 import * as React from "react"
 import * as PopoverPrimitive from "@radix-ui/react-popover"
 
 import { cn } from "@/lib/utils"
-import { DashboardLayoutWrapper } from "@/app/dashboard/layout-wrapper"
 
 const Popover = PopoverPrimitive.Root
 
@@ -24,11 +24,7 @@ const PopoverContent = React.forwardRef<
         className
       )}
       {...props}
-    >
-        <DashboardLayoutWrapper>
-            {props.children}
-        </DashboardLayoutWrapper>
-    </PopoverPrimitive.Content>
+    />
   </PopoverPrimitive.Portal>
 ))
 PopoverContent.displayName = PopoverPrimitive.Content.displayName

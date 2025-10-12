@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -5,7 +6,6 @@ import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog"
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
-import { DashboardLayoutWrapper } from "@/app/dashboard/layout-wrapper"
 
 const AlertDialog = AlertDialogPrimitive.Root
 
@@ -31,7 +31,7 @@ AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName
 const AlertDialogContent = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+>(({ className, ...props }, ref) => (
   <AlertDialogPortal>
     <AlertDialogOverlay />
     <AlertDialogPrimitive.Content
@@ -41,11 +41,7 @@ const AlertDialogContent = React.forwardRef<
         className
       )}
       {...props}
-    >
-      <DashboardLayoutWrapper>
-        {children}
-      </DashboardLayoutWrapper>
-      </AlertDialogPrimitive.Content>
+    />
   </AlertDialogPortal>
 ))
 AlertDialogContent.displayName = AlertDialogPrimitive.Content.displayName
