@@ -20,7 +20,8 @@ import {
 import { ChangePasswordCard } from '@/app/dashboard/profile/_components/change-password-card';
 import { ColorPicker } from './ui/color-picker';
 import { DashboardLayoutWrapper } from '@/app/dashboard/layout-wrapper';
-import { updateThemePreferencesAction, updateWhatsNewAction, updateAboutPlatformAction, updateContactInfoAction, submitFeedbackAction, updateTermsAction, updatePolicyAction, sendVerificationEmailAction } from '@/app/dashboard/settings/actions';
+import { updateThemePreferencesAction, updateWhatsNewAction, updateAboutPlatformAction, updateContactInfoAction, submitFeedbackAction, updateTermsAction, updatePolicyAction } from '@/app/dashboard/settings/actions';
+import { sendVerificationEmailAction } from '@/app/actions';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import { Textarea } from './ui/textarea';
 import { Input } from './ui/input';
