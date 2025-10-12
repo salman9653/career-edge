@@ -20,6 +20,8 @@ export interface ApplicantRoundResult {
     score?: number;
     completedAt?: string;
     answers?: { questionId: string; answer: string }[];
+    timeTaken?: number;
+    startedAt?: string;
 }
 
 export interface Schedule {

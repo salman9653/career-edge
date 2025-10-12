@@ -5,7 +5,7 @@ import { doc, setDoc, serverTimestamp, updateDoc, arrayUnion, arrayRemove, getDo
 import { db } from '@/lib/firebase/config';
 import { revalidatePath } from 'next/cache';
 import { UserSession } from '@/hooks/use-session';
-import type { Question, Job, Round, ApplicantRoundResult } from '@/lib/types';
+import type { Question, Job, Round, ApplicantRoundResult, Schedule } from '@/lib/types';
 
 interface ApplyForJobInput {
   jobId: string;
@@ -137,29 +137,90 @@ interface SubmitAssessmentInput {
   roundId: number;
   candidateId: string;
   answers: { questionId: string; answer: string }[];
+  startedAt: string;
 }
 
 export async function submitAssessmentAction(input: SubmitAssessmentInput) {
-    const { jobId, roundId, candidateId, answers } = input;
+    const { jobId, roundId, candidateId, answers, startedAt } = input;
 
     if (!jobId || !roundId || !candidateId) {
         return { error: 'Missing required information.' };
     }
 
     try {
-        const applicantDocRef = doc(db, 'jobs', jobId, 'applicants', candidateId);
+        const submittedAt = new Date();
+        const timeTaken = submittedAt.getTime() - new Date(startedAt).getTime();
+
+        const jobDoc = await getDoc(doc(db, 'jobs', jobId));
+        if (!jobDoc.exists()) return { error: "Job not found." };
+        const jobData = jobDoc.data() as Job;
+        
+        const currentRound = jobData.rounds.find(r => r.id === roundId);
+        if (!currentRound) return { error: "Round not found." };
+
+        let score = 0;
+        let resultStatus: 'Passed' | 'Failed' | 'Pending' = 'Pending';
+
+        if (currentRound.type === 'assessment' && currentRound.assessmentId) {
+            const assessmentDoc = await getDoc(doc(db, 'assessments', currentRound.assessmentId));
+            if(assessmentDoc.exists()) {
+                const assessmentData = assessmentDoc.data();
+                const questionIds = assessmentData.questionIds || [];
+                let correctCount = 0;
+
+                for (const answer of answers) {
+                    const qDoc = await getDoc(doc(db, 'questions', answer.questionId));
+                    if (qDoc.exists()) {
+                        const question = qDoc.data() as Question;
+                        if (question.type === 'mcq' && question.correctAnswer === answer.answer) {
+                            correctCount++;
+                        }
+                    }
+                }
+                score = questionIds.length > 0 ? Math.round((correctCount / questionIds.length) * 100) : 0;
+                
+                if (currentRound.selectionCriteria) {
+                    resultStatus = score >= currentRound.selectionCriteria ? 'Passed' : 'Failed';
+                }
+            }
+        }
         
         const roundResult: ApplicantRoundResult = {
             roundId,
-            status: 'Pending', // Status to be updated after grading
+            status: resultStatus,
             answers,
-            completedAt: new Date().toISOString(),
+            score,
+            completedAt: submittedAt.toISOString(),
+            timeTaken,
+            startedAt,
         };
 
-        await updateDoc(applicantDocRef, {
-            roundResults: arrayUnion(roundResult),
-            // Optionally update applicant status here if needed
-        });
+        const applicantDocRef = doc(db, 'jobs', jobId, 'applicants', candidateId);
+        const updates: any = { roundResults: arrayUnion(roundResult) };
+
+        const isLastRound = jobData.rounds.length === roundId + 1;
+
+        if (currentRound.autoProceed && resultStatus === 'Passed' && !isLastRound) {
+            updates.activeRoundIndex = roundId + 1;
+            updates.status = 'In Progress';
+
+            const nextRound = jobData.rounds[roundId + 1];
+            if(nextRound && nextRound.type === 'assessment') {
+                 let dueDate = new Date();
+                 dueDate.setDate(dueDate.getDate() + 2);
+                 const newSchedule: Schedule = {
+                    roundId: nextRound.id,
+                    scheduledAt: new Date().toISOString(),
+                    dueDate: dueDate.toISOString(),
+                    status: 'Pending'
+                 };
+                 updates.schedules = arrayUnion(newSchedule);
+            }
+        } else {
+            updates.status = resultStatus === 'Passed' ? 'In Progress' : resultStatus === 'Failed' ? 'Rejected' : 'In Progress';
+        }
+        
+        await updateDoc(applicantDocRef, updates);
         
         revalidatePath(`/dashboard/candidate/applications`);
         return { success: true };

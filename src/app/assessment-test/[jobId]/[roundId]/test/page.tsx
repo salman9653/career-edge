@@ -13,7 +13,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, Clock, BookCopy, ChevronLeft, ChevronRight, CheckCircle, Info, Link as LinkIcon, Briefcase } from 'lucide-react';
+import { Loader2, Clock, BookCopy, ChevronLeft, ChevronRight, CheckCircle, Info, Link as LinkIcon, Briefcase, AlertTriangle } from 'lucide-react';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -93,9 +93,13 @@ export default function AssessmentTestPage() {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState<Record<string, string>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isTimeUp, setIsTimeUp] = useState(false);
+
+    const startTimeRef = useRef<Date | null>(null);
     
     useEffect(() => {
         if (session && jobId && roundId) {
+            startTimeRef.current = new Date();
             const fetchTest = async () => {
                 try {
                     const sessionData = sessionStorage.getItem(`assessment-${jobId}-${roundId}`);
@@ -104,7 +108,7 @@ export default function AssessmentTestPage() {
                         setLoading(false);
                         return;
                     }
-                    const { assessmentId, assessmentName, jobId: sessionJobId } = JSON.parse(sessionData);
+                    const { assessmentId, jobId: sessionJobId } = JSON.parse(sessionData);
 
                     if (sessionJobId !== jobId) {
                         setError("Mismatched job ID in session.");
@@ -143,7 +147,9 @@ export default function AssessmentTestPage() {
                         assessmentData.questionIds.map(id => getDoc(doc(db, 'questions', id)))
                     );
                     
-                    const fetchedQuestions = questionDocs.map(doc => ({ id: doc.id, ...doc.data() } as Question));
+                    const fetchedQuestions = questionDocs
+                        .filter(doc => doc.exists())
+                        .map(doc => ({ id: doc.id, ...doc.data() } as Question));
                     
                     setTestDetails({
                         assessmentName: assessmentData.name,
@@ -176,17 +182,12 @@ export default function AssessmentTestPage() {
     
     const handlePrev = () => {
         if (currentQuestionIndex > 0) {
-            setCurrentQuestionIndex(prev => prev - 1);
+            setCurrentQuestionIndex(prev => prev + 1);
         }
     };
 
     const handleTimeUp = () => {
-        toast({
-            title: "Time's Up!",
-            description: "Your assessment will be submitted automatically.",
-            variant: "destructive"
-        });
-        handleSubmit();
+        setIsTimeUp(true);
     };
     
     const handleSubmit = async () => {
@@ -198,6 +199,7 @@ export default function AssessmentTestPage() {
             roundId,
             candidateId: session.uid,
             answers: Object.entries(answers).map(([questionId, answer]) => ({ questionId, answer })),
+            startedAt: startTimeRef.current?.toISOString() || new Date().toISOString(),
         });
         
         if (result.success) {
@@ -216,6 +218,8 @@ export default function AssessmentTestPage() {
         return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
     }
     
+    const unansweredQuestions = questions.length - Object.keys(answers).length;
+
     if(loading || sessionLoading) {
         return <div className="min-h-screen bg-secondary flex flex-col items-center justify-center p-4"><Loader2 className="h-8 w-8 animate-spin" /></div>
     }
@@ -226,6 +230,27 @@ export default function AssessmentTestPage() {
 
     return (
         <div className="min-h-screen bg-secondary flex flex-col select-none" onContextMenu={(e) => e.preventDefault()}>
+             <AlertDialog open={isTimeUp}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                         <div className="flex justify-center">
+                            <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center mb-2">
+                                <AlertTriangle className="h-6 w-6 text-destructive"/>
+                            </div>
+                        </div>
+                        <AlertDialogTitle className="text-center">Time's Up!</AlertDialogTitle>
+                        <AlertDialogDescription className="text-center">
+                            The timer has expired. Your assessment will be submitted automatically with your saved answers.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogAction onClick={handleSubmit} disabled={isSubmitting}>
+                             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Submit
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
             <header className="flex h-20 shrink-0 items-center justify-between gap-4 border-b bg-background px-6">
                 <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
@@ -274,7 +299,7 @@ export default function AssessmentTestPage() {
                             <p className="text-xs text-muted-foreground">for {testDetails?.jobTitle} • at {testDetails?.companyName}</p>
                         </div>
                         <div className="flex-1 flex justify-center">
-                          {testDetails && <CountdownTimer minutes={testDetails.duration} onTimeUp={handleSubmit} />}
+                          {testDetails && <CountdownTimer minutes={testDetails.duration} onTimeUp={handleTimeUp} />}
                         </div>
                         <div className="flex-1 flex justify-end">
                             <AlertDialog>
@@ -284,11 +309,21 @@ export default function AssessmentTestPage() {
                                 <AlertDialogContent>
                                 <AlertDialogHeader>
                                     <AlertDialogTitle>Are you sure you want to finish?</AlertDialogTitle>
-                                    <AlertDialogDescription>You cannot change your answers after submitting. Your test will be graded based on your submitted answers.</AlertDialogDescription>
+                                    <AlertDialogDescription>
+                                        You cannot change your answers after submitting.
+                                        {unansweredQuestions > 0 && (
+                                            <p className="mt-2 font-semibold text-amber-600 dark:text-amber-400">
+                                                You have {unansweredQuestions} unanswered questions.
+                                            </p>
+                                        )}
+                                    </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleSubmit}>Finish</AlertDialogAction>
+                                    <AlertDialogAction onClick={handleSubmit} disabled={isSubmitting}>
+                                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                        Finish
+                                    </AlertDialogAction>
                                 </AlertDialogFooter>
                                 </AlertDialogContent>
                             </AlertDialog>
@@ -385,3 +420,4 @@ export default function AssessmentTestPage() {
         </div>
     );
 }
+
