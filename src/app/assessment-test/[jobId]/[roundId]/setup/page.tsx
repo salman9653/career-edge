@@ -9,7 +9,7 @@ import { Logo } from '@/components/logo';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Video, CheckCircle, AlertTriangle, ChevronRight, Mic, Wifi, FileText, RefreshCw, XCircle } from 'lucide-react';
+import { Loader2, Video, CheckCircle, AlertTriangle, ChevronRight, Mic, Wifi, FileText, RefreshCw, XCircle, Briefcase, Link as LinkIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
@@ -19,9 +19,18 @@ import { SpeedMeter } from '@/components/ui/speed-meter';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase/config';
+import type { Job } from '@/lib/types';
+import Link from 'next/link';
 
 type SetupStepStatus = 'active' | 'pending' | 'complete';
 type SetupStepKey = 'systemCheck' | 'networkCheck' | 'finalInstructions';
+
+interface CompanyInfo {
+    name: string;
+    logo?: string;
+}
 
 const SetupStep = ({ icon: Icon, title, status }: { icon: React.ElementType, title: string, status: SetupStepStatus }) => {
     return (
@@ -63,7 +72,28 @@ export default function AssessmentSetupPage() {
     const [speed, setSpeed] = useState(0);
     const [isTestingNetwork, setIsTestingNetwork] = useState(false);
     const [acceptedInstructions, setAcceptedInstructions] = useState(false);
+    const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
 
+    const jobId = params.jobId as string;
+
+    useEffect(() => {
+        if (jobId) {
+            const fetchCompanyInfo = async () => {
+                const jobDoc = await getDoc(doc(db, 'jobs', jobId));
+                if (jobDoc.exists()) {
+                    const jobData = jobDoc.data() as Job;
+                    if (jobData.companyId) {
+                        const companyDoc = await getDoc(doc(db, 'users', jobData.companyId));
+                        if (companyDoc.exists()) {
+                            const companyData = companyDoc.data();
+                            setCompanyInfo({ name: companyData.name, logo: companyData.displayImageUrl });
+                        }
+                    }
+                }
+            };
+            fetchCompanyInfo();
+        }
+    }, [jobId]);
 
     const requestPermissions = async () => {
         try {
@@ -400,8 +430,32 @@ export default function AssessmentSetupPage() {
 
     return (
         <div className="min-h-screen bg-secondary flex flex-col items-center justify-center p-4">
-            <div className="mb-4">
-                <Logo />
+             <div className="flex items-center justify-center gap-6 mb-8">
+                <div className="flex items-center gap-2">
+                    <span className="font-headline text-lg font-bold text-foreground">Career Edge</span>
+                    <Avatar className="h-12 w-12">
+                        <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-[#667EEA] to-[#764BA2] text-white">
+                            <Briefcase className="h-6 w-6" />
+                        </div>
+                    </Avatar>
+                </div>
+                 {companyInfo && (
+                    <>
+                        <div className="relative flex items-center">
+                            <div className="h-px w-16 bg-border"></div>
+                            <Link href="#" className="h-6 w-6 rounded-full border bg-background flex items-center justify-center absolute left-1/2 -translate-x-1/2">
+                                <LinkIcon className="h-3 w-3 text-muted-foreground" />
+                            </Link>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Avatar className="h-12 w-12">
+                                <AvatarImage src={companyInfo.logo} />
+                                <AvatarFallback>{getInitials(companyInfo.name)}</AvatarFallback>
+                            </Avatar>
+                            <span className="font-semibold text-lg">{companyInfo.name}</span>
+                        </div>
+                    </>
+                 )}
             </div>
             
             <Card className="w-full max-w-4xl overflow-hidden">
