@@ -9,7 +9,7 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import type { Price, Round, Job } from "@/lib/types";
-import { updateProfile, reauthenticateWithCredential, EmailAuthProvider, updatePassword, sendEmailVerification } from "firebase/auth";
+import { updateProfile, reauthenticateWithCredential, EmailAuthProvider, updatePassword } from "firebase/auth";
 import { randomUUID } from 'crypto';
 import { careerChat } from "@/ai/flows/career-chat-flow";
 import { streamText } from 'genkit';
@@ -956,20 +956,5 @@ export async function scheduleNextRoundAction(jobId: string, applicantId: string
     } catch (e: any) {
         console.error('Error scheduling next round:', e);
         return { error: e.message };
-    }
-}
-
-export async function sendVerificationEmailAction() {
-    const user = auth.currentUser;
-    if (!user) {
-        return { error: 'You must be logged in to verify your email.' };
-    }
-
-    try {
-        await sendEmailVerification(user);
-        return { success: 'Verification email sent successfully. Please check your inbox.' };
-    } catch (error: any) {
-        console.error("Error sending verification email:", error);
-        return { error: error.message };
     }
 }

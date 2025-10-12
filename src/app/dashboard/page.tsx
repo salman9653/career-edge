@@ -14,12 +14,12 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { MobileSearch } from '@/components/mobile-search';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { db, auth } from '@/lib/firebase/config';
+import { sendEmailVerification } from 'firebase/auth';
 import type { Job, Applicant, Schedule } from '@/lib/types';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { JobContext } from '@/context/job-context';
-import { sendVerificationEmailAction } from '../actions';
 import { Loader2 } from 'lucide-react';
 
 
@@ -297,18 +297,23 @@ export default function DashboardPage() {
   const [toastShown, setToastShown] = useState(false);
 
   const handleVerify = async () => {
-    const result = await sendVerificationEmailAction();
-    if(result.success) {
-      toast({
-        title: "Verification Email Sent",
-        description: "Please check your inbox to verify your email address.",
-      });
-    } else {
-      toast({
-        title: "Error",
-        description: result.error || "An unknown error occurred.",
-        variant: "destructive"
-      });
+    const user = auth.currentUser;
+    if (!user) {
+        toast({ title: "Error", description: "You must be logged in to verify your email.", variant: "destructive" });
+        return;
+    }
+    try {
+        await sendEmailVerification(user);
+        toast({
+            title: "Verification Email Sent",
+            description: "Please check your inbox to verify your email address.",
+        });
+    } catch (error: any) {
+        toast({
+            title: "Error",
+            description: error.message || "An unknown error occurred.",
+            variant: "destructive"
+        });
     }
   }
 

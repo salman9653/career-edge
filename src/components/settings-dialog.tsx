@@ -21,7 +21,8 @@ import { ChangePasswordCard } from '@/app/dashboard/profile/_components/change-p
 import { ColorPicker } from './ui/color-picker';
 import { DashboardLayoutWrapper } from '@/app/dashboard/layout-wrapper';
 import { updateThemePreferencesAction, updateWhatsNewAction, updateAboutPlatformAction, updateContactInfoAction, submitFeedbackAction, updateTermsAction, updatePolicyAction } from '@/app/dashboard/settings/actions';
-import { sendVerificationEmailAction } from '@/app/actions';
+import { auth } from '@/lib/firebase/config';
+import { sendEmailVerification } from 'firebase/auth';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import { Textarea } from './ui/textarea';
 import { Input } from './ui/input';
@@ -125,18 +126,23 @@ const AccountSettings = ({ onNavigate }: { onNavigate: () => void }) => {
     const { toast } = useToast();
 
     const handleVerify = async () => {
-        const result = await sendVerificationEmailAction();
-        if(result.success) {
-        toast({
-            title: "Verification Email Sent",
-            description: "Please check your inbox to verify your email address.",
-        });
-        } else {
-        toast({
-            title: "Error",
-            description: result.error || "An unknown error occurred.",
-            variant: "destructive"
-        });
+        const user = auth.currentUser;
+        if (!user) {
+            toast({ title: "Error", description: "You must be logged in to verify your email.", variant: "destructive" });
+            return;
+        }
+        try {
+            await sendEmailVerification(user);
+            toast({
+                title: "Verification Email Sent",
+                description: "Please check your inbox to verify your email address.",
+            });
+        } catch (error: any) {
+            toast({
+                title: "Error",
+                description: error.message || "An unknown error occurred.",
+                variant: "destructive"
+            });
         }
     }
 
