@@ -13,7 +13,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, Clock, BookCopy, ChevronLeft, ChevronRight, CheckCircle, Info } from 'lucide-react';
+import { Loader2, Clock, BookCopy, ChevronLeft, ChevronRight, CheckCircle, Info, Link as LinkIcon, Briefcase } from 'lucide-react';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -37,6 +37,7 @@ interface TestDetails {
     assessmentName: string;
     jobTitle: string;
     companyName: string;
+    companyLogo?: string;
     duration: number; // in minutes
 }
 
@@ -120,10 +121,13 @@ export default function AssessmentTestPage() {
                     const jobData = jobDoc.data() as Job;
 
                     let companyName = 'A Company';
+                    let companyLogo: string | undefined;
                     if (jobData.companyId) {
                         const companyDoc = await getDoc(doc(db, 'users', jobData.companyId));
                         if (companyDoc.exists()) {
-                            companyName = companyDoc.data().name;
+                            const data = companyDoc.data();
+                            companyName = data.name;
+                            companyLogo = data.displayImageUrl;
                         }
                     }
                     
@@ -145,6 +149,7 @@ export default function AssessmentTestPage() {
                         assessmentName: assessmentData.name,
                         jobTitle: jobData.title,
                         companyName: companyName,
+                        companyLogo,
                         duration: 5, // For development, set to 5 minutes
                     });
                     setQuestions(fetchedQuestions);
@@ -222,7 +227,33 @@ export default function AssessmentTestPage() {
     return (
         <div className="min-h-screen bg-secondary flex flex-col select-none" onContextMenu={(e) => e.preventDefault()}>
             <header className="flex h-20 shrink-0 items-center justify-between gap-4 border-b bg-background px-6">
-                <Logo />
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                        <span className="font-headline text-lg font-bold text-foreground">Career Edge</span>
+                        <Avatar className="h-10 w-10">
+                            <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-[#667EEA] to-[#764BA2] text-white">
+                                <Briefcase className="h-5 w-5" />
+                            </div>
+                        </Avatar>
+                    </div>
+                    {testDetails && (
+                        <>
+                            <div className="relative flex items-center">
+                                <div className="h-px w-8 bg-border"></div>
+                                <div className="h-6 w-6 rounded-full border bg-background flex items-center justify-center absolute left-1/2 -translate-x-1/2">
+                                    <LinkIcon className="h-3 w-3 text-muted-foreground" />
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Avatar className="h-10 w-10">
+                                    <AvatarImage src={testDetails.companyLogo} />
+                                    <AvatarFallback>{getInitials(testDetails.companyName)}</AvatarFallback>
+                                </Avatar>
+                                <span className="font-semibold text-lg">{testDetails.companyName}</span>
+                            </div>
+                        </>
+                    )}
+                </div>
                 <div className="flex items-center gap-4">
                     <div className="text-right">
                         <p className="font-semibold text-sm">Hello, {session?.displayName}</p>
