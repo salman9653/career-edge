@@ -162,26 +162,32 @@ export default function AssessmentStartPage() {
             return (
                 <>
                     <CardHeader className="text-center items-center">
-                         <div className="flex items-center gap-4 mb-4">
-                            <Avatar className="h-12 w-12">
-                                <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-[#667EEA] to-[#764BA2] text-white">
-                                    <Briefcase className="h-6 w-6" />
-                                </div>
-                            </Avatar>
+                         <div className="flex items-center justify-center gap-4 mb-4">
+                            <div className="flex items-center gap-2">
+                                <span className="font-headline text-lg font-bold text-foreground">Career Edge</span>
+                                <Avatar className="h-12 w-12">
+                                    <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-[#667EEA] to-[#764BA2] text-white">
+                                        <Briefcase className="h-6 w-6" />
+                                    </div>
+                                </Avatar>
+                            </div>
                             <div className="relative flex items-center">
-                                <div className="h-px w-12 bg-border"></div>
+                                <div className="h-px w-16 bg-border"></div>
                                 <Link href="#" className="h-6 w-6 rounded-full border bg-background flex items-center justify-center absolute left-1/2 -translate-x-1/2">
                                     <LinkIcon className="h-3 w-3 text-muted-foreground" />
                                 </Link>
                             </div>
-                            <Avatar className="h-12 w-12">
-                                <AvatarImage src={assessmentDetails.companyLogo} />
-                                <AvatarFallback>{getInitials(assessmentDetails.companyName)}</AvatarFallback>
-                            </Avatar>
+                            <div className="flex items-center gap-2">
+                                <Avatar className="h-12 w-12">
+                                    <AvatarImage src={assessmentDetails.companyLogo} />
+                                    <AvatarFallback>{getInitials(assessmentDetails.companyName)}</AvatarFallback>
+                                </Avatar>
+                                <span className="font-semibold text-lg">{assessmentDetails.companyName}</span>
+                            </div>
                         </div>
                         <CardTitle className="font-headline text-3xl">{assessmentDetails.assessmentName} - Assessment</CardTitle>
                         <CardDescription>
-                            for {assessmentDetails.jobTitle} • at {assessmentDetails.companyName}
+                            for {assessmentDetails.jobTitle}
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
@@ -227,7 +233,7 @@ export default function AssessmentStartPage() {
             <div className="mb-8">
                 <Logo />
             </div>
-            <Card className="w-full max-w-lg">
+            <Card className="w-full max-w-2xl">
                 {renderContent()}
             </Card>
         </div>
