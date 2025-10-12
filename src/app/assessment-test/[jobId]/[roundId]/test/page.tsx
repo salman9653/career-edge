@@ -203,9 +203,9 @@ export default function AssessmentTestPage() {
         });
         
         if (result.success) {
-            toast({ title: "Assessment Submitted!", description: "Your answers have been recorded." });
+            toast({ title: "Assessment Submitted!", description: "Your answers have been recorded. Redirecting to feedback form..." });
             sessionStorage.removeItem(`assessment-${jobId}-${roundId}`);
-            router.push('/dashboard/candidate/applications');
+            router.push(`/assessment-test/${jobId}/${roundId}/test/feedback`);
         } else {
             toast({ title: "Submission Failed", description: result.error, variant: 'destructive' });
         }
@@ -251,8 +251,8 @@ export default function AssessmentTestPage() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-            <header className="flex h-20 shrink-0 items-center justify-between gap-4 border-b bg-background px-6">
-                <div className="flex items-center gap-4">
+            <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b bg-background px-4">
+                <div className="flex items-center gap-2">
                     <div className="flex items-center gap-2">
                         <span className="font-headline text-lg font-bold text-foreground">Career Edge</span>
                         <Avatar className="h-10 w-10">
@@ -264,7 +264,7 @@ export default function AssessmentTestPage() {
                     {testDetails && (
                         <>
                             <div className="relative flex items-center">
-                                <div className="h-px w-8 bg-border"></div>
+                                <div className="h-px w-4 bg-border"></div>
                                 <div className="h-6 w-6 rounded-full border bg-background flex items-center justify-center absolute left-1/2 -translate-x-1/2">
                                     <LinkIcon className="h-3 w-3 text-muted-foreground" />
                                 </div>
@@ -293,7 +293,7 @@ export default function AssessmentTestPage() {
             
             <main className="flex-1 flex flex-col p-2 gap-2">
                 <Card>
-                    <CardContent className="p-4 flex items-center justify-between">
+                    <CardContent className="p-2 flex items-center justify-between">
                          <div className="flex-1">
                             <h2 className="font-semibold font-headline text-lg">{testDetails?.assessmentName} - Assessment</h2>
                             <p className="text-xs text-muted-foreground">for {testDetails?.jobTitle} • at {testDetails?.companyName}</p>
@@ -420,5 +420,3 @@ export default function AssessmentTestPage() {
         </div>
     );
 }
-
-    

@@ -5,7 +5,7 @@ import { doc, setDoc, serverTimestamp, updateDoc, arrayUnion, arrayRemove, getDo
 import { db } from '@/lib/firebase/config';
 import { revalidatePath } from 'next/cache';
 import { UserSession } from '@/hooks/use-session';
-import type { Question, Job, Round, ApplicantRoundResult, Schedule } from '@/lib/types';
+import type { Question, Job, Round, ApplicantRoundResult, Schedule, Applicant } from '@/lib/types';
 
 interface ApplyForJobInput {
   jobId: string;
@@ -151,9 +151,17 @@ export async function submitAssessmentAction(input: SubmitAssessmentInput) {
         const submittedAt = new Date();
         const timeTaken = submittedAt.getTime() - new Date(startedAt).getTime();
 
-        const jobDoc = await getDoc(doc(db, 'jobs', jobId));
+        const applicantDocRef = doc(db, 'jobs', jobId, 'applicants', candidateId);
+        const [jobDoc, applicantDoc] = await Promise.all([
+            getDoc(doc(db, 'jobs', jobId)),
+            getDoc(applicantDocRef),
+        ]);
+
         if (!jobDoc.exists()) return { error: "Job not found." };
+        if (!applicantDoc.exists()) return { error: "Applicant data not found." };
+
         const jobData = jobDoc.data() as Job;
+        const applicantData = applicantDoc.data() as Applicant;
         
         const currentRound = jobData.rounds.find(r => r.id === roundId);
         if (!currentRound) return { error: "Round not found." };
@@ -195,9 +203,16 @@ export async function submitAssessmentAction(input: SubmitAssessmentInput) {
             startedAt,
         };
 
-        const applicantDocRef = doc(db, 'jobs', jobId, 'applicants', candidateId);
-        const updates: any = { roundResults: arrayUnion(roundResult) };
+        const existingResults = applicantData.roundResults || [];
+        const newRoundResults = [...existingResults, roundResult];
 
+        const schedules = applicantData.schedules || [];
+        const scheduleIndex = schedules.findIndex(s => s.roundId === roundId);
+        if (scheduleIndex > -1) {
+            schedules[scheduleIndex].status = 'Attempted';
+        }
+
+        const updates: any = { roundResults: newRoundResults, schedules };
         const isLastRound = jobData.rounds.length === roundId + 1;
 
         if (currentRound.autoProceed && resultStatus === 'Passed' && !isLastRound) {
@@ -214,7 +229,7 @@ export async function submitAssessmentAction(input: SubmitAssessmentInput) {
                     dueDate: dueDate.toISOString(),
                     status: 'Pending'
                  };
-                 updates.schedules = arrayUnion(newSchedule);
+                 updates.schedules = [...schedules, newSchedule];
             }
         } else {
             updates.status = resultStatus === 'Passed' ? 'In Progress' : resultStatus === 'Failed' ? 'Rejected' : 'In Progress';
@@ -228,5 +243,53 @@ export async function submitAssessmentAction(input: SubmitAssessmentInput) {
     } catch (error: any) {
         console.error('Error submitting assessment:', error);
         return { error: 'Could not submit your assessment. Please try again.' };
+    }
+}
+
+interface SubmitFeedbackInput {
+    jobId: string;
+    roundId: number;
+    candidateId: string;
+    rating: number;
+    feedback: string;
+}
+
+export async function submitAssessmentFeedbackAction(input: SubmitFeedbackInput) {
+    const { jobId, roundId, candidateId, rating, feedback } = input;
+
+    if (!jobId || !roundId || !candidateId) {
+        return { error: 'Missing required information.' };
+    }
+    
+    try {
+        const applicantDocRef = doc(db, 'jobs', jobId, 'applicants', candidateId);
+        const applicantDoc = await getDoc(applicantDocRef);
+
+        if (!applicantDoc.exists()) {
+            return { error: "Applicant not found." };
+        }
+
+        const applicantData = applicantDoc.data() as Applicant;
+        const roundResults = applicantData.roundResults || [];
+        
+        const roundResultIndex = roundResults.findIndex(r => r.roundId === roundId);
+
+        if (roundResultIndex === -1) {
+            return { error: "Round result not found." };
+        }
+        
+        roundResults[roundResultIndex].feedback = {
+            rating,
+            comment: feedback,
+            submittedAt: new Date().toISOString(),
+        };
+
+        await updateDoc(applicantDocRef, { roundResults });
+
+        return { success: true };
+
+    } catch (error: any) {
+        console.error("Error submitting feedback:", error);
+        return { error: "Failed to submit feedback." };
     }
 }

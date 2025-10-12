@@ -22,11 +22,16 @@ export interface ApplicantRoundResult {
     answers?: { questionId: string; answer: string }[];
     timeTaken?: number;
     startedAt?: string;
+    feedback?: {
+        rating: number;
+        comment: string;
+        submittedAt: string;
+    };
 }
 
 export interface Schedule {
     roundId: number;
-    status: 'Pending' | 'Completed';
+    status: 'Pending' | 'Attempted' | 'Completed';
     scheduledAt: string;
     dueDate: string;
 }
