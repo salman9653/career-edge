@@ -127,7 +127,7 @@ export default function AssessmentStartPage() {
         router.push(`/assessment-test/${jobId}/${roundId}/setup`);
     };
 
-    const getInitials = (name: string) => {
+    const getInitials = (name: string | null | undefined) => {
         if (!name) return '';
         const names = name.split(' ');
         return names.length > 1 ? `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase() : name.substring(0, 2).toUpperCase();
@@ -168,6 +168,16 @@ export default function AssessmentStartPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
+                        <div className="flex items-center gap-3 rounded-lg p-3 bg-muted/50 justify-center">
+                            <Avatar className="h-10 w-10">
+                                <AvatarImage src={session?.displayImageUrl ?? undefined} />
+                                <AvatarFallback className="text-sm bg-background text-muted-foreground">{getInitials(session?.displayName)}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <p className="font-semibold text-sm">{session?.displayName}</p>
+                                <p className="text-xs text-muted-foreground">{session?.email}</p>
+                            </div>
+                        </div>
                         <div className="flex items-center justify-center gap-8 text-center text-sm">
                             <div className="flex flex-col items-center gap-1">
                                 <Calendar className="h-5 w-5 text-muted-foreground" />
