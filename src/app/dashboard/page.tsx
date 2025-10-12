@@ -19,6 +19,8 @@ import type { Job, Applicant, Schedule } from '@/lib/types';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { JobContext } from '@/context/job-context';
+import { sendVerificationEmailAction } from '../actions';
+import { Loader2 } from 'lucide-react';
 
 
 const AdminDashboard = () => {
@@ -110,6 +112,7 @@ interface UpcomingSchedule {
   roundName: string;
   roundType: string;
   dueDate: string;
+  status: 'Pending' | 'Attempted';
 }
 
 const CandidateDashboard = ({ user }: { user: any }) => {
@@ -139,18 +142,17 @@ const CandidateDashboard = ({ user }: { user: any }) => {
 
                     if (applicantData.schedules) {
                         applicantData.schedules.forEach(schedule => {
-                            if (schedule.status === 'Pending') {
-                                const round = jobData.rounds.find(r => r.id === schedule.roundId);
-                                if (round) {
-                                    allSchedules.push({
-                                        jobId: jobDoc.id,
-                                        jobTitle: jobData.title,
-                                        roundId: round.id,
-                                        roundName: round.name,
-                                        roundType: round.type,
-                                        dueDate: schedule.dueDate,
-                                    });
-                                }
+                            const round = jobData.rounds.find(r => r.id === schedule.roundId);
+                            if (round) {
+                                allSchedules.push({
+                                    jobId: jobDoc.id,
+                                    jobTitle: jobData.title,
+                                    roundId: round.id,
+                                    roundName: round.name,
+                                    roundType: round.type,
+                                    dueDate: schedule.dueDate,
+                                    status: schedule.status,
+                                });
                             }
                         });
                     }
@@ -181,6 +183,9 @@ const CandidateDashboard = ({ user }: { user: any }) => {
         // Handle other round types in the future
       }
     };
+    
+    const upcomingSchedules = schedules.filter(s => s.status === 'Pending');
+    const attemptedSchedules = schedules.filter(s => s.status === 'Attempted');
 
     return (
     <div className="grid gap-6">
@@ -210,9 +215,9 @@ const CandidateDashboard = ({ user }: { user: any }) => {
                         <Skeleton className="h-12 w-full" />
                         <Skeleton className="h-12 w-full" />
                     </div>
-                ) : schedules.length > 0 ? (
+                ) : upcomingSchedules.length > 0 ? (
                     <div className="space-y-3">
-                        {schedules.map((schedule, index) => (
+                        {upcomingSchedules.map((schedule, index) => (
                             <div key={index} className="p-4 border rounded-lg">
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                                     <div className="flex-1">
@@ -237,8 +242,52 @@ const CandidateDashboard = ({ user }: { user: any }) => {
                 )}
             </CardContent>
         </Card>
+        <Card>
+            <CardHeader>
+                <CardTitle>Attempted Assessments</CardTitle>
+            </CardHeader>
+            <CardContent>
+                {loadingData ? (
+                    <Skeleton className="h-12 w-full" />
+                ) : attemptedSchedules.length > 0 ? (
+                     <div className="space-y-3">
+                        {attemptedSchedules.map((schedule, index) => (
+                            <div key={index} className="p-4 border rounded-lg opacity-70">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                    <div className="flex-1">
+                                        <p className="font-semibold">{schedule.roundName}</p>
+                                        <p className="text-sm text-muted-foreground">{schedule.jobTitle}</p>
+                                        <p className="text-xs text-muted-foreground mt-1">Attempted</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                     <p className="text-sm text-muted-foreground">You haven't attempted any assessments yet.</p>
+                )}
+            </CardContent>
+        </Card>
     </div>
 )};
+
+function VerificationButton({ onVerify }: { onVerify: () => Promise<void> }) {
+  const [pending, setPending] = useState(false);
+  
+  const handleClick = async () => {
+    setPending(true);
+    await onVerify();
+    setPending(false);
+  }
+
+  return (
+    <Button onClick={handleClick} disabled={pending}>
+       {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+      Verify
+    </Button>
+  );
+}
+
 
 export default function DashboardPage() {
   const { session, loading } = useSession();
@@ -246,6 +295,22 @@ export default function DashboardPage() {
   const router = useRouter();
 
   const [toastShown, setToastShown] = useState(false);
+
+  const handleVerify = async () => {
+    const result = await sendVerificationEmailAction();
+    if(result.success) {
+      toast({
+        title: "Verification Email Sent",
+        description: "Please check your inbox to verify your email address.",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "An unknown error occurred.",
+        variant: "destructive"
+      });
+    }
+  }
 
   const showVerificationToast = useCallback(() => {
     if (session && !session.emailVerified && !toastShown) {
@@ -255,17 +320,7 @@ export default function DashboardPage() {
           title: "Please Verify your Email Address !",
           duration: Infinity,
           className: "border-dash-primary",
-          action: (
-            <Button
-              onClick={() => {
-                router.push('/dashboard?settings=true&tab=Account');
-                dismiss(id);
-                sessionStorage.setItem('hasDismissedVerificationToast', 'true');
-              }}
-            >
-              Verify
-            </Button>
-          ),
+          action: <VerificationButton onVerify={handleVerify} />,
           secondaryAction: (
             <Button
               variant="outline"
@@ -338,5 +393,3 @@ export default function DashboardPage() {
     </>
   );
 }
-
-    

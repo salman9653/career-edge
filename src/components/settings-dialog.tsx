@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useActionState, useRef } from 'react';
@@ -19,7 +20,7 @@ import {
 import { ChangePasswordCard } from '@/app/dashboard/profile/_components/change-password-card';
 import { ColorPicker } from './ui/color-picker';
 import { DashboardLayoutWrapper } from '@/app/dashboard/layout-wrapper';
-import { updateThemePreferencesAction, updateWhatsNewAction, updateAboutPlatformAction, updateContactInfoAction, submitFeedbackAction, updateTermsAction, updatePolicyAction } from '@/app/dashboard/settings/actions';
+import { updateThemePreferencesAction, updateWhatsNewAction, updateAboutPlatformAction, updateContactInfoAction, submitFeedbackAction, updateTermsAction, updatePolicyAction, sendVerificationEmailAction } from '@/app/dashboard/settings/actions';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 import { Textarea } from './ui/textarea';
 import { Input } from './ui/input';
@@ -100,9 +101,43 @@ const AppearanceSettings = () => {
     )
 }
 
+function VerificationButton({ onVerify }: { onVerify: () => Promise<void> }) {
+  const [pending, setPending] = useState(false);
+  
+  const handleClick = async () => {
+    setPending(true);
+    await onVerify();
+    setPending(false);
+  }
+
+  return (
+    <Button onClick={handleClick} disabled={pending} size="sm">
+       {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+      Verify Email
+    </Button>
+  );
+}
+
 const AccountSettings = ({ onNavigate }: { onNavigate: () => void }) => {
     const { session } = useSession();
     const router = useRouter();
+    const { toast } = useToast();
+
+    const handleVerify = async () => {
+        const result = await sendVerificationEmailAction();
+        if(result.success) {
+        toast({
+            title: "Verification Email Sent",
+            description: "Please check your inbox to verify your email address.",
+        });
+        } else {
+        toast({
+            title: "Error",
+            description: result.error || "An unknown error occurred.",
+            variant: "destructive"
+        });
+        }
+    }
 
     const goToProfile = () => {
         onNavigate();
@@ -154,7 +189,7 @@ const AccountSettings = ({ onNavigate }: { onNavigate: () => void }) => {
                     </div>
                      {!session?.emailVerified && (
                         <div className="mt-2">
-                            <Button size="sm" disabled><CheckCircle className="mr-2 h-4 w-4" />Verify Email (Coming Soon)</Button>
+                           <VerificationButton onVerify={handleVerify} />
                         </div>
                     )}
                 </div>

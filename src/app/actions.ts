@@ -958,3 +958,18 @@ export async function scheduleNextRoundAction(jobId: string, applicantId: string
         return { error: e.message };
     }
 }
+
+export async function sendVerificationEmailAction() {
+    const user = auth.currentUser;
+    if (!user) {
+        return { error: 'You must be logged in to verify your email.' };
+    }
+
+    try {
+        await sendEmailVerification(user);
+        return { success: 'Verification email sent successfully. Please check your inbox.' };
+    } catch (error: any) {
+        console.error("Error sending verification email:", error);
+        return { error: error.message };
+    }
+}
