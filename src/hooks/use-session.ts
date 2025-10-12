@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import Cookies from 'js-cookie';
 import type { CompanySize, Socials } from '@/lib/types';
+import { onIdTokenChanged, type User } from 'firebase/auth';
+import { auth } from '@/lib/firebase/config';
 
 export interface UserPreferences {
   themeMode: 'light' | 'dark' | 'system';
@@ -37,21 +39,7 @@ export function useSession() {
     const [session, setSession] = useState<UserSession | null>(null);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const sessionCookie = Cookies.get('firebase-session');
-        if (sessionCookie) {
-            try {
-                const decodedSession = JSON.parse(atob(sessionCookie));
-                setSession(decodedSession);
-            } catch (e) {
-                console.error("Failed to parse session cookie", e);
-                setSession(null);
-            }
-        }
-        setLoading(false);
-    }, []);
-    
-    const updateSession = useCallback((newSessionData: Partial<UserSession>) => {
+    const updateSessionCookie = useCallback((newSessionData: Partial<UserSession>) => {
         setSession(prevSession => {
             if (!prevSession) return null;
 
@@ -69,5 +57,32 @@ export function useSession() {
         });
     }, []);
 
-    return { session, loading, updateSession };
+    useEffect(() => {
+        const sessionCookie = Cookies.get('firebase-session');
+        if (sessionCookie) {
+            try {
+                const decodedSession = JSON.parse(atob(sessionCookie));
+                setSession(decodedSession);
+            } catch (e) {
+                console.error("Failed to parse session cookie", e);
+                setSession(null);
+            }
+        }
+        setLoading(false);
+
+        const unsubscribe = onIdTokenChanged(auth, async (user: User | null) => {
+            if (user && session) {
+                // User is signed in and we have a session
+                await user.reload(); // Force refresh user data
+                if (user.emailVerified !== session.emailVerified) {
+                    // Verification status has changed, update the session
+                    updateSessionCookie({ emailVerified: user.emailVerified });
+                }
+            }
+        });
+
+        return () => unsubscribe();
+    }, [session, updateSessionCookie]);
+
+    return { session, loading, updateSession: updateSessionCookie };
 }
