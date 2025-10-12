@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label"
 import { Logo } from "@/components/logo"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, Loader2, Ban } from "lucide-react"
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction } from "@/components/ui/alert-dialog";
 import { RoleSelectionDialog } from "@/components/role-selection-dialog";
 import { DashboardThemeProvider } from "@/context/dashboard-theme-context";
@@ -67,8 +67,7 @@ function SubmitButton() {
   )
 }
 
-
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [state, formAction] = useActionState(signInAction, initialState);
@@ -159,6 +158,8 @@ export default function LoginPage() {
     }
   };
 
+  const loginUrl = redirectJobId ? `/login?redirectJobId=${redirectJobId}` : '/login';
+
   return (
     <>
       <DashboardThemeProvider>
@@ -244,4 +245,16 @@ export default function LoginPage() {
       </div>
     </>
   )
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex min-h-screen items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin" />
+            </div>
+        }>
+            <LoginContent />
+        </Suspense>
+    )
 }
