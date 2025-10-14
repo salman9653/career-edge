@@ -2,7 +2,7 @@
 'use client';
 
 import Link from "next/link"
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 import { useFormStatus } from "react-dom";
 import { signUpCompany } from "@/lib/firebase/auth";
 import { Button } from "@/components/ui/button"
@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Logo } from "@/components/logo"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2, Eye, EyeOff } from "lucide-react";
 
 const initialState = {
   error: null,
@@ -28,6 +28,7 @@ function SubmitButton() {
 
 export default function CompanySignupPage() {
   const [state, formAction] = useActionState(signUpCompany, initialState);
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-secondary">
@@ -67,7 +68,22 @@ export default function CompanySignupPage() {
           </div>
           <div className="grid gap-2">
             <Label htmlFor="password">Password</Label>
-            <Input id="password" name="password" type="password" required />
+            <div className="relative">
+                <Input 
+                    id="password" 
+                    name="password" 
+                    type={showPassword ? 'text' : 'password'} 
+                    required 
+                    className="pr-10"
+                />
+                <button 
+                    type="button" 
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground"
+                >
+                    {showPassword ? <EyeOff className="h-5 w-5"/> : <Eye className="h-5 w-5"/>}
+                </button>
+            </div>
           </div>
           <SubmitButton />
           <Button variant="outline" className="w-full" disabled>
