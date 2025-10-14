@@ -1,7 +1,6 @@
-
 'use server';
 
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile, sendPasswordResetEmail } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from './config';
 import { redirect } from 'next/navigation';
@@ -108,4 +107,18 @@ export async function signUpCompany(prevState: any, formData: FormData) {
     }
 
     redirect('/dashboard/company/jobs');
+}
+
+export async function sendPasswordResetEmailAction(prevState: any, formData: FormData) {
+    const email = formData.get('email') as string;
+    if (!email) {
+        return { error: 'Email is required.' };
+    }
+    try {
+        await sendPasswordResetEmail(auth, email);
+        return { success: true };
+    } catch (e: any) {
+        // Firebase often returns user-friendly error messages
+        return { error: e.message };
+    }
 }
