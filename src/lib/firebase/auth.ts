@@ -116,9 +116,9 @@ export async function sendPasswordResetEmailAction(prevState: any, formData: For
     }
     try {
         await sendPasswordResetEmail(auth, email);
-        return { success: true };
+        return { success: true, email };
     } catch (e: any) {
         // Firebase often returns user-friendly error messages
-        return { error: e.message };
+        return { error: e.message, email };
     }
 }

@@ -12,7 +12,11 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Loader2, CheckCircle } from "lucide-react";
 import { sendPasswordResetEmailAction } from "@/lib/firebase/auth";
 
-const initialState = {
+const initialState: {
+  error: string | null;
+  success: boolean;
+  email?: string;
+} = {
   error: null,
   success: false,
 };
@@ -36,10 +40,14 @@ export default function ForgotPasswordPage() {
                     <div className="mb-4 flex justify-center">
                         <Logo />
                     </div>
-                    <CardTitle className="font-headline text-2xl">Forgot Password</CardTitle>
-                    <CardDescription>
-                        Enter your email and we'll send you a link to reset your password.
-                    </CardDescription>
+                     {!state.success && (
+                        <>
+                            <CardTitle className="font-headline text-2xl">Forgot Password</CardTitle>
+                            <CardDescription>
+                                Enter your email and we'll send you a link to reset your password.
+                            </CardDescription>
+                        </>
+                     )}
                 </CardHeader>
                 <CardContent>
                     {state.success ? (
@@ -51,7 +59,7 @@ export default function ForgotPasswordPage() {
                             </div>
                             <h3 className="font-semibold">Check Your Email</h3>
                             <p className="text-sm text-muted-foreground">
-                                We've sent a link to reset your password. Please check your inbox and follow the instructions.
+                                We've sent a link to reset your password to <span className="font-medium text-foreground">{state.email}</span>. Please check your inbox and follow the instructions.
                             </p>
                             <Button asChild>
                                 <Link href="/login">Back to Login</Link>
