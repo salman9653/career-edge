@@ -85,9 +85,9 @@ const AppearanceSettings = () => {
                 <ColorPicker />
             </div>
             <div className="space-y-4">
-                <Label htmlFor="font-select" className="font-semibold">Font</Label>
+                <h4 className="font-semibold">Font</h4>
                 <Select defaultValue="inter" disabled>
-                    <SelectTrigger id="font-select">
+                    <SelectTrigger>
                         <SelectValue placeholder="Select a font" />
                     </SelectTrigger>
                     <SelectContent>
@@ -474,10 +474,6 @@ const HelpSettings = () => {
         case 'feedback':
             return renderDetailView("Give Feedback", (
                  <form action={feedbackFormAction} ref={feedbackFormRef} className="space-y-4">
-                    <input type="hidden" name="feedbackBy" value={session?.uid} />
-                    <input type="hidden" name="feedbackByName" value={session?.displayName} />
-                    <input type="hidden" name="rating" value={rating} />
-
                     <h3 className="text-lg font-medium font-headline">Share Your Thoughts</h3>
                     <p className="text-sm text-muted-foreground">
                         We'd love to hear your feedback on how we can improve Career Edge.

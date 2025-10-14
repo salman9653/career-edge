@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useTheme, themes } from '@/context/dashboard-theme-context';
@@ -17,10 +18,10 @@ export function ColorPicker() {
   }, {} as Record<string, typeof themes>);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {Object.entries(groupedThemes).map(([category, themeList]) => (
         <div key={category}>
-          <h4 className="font-semibold mb-2">{category}</h4>
+          <h5 className="font-medium text-muted-foreground mb-2">{category}</h5>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {themeList.map((t) => {
               const activeVariant = resolvedTheme === 'dark' ? t.dark : t.light;
