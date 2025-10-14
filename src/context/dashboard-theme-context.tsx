@@ -50,6 +50,21 @@ export const themes: Theme[] = [
         light: { color: 'hsl(340 90% 65%)', colorHsl: '340 90% 65%', colorForeground: '0 0% 100%', gradient: 'linear-gradient(to right, hsl(340, 90%, 65%), hsl(350, 90%, 65%))' },
         dark: { color: 'hsl(340 90% 75%)', colorHsl: '340 90% 75%', colorForeground: '0 0% 0%', gradient: 'linear-gradient(to right, hsl(340, 90%, 75%), hsl(350, 90%, 75%))' }
     },
+    {
+        name: 'Verdant',
+        light: { color: 'hsl(142.1 76.2% 36.3%)', colorHsl: '142.1 76.2% 36.3%', colorForeground: '0 0% 100%', gradient: 'linear-gradient(to right, hsl(142.1, 76.2%, 36.3%), hsl(152.1, 76.2%, 36.3%))' },
+        dark: { color: 'hsl(142.1 76.2% 46.3%)', colorHsl: '142.1 76.2% 46.3%', colorForeground: '0 0% 100%', gradient: 'linear-gradient(to right, hsl(142.1, 76.2%, 46.3%), hsl(152.1, 76.2%, 46.3%))' }
+    },
+    {
+        name: 'Sky',
+        light: { color: 'hsl(210 90% 55%)', colorHsl: '210 90% 55%', colorForeground: '0 0% 100%', gradient: 'linear-gradient(to right, hsl(210, 90%, 55%), hsl(220, 90%, 55%))' },
+        dark: { color: 'hsl(210 90% 65%)', colorHsl: '210 90% 65%', colorForeground: '0 0% 100%', gradient: 'linear-gradient(to right, hsl(210, 90%, 65%), hsl(220, 90%, 65%))' }
+    },
+    {
+        name: 'Rose',
+        light: { color: 'hsl(346.8 90% 50%)', colorHsl: '346.8 90% 50%', colorForeground: '0 0% 100%', gradient: 'linear-gradient(to right, hsl(346.8, 90%, 50%), hsl(356.8, 90%, 50%))' },
+        dark: { color: 'hsl(346.8 90% 60%)', colorHsl: '346.8 90% 60%', colorForeground: '0 0% 100%', gradient: 'linear-gradient(to right, hsl(346.8, 90%, 60%), hsl(356.8, 90%, 60%))' }
+    },
     { 
         name: 'Gray', 
         light: { color: 'hsl(220 9% 46%)', colorHsl: '220 9% 46%', colorForeground: '0 0% 98%', gradient: 'linear-gradient(to right, hsl(220, 9%, 46%), hsl(220, 9%, 56%))' },
