@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from "next/link";
@@ -9,8 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/logo";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, Loader2, CheckCircle } from "lucide-react";
+import { AlertCircle, Loader2, CheckCircle, Eye, EyeOff } from "lucide-react";
 import { sendPasswordResetEmailAction } from "@/lib/firebase/auth";
+import { useState } from "react";
 
 const initialState: {
   error: string | null;
@@ -32,6 +34,7 @@ function SubmitButton() {
 
 export default function ForgotPasswordPage() {
     const [state, formAction] = useActionState(sendPasswordResetEmailAction, initialState);
+    const [showPassword, setShowPassword] = useState(false);
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-secondary p-4">
@@ -58,9 +61,11 @@ export default function ForgotPasswordPage() {
                                 </div>
                             </div>
                             <h3 className="font-semibold">Check Your Email</h3>
-                            <p className="text-sm text-muted-foreground">
-                                We've sent a link to reset your password to <span className="font-medium text-foreground">{state.email}</span>. Please check your inbox and follow the instructions.
-                            </p>
+                            <div className="text-sm text-muted-foreground">
+                                <p>We've sent a link to reset your password to</p>
+                                <p className="font-medium text-foreground">{state.email}</p>
+                                <p>Please check your inbox and follow the instructions.</p>
+                            </div>
                             <Button asChild>
                                 <Link href="/login">Back to Login</Link>
                             </Button>
