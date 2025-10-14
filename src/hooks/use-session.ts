@@ -80,7 +80,8 @@ export function useSession() {
             if (user && currentSessionCookie) {
                 try {
                     const currentSession = JSON.parse(atob(currentSessionCookie));
-                    await user.reload(); // Force refresh user data
+                    // The user object from the listener has the latest state,
+                    // including emailVerified. We don't need to call user.reload().
                     if (user.emailVerified !== currentSession.emailVerified) {
                         const updatedSession = { ...currentSession, emailVerified: user.emailVerified };
                         Cookies.set('firebase-session', btoa(JSON.stringify(updatedSession)), { path: '/' });
