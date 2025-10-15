@@ -470,8 +470,8 @@ export default function EditJobPage() {
                                     <Select value={newRoundType} onValueChange={setNewRoundType}>
                                     <SelectTrigger><SelectValue placeholder="Select type..." /></SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="telephonic" disabled>Telephonic</SelectItem>
                                         <SelectItem value="screening" disabled={hasScreeningRound && (editingRoundId === null || rounds.find(r => r.id === editingRoundId)?.type !== 'screening')}>Screening</SelectItem>
+                                        <SelectItem value="telephonic" disabled>Telephonic</SelectItem>
                                         <SelectItem value="assessment">Assessment</SelectItem>
                                         <SelectItem value="coding assessment" disabled>Coding Assessment</SelectItem>
                                         <SelectItem value="live coding" disabled>Live Coding</SelectItem>
