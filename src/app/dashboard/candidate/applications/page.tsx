@@ -6,7 +6,7 @@ import { MobileSearch } from '@/components/mobile-search';
 import { ApplicationsTable } from './_components/applications-table';
 import { useContext, useEffect, useState } from 'react';
 import type { Job, Applicant } from '@/lib/types';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 
 interface Application extends Job {
