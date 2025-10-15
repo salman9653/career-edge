@@ -322,8 +322,9 @@ export function QuestionsTable({ questions, loading, context, showAddButton = fa
 
   return (
     <TooltipProvider>
+      <div className="flex flex-col h-full gap-4">
         {!isAssessmentContext && (
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-2">
                 {isSelectModeActive ? (
                    <div className="flex w-full items-center justify-between">
                         <div className="flex items-center gap-4 flex-1">
@@ -479,7 +480,7 @@ export function QuestionsTable({ questions, loading, context, showAddButton = fa
         </div>
 
         {/* Desktop View - Table */}
-        <Card className="hidden md:block flex-1 overflow-hidden">
+        <Card className="hidden md:flex flex-1 flex-col overflow-hidden">
             <div className="relative h-full overflow-auto custom-scrollbar">
                 <Table>
                     <TableHeader className="bg-muted/50 sticky top-0 z-10">
@@ -610,6 +611,7 @@ export function QuestionsTable({ questions, loading, context, showAddButton = fa
                 context={detailSheetContext}
             />
         )}
+      </div>
     </TooltipProvider>
   );
 }
