@@ -28,6 +28,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { mockAiInterviews } from '@/lib/mock-data';
 import { FilterSheet } from './ai-interviews-filter-sheet';
+import { GenerateAiInterviewDialog } from './generate-ai-interview-dialog';
 
 type SortKey = 'name' | 'createdAt' | 'duration' | 'questionCount' | 'difficulty' | 'tone';
 
@@ -49,6 +50,7 @@ export function AiInterviewsTable({ onCreate }: AiInterviewsTableProps) {
     const [selectedInterviews, setSelectedInterviews] = useState<string[]>([]);
     const [filters, setFilters] = useState<AiInterviewFilterState>({ difficulty: [], tone: [] });
     const { toast } = useToast();
+    const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
 
     // Using mock data for now
     const interviews = mockAiInterviews;
@@ -140,6 +142,8 @@ export function AiInterviewsTable({ onCreate }: AiInterviewsTableProps) {
     };
 
     return (
+        <>
+        <GenerateAiInterviewDialog open={isGenerateDialogOpen} onOpenChange={setIsGenerateDialogOpen} />
         <div className="flex flex-col h-full gap-4">
             <div className="flex items-center gap-2">
                 {isSelectModeActive ? (
@@ -209,7 +213,7 @@ export function AiInterviewsTable({ onCreate }: AiInterviewsTableProps) {
                                     <AlertDialogFooter><AlertDialogCancel>OK</AlertDialogCancel></AlertDialogFooter>
                                 </AlertDialogContent>
                             </AlertDialog>
-                            <Button size="sm" className="h-10 gap-1" onClick={onCreate}>
+                            <Button size="sm" className="h-10 gap-1" onClick={() => setIsGenerateDialogOpen(true)}>
                                 <Sparkles className="h-3.5 w-3.5" /> Generate AI Interview
                             </Button>
                         </div>
@@ -314,5 +318,6 @@ export function AiInterviewsTable({ onCreate }: AiInterviewsTableProps) {
                 </div>
             </Card>
         </div>
+        </>
     );
 }
