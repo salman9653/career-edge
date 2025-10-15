@@ -261,8 +261,8 @@ export function AssessmentsTable({ assessments, loading, onCreate }: Assessments
     };
 
     return (
-        <>
-            <div className="flex items-center gap-2 mb-4">
+        <div className="flex flex-col h-full gap-4">
+            <div className="flex items-center gap-2">
                 {isSelectModeActive ? (
                     <>
                          <div className="flex items-center gap-4 flex-1">
@@ -410,8 +410,8 @@ export function AssessmentsTable({ assessments, loading, onCreate }: Assessments
             </div>
             
             {/* Desktop View - Table */}
-            <Card className="hidden md:block flex-1 overflow-hidden">
-                <div className="relative h-full overflow-auto custom-scrollbar">
+            <Card className="hidden md:flex flex-1 flex-col overflow-hidden">
+                <div className="relative overflow-auto custom-scrollbar">
                     <Table>
                         <TableHeader className="bg-muted/50 sticky top-0 z-10">
                             <TableRow>
@@ -498,6 +498,7 @@ export function AssessmentsTable({ assessments, loading, onCreate }: Assessments
                     </Table>
                 </div>
             </Card>
-        </>
+        </div>
     );
 }
+
