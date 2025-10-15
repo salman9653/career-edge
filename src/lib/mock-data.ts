@@ -1,5 +1,5 @@
 
-import type { Job, Company, Applicant, Question } from './types';
+import type { Job, Company, Applicant, Question, AiInterview } from './types';
 import type { CrmCandidate } from '@/context/talent-pool-context';
 
 export const mockCompanies: Company[] = [
@@ -135,6 +135,42 @@ export const mockQuestions: Question[] = [
     { id: 'q7', question: 'Design a system for a URL shortener.', type: 'subjective', category: ['System Design'], difficulty: 3, createdAt: '2024-05-07T10:45:00Z', status: 'active', libraryType: 'library', addedBy: 'admin', addedByName: 'Admin' },
 ];
 
+export const mockAiInterviews: AiInterview[] = [
+    {
+        id: 'ai_int_1',
+        name: 'Frontend Developer - Initial Screening',
+        createdBy: 'user1',
+        createdByName: 'John Doe',
+        createdAt: '2024-05-10T10:00:00Z',
+        duration: 15,
+        questionCount: 5,
+        difficulty: 'Medium',
+        tone: 'Conversational',
+    },
+    {
+        id: 'ai_int_2',
+        name: 'Data Scientist - Behavioral',
+        createdBy: 'user2',
+        createdByName: 'Jane Smith',
+        createdAt: '2024-05-12T11:30:00Z',
+        duration: 20,
+        questionCount: 7,
+        difficulty: 'Medium',
+        tone: 'Formal',
+    },
+    {
+        id: 'ai_int_3',
+        name: 'Senior Backend Engineer - Technical',
+        createdBy: 'user1',
+        createdByName: 'John Doe',
+        createdAt: '2024-05-15T09:00:00Z',
+        duration: 30,
+        questionCount: 8,
+        difficulty: 'Hard',
+        tone: 'Technical',
+    },
+];
+
 const firstNames = ['John', 'Jane', 'Alex', 'Emily', 'Chris', 'Katie', 'Michael', 'Sarah', 'David', 'Laura'];
 const lastNames = ['Smith', 'Doe', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez'];
 const locations = ['New York, NY', 'San Francisco, CA', 'Austin, TX', 'Chicago, IL', 'Remote', 'London, UK', 'Berlin, Germany'];
@@ -158,5 +194,3 @@ export const mockCrmCandidates: CrmCandidate[] = Array.from({ length: 100 }, (_,
         source: ['LinkedIn', 'Referral', 'Past Applicant', 'Sourced'][Math.floor(Math.random() * 4)],
     };
 });
-
-    

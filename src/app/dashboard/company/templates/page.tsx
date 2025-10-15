@@ -1,10 +1,10 @@
 
-
 'use client';
 import { useState, useContext } from 'react';
 import { useSession } from '@/hooks/use-session';
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { AssessmentsTable } from '../assessments/_components/assessments-table';
+import { AiInterviewsTable } from './_components/ai-interviews-table';
 import { CreateAssessmentDialog } from '../assessments/_components/create-assessment-dialog';
 import { AssessmentContext } from '@/context/assessment-context';
 import { MobileSearch } from '@/components/mobile-search';
@@ -41,7 +41,7 @@ export default function TemplatesPage() {
             <Tabs defaultValue="assessments" className="flex flex-col h-full">
               <TabsList className="mb-4 self-start">
                   <TabsTrigger value="assessments">Assessments</TabsTrigger>
-                  <TabsTrigger value="ai-interviews" disabled>AI Interviews</TabsTrigger>
+                  <TabsTrigger value="ai-interviews">AI Interviews</TabsTrigger>
               </TabsList>
               <TabsContent value="assessments" className="flex-1 overflow-hidden">
                 <AssessmentsTable 
@@ -50,17 +50,9 @@ export default function TemplatesPage() {
                   onCreate={() => setCreateDialogOpen(true)} />
               </TabsContent>
               <TabsContent value="ai-interviews" className="flex-1 overflow-hidden">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>AI Interviews</CardTitle>
-                    <CardDescription>
-                      This feature is coming soon! Create and manage AI-powered interview templates.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                      <Button disabled>Create AI Interview</Button>
-                  </CardContent>
-                </Card>
+                <AiInterviewsTable
+                  onCreate={() => {}} // Placeholder for "Generate AI Interview"
+                />
               </TabsContent>
             </Tabs>
           </>

@@ -160,6 +160,18 @@ export interface Assessment {
     createdAt: any;
 }
 
+export interface AiInterview {
+    id: string;
+    name: string;
+    createdBy: string;
+    createdByName: string;
+    createdAt: any;
+    duration: number;
+    questionCount: number;
+    difficulty: 'Easy' | 'Medium' | 'Hard';
+    tone: 'Formal' | 'Conversational' | 'Technical';
+}
+
 export interface Round {
     id: number;
     name: string;
