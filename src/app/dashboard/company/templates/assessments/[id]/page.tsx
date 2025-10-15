@@ -38,7 +38,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { EditAssessmentDialog } from '../_components/edit-assessment-dialog';
+import { EditAssessmentDialog } from '../../../assessments/_components/edit-assessment-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 

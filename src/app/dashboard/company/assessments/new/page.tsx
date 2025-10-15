@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useActionState, useEffect, useRef } from 'react';
 import { useFormStatus } from 'react-dom';
@@ -58,7 +59,7 @@ export function CreateAssessmentDialog({ open, onOpenChange }: CreateAssessmentD
         title: 'Assessment Created',
         description: 'You can now add questions to your new assessment.',
       });
-      router.push(`/dashboard/company/assessments/${state.assessmentId}`);
+      router.push(`/dashboard/company/templates/assessments/${state.assessmentId}`);
       onOpenChange(false);
       formRef.current?.reset();
     }
@@ -105,7 +106,7 @@ export function CreateAssessmentDialog({ open, onOpenChange }: CreateAssessmentD
             )}
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button variant="ghost" type="button" onClick={() => onOpenChange(false)}>Cancel</Button>
             <SubmitButton />
           </DialogFooter>
         </form>

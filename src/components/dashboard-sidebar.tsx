@@ -4,7 +4,7 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { Home, Package, User, Users, Users2, LineChart, Search, Settings, LogOut, Moon, Sun, Briefcase, Library, FileCheck, ClipboardList, BookUser, Book, BookCopy, CreditCard, TicketPercent, Palette, Laptop, Check, ChevronRight, HelpCircle, MessageSquare, Sparkles, PanelLeft } from "lucide-react"
+import { Home, Package, User, Users, Users2, LineChart, Search, Settings, LogOut, Moon, Sun, Briefcase, Library, FileCheck, ClipboardList, BookUser, Book, BookCopy, CreditCard, TicketPercent, Palette, Laptop, Check, ChevronRight, HelpCircle, MessageSquare, Sparkles, PanelLeft, AppWindow } from "lucide-react"
 import { useTheme as useNextTheme } from "next-themes"
 import { useState } from "react"
 import { useTheme } from "@/context/dashboard-theme-context"
@@ -47,7 +47,7 @@ const companyNavItems: NavItem[] = [
     { href: "/dashboard/company/ats", label: "ATS", icon: FileCheck },
     { href: "/dashboard/company/crm", label: "CRM", icon: BookUser },
     { href: "/dashboard/company/jobs", label: "Job Postings", icon: Briefcase },
-    { href: "/dashboard/company/assessments", label: "Assessments", icon: ClipboardList },
+    { href: "/dashboard/company/templates", label: "Templates", icon: AppWindow },
     { href: "/dashboard/company/questions", label: "Question Bank", icon: Library },
 ];
 
