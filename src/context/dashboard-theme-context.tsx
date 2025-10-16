@@ -202,6 +202,17 @@ export const DashboardThemeProvider = ({ children }: { children: ReactNode }) =>
 
   const activeThemeVariant = !mounted ? defaultTheme.light : (resolvedTheme === 'dark' ? currentTheme.dark : currentTheme.light);
 
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+        const body = document.body;
+        const primaryHue = activeThemeVariant.colorHsl.split(' ')[0];
+        body.style.setProperty('--dash-primary', activeThemeVariant.colorHsl);
+        body.style.setProperty('--dash-primary-foreground', activeThemeVariant.colorForeground);
+        body.style.setProperty('--ring', activeThemeVariant.colorHsl);
+        body.style.setProperty('--dash-primary-hue', primaryHue);
+    }
+  }, [activeThemeVariant])
+
   const value = {
     theme: activeThemeVariant,
     themeName,
