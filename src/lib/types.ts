@@ -1,4 +1,5 @@
 
+
 import type { LucideIcon } from 'lucide-react';
 
 export interface NavItem {
@@ -163,6 +164,15 @@ export interface Assessment {
 export interface AiInterview {
     id: string;
     name: string;
+    jobTitle: string;
+    jobDescription: string;
+    keySkills: string[];
+    intro: string;
+    outro: string;
+    questions: {
+        question: string;
+        followUps: string[];
+    }[];
     createdBy: string;
     createdByName: string;
     createdAt: any;

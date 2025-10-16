@@ -14,6 +14,8 @@ import { randomUUID } from 'crypto';
 import { careerChat } from "@/ai/flows/career-chat-flow";
 import { streamText } from 'genkit';
 import type { CareerChatInput } from "@/ai/flows/career-chat-flow-types";
+import { generateAiInterview } from '@/ai/flows/generate-ai-interview-flow';
+import type { GenerateAiInterviewInput } from '@/ai/flows/generate-ai-interview-flow-types';
 
 async function fileToDataURI(file: File) {
     const arrayBuffer = await file.arrayBuffer();
@@ -958,3 +960,49 @@ export async function scheduleNextRoundAction(jobId: string, applicantId: string
         return { error: e.message };
     }
 }
+
+export async function generateAiInterviewAction(prevState: any, formData: FormData) {
+  const input: GenerateAiInterviewInput = {
+    jobTitle: formData.get('jobTitle') as string,
+    jobDescription: formData.get('jobDescription') as string,
+    keySkills: (formData.get('keySkills') as string).split(',').map(s => s.trim()),
+    difficulty: formData.get('difficulty') as GenerateAiInterviewInput['difficulty'],
+    tone: formData.get('tone') as GenerateAiInterviewInput['tone'],
+    duration: parseInt(formData.get('duration') as string, 10),
+  };
+
+  const createdBy = formData.get('createdBy') as string;
+  const createdByName = formData.get('createdByName') as string;
+  const companyId = formData.get('companyId') as string;
+
+  if (!input.jobTitle || !input.jobDescription || !input.keySkills || !createdBy || !createdByName || !companyId) {
+    return { error: 'Please fill out all required fields.' };
+  }
+
+  try {
+    const interviewData = await generateAiInterview(input);
+    
+    await addDoc(collection(db, 'ai-interviews'), {
+      ...interviewData,
+      name: `${input.jobTitle} - AI Interview`,
+      jobTitle: input.jobTitle,
+      jobDescription: input.jobDescription,
+      keySkills: input.keySkills,
+      difficulty: input.difficulty,
+      tone: input.tone,
+      duration: input.duration,
+      questionCount: interviewData.questions.length,
+      createdBy,
+      createdByName,
+      companyId,
+      createdAt: serverTimestamp(),
+    });
+    
+    revalidatePath('/dashboard/company/templates');
+    return { success: true };
+  } catch (e: any) {
+    console.error('Error generating AI interview:', e);
+    return { error: e.message || 'An unexpected error occurred while generating the interview.' };
+  }
+}
+
