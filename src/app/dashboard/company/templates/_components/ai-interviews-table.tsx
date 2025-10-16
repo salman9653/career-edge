@@ -1,7 +1,7 @@
 
 'use client';
 import { useState, useMemo, useContext } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +22,6 @@ import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { AiInterview } from '@/lib/types';
-import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
@@ -135,7 +134,7 @@ export function AiInterviewsTable({ onCreate }: AiInterviewsTableProps) {
             const isSelected = selectedInterviews.includes(interviewId);
             handleRowSelect(interviewId, !isSelected);
         } else {
-            // router.push(`/dashboard/company/templates/ai-interviews/${interviewId}`);
+            router.push(`/dashboard/company/templates/ai-interviews/${interviewId}`);
         }
     };
 
