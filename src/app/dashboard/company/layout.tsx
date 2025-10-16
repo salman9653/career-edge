@@ -5,6 +5,7 @@ import { QuestionProvider } from '@/context/question-context';
 import { AssessmentProvider } from '@/context/assessment-context';
 import { JobProvider } from '@/context/job-context';
 import { TalentPoolProvider } from '@/context/talent-pool-context';
+import { AiInterviewProvider } from '@/context/ai-interview-context';
 
 export default function CompanyLayout({
     children,
@@ -16,7 +17,9 @@ export default function CompanyLayout({
             <AssessmentProvider>
                 <TalentPoolProvider>
                     <QuestionProvider>
-                        {children}
+                        <AiInterviewProvider>
+                            {children}
+                        </AiInterviewProvider>
                     </QuestionProvider>
                 </TalentPoolProvider>
             </AssessmentProvider>

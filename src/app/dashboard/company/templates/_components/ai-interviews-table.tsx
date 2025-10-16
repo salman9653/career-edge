@@ -1,6 +1,6 @@
 
 'use client';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useContext } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -26,9 +26,9 @@ import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { mockAiInterviews } from '@/lib/mock-data';
 import { FilterSheet } from './ai-interviews-filter-sheet';
 import { GenerateAiInterviewDialog } from './generate-ai-interview-dialog';
+import { AiInterviewContext } from '@/context/ai-interview-context';
 
 type SortKey = 'name' | 'createdAt' | 'duration' | 'questionCount' | 'difficulty' | 'tone';
 
@@ -51,10 +51,8 @@ export function AiInterviewsTable({ onCreate }: AiInterviewsTableProps) {
     const [filters, setFilters] = useState<AiInterviewFilterState>({ difficulty: [], tone: [] });
     const { toast } = useToast();
     const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
-
-    // Using mock data for now
-    const interviews = mockAiInterviews;
-    const loading = false;
+    
+    const { interviews, loading } = useContext(AiInterviewContext);
 
     const requestSort = (key: SortKey) => {
         let direction: 'ascending' | 'descending' = 'ascending';
