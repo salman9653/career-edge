@@ -6,7 +6,7 @@ import { useSession } from '@/hooks/use-session';
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ArrowLeft, Loader2, Edit, Trash2, AlertTriangle, Sparkles, ChevronDown, Bot } from 'lucide-react';
+import { ArrowLeft, Loader2, Edit, Trash2, AlertTriangle, Sparkles, ChevronDown, Bot, RefreshCw, Wand2, Plus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
@@ -26,6 +26,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Textarea } from '@/components/ui/textarea';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { GradientButton } from '@/components/ui/gradient-button';
 
 export default function AiInterviewDetailPage() {
     const { session, loading: sessionLoading } = useSession();
@@ -154,6 +156,10 @@ export default function AiInterviewDetailPage() {
                                 <div className="flex items-center gap-2">
                                      {isEditing ? (
                                         <>
+                                            <GradientButton variant="default" size="sm" disabled>
+                                                <Sparkles className="mr-2 h-4 w-4"/>
+                                                AI Suggestions
+                                            </GradientButton>
                                             <Button variant="outline" onClick={handleCancel}>Cancel</Button>
                                             <Button onClick={handleSave}>Save Changes</Button>
                                         </>
@@ -234,9 +240,18 @@ export default function AiInterviewDetailPage() {
                                                     )}
                                                 </div>
                                                 {isEditing && (
-                                                    <Button variant="ghost" size="icon" disabled title="Regenerate with AI (coming soon)">
-                                                        <Sparkles className="h-4 w-4" />
-                                                    </Button>
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" size="icon">
+                                                                <Sparkles className="h-4 w-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent>
+                                                            <DropdownMenuItem disabled><RefreshCw className="mr-2 h-4 w-4" />Regenerate</DropdownMenuItem>
+                                                            <DropdownMenuItem disabled><Wand2 className="mr-2 h-4 w-4" />Refine Tone</DropdownMenuItem>
+                                                            <DropdownMenuItem disabled><Plus className="mr-2 h-4 w-4" />Add Follow-ups</DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
                                                 )}
                                             </div>
                                             <Collapsible>
