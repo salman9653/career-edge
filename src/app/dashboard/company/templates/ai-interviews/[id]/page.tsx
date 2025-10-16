@@ -96,44 +96,48 @@ export default function AiInterviewDetailPage() {
                         </Button>
                         <h1 className="font-headline text-xl font-semibold truncate">{interview.name}</h1>
                     </div>
-                     <div className="flex items-center gap-2">
-                        <Button variant="secondary" size="sm" disabled><Edit className="mr-2 h-4 w-4" /> Edit</Button>
-                        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                            <AlertDialogTrigger asChild>
-                                <Button variant="destructive" size="sm"><Trash2 className="mr-2 h-4 w-4" />Delete</Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <div className="flex justify-center">
-                                        <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center mb-2">
-                                            <AlertTriangle className="h-6 w-6 text-destructive"/>
-                                        </div>
-                                    </div>
-                                    <AlertDialogTitle className="text-center">Are you absolutely sure?</AlertDialogTitle>
-                                    <AlertDialogDescription className="text-center">
-                                        This action cannot be undone. This will permanently delete this interview template.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleDelete} disabled={isDeletePending} className="bg-destructive hover:bg-destructive/90">
-                                        {isDeletePending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                        Delete
-                                    </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                    </div>
                 </header>
                 <main className="flex flex-1 flex-col gap-4 overflow-auto p-4 md:gap-6 md:p-6 custom-scrollbar">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="font-headline text-2xl">{interview.jobTitle}</CardTitle>
-                             <div className="flex items-center gap-4 text-sm text-muted-foreground pt-1">
-                                <Badge variant="secondary">{interview.difficulty}</Badge>
-                                <Badge variant="outline">{interview.tone}</Badge>
-                                <span>Duration: {interview.duration} mins</span>
-                                <span>Questions: {interview.questionCount}</span>
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <CardTitle className="font-headline text-2xl">{interview.jobTitle}</CardTitle>
+                                    <div className="flex items-center gap-4 text-sm text-muted-foreground pt-1">
+                                        <Badge variant="secondary">{interview.difficulty}</Badge>
+                                        <Badge variant="outline">{interview.tone}</Badge>
+                                        <span>Duration: {interview.duration} mins</span>
+                                        <span>Questions: {interview.questionCount}</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Button variant="secondary" size="sm" disabled><Edit className="mr-2 h-4 w-4" /> Edit</Button>
+                                    <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="destructive" size="sm"><Trash2 className="mr-2 h-4 w-4" />Delete</Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <div className="flex justify-center">
+                                                    <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center mb-2">
+                                                        <AlertTriangle className="h-6 w-6 text-destructive"/>
+                                                    </div>
+                                                </div>
+                                                <AlertDialogTitle className="text-center">Are you absolutely sure?</AlertDialogTitle>
+                                                <AlertDialogDescription className="text-center">
+                                                    This action cannot be undone. This will permanently delete this interview template.
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                <AlertDialogAction onClick={handleDelete} disabled={isDeletePending} className="bg-destructive hover:bg-destructive/90">
+                                                    {isDeletePending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                                    Delete
+                                                </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-6">
