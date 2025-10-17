@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ArrowLeft, Loader2, Plus, Trash2, Sparkles } from 'lucide-react';
 import { useFormStatus } from 'react-dom';
+import { GradientButton } from '@/components/ui/gradient-button';
 
 const initialState = {
   error: null,
@@ -32,9 +33,9 @@ function SubmitButton() {
 function AiGenerateButton() {
     const { pending } = useFormStatus();
     return (
-        <Button type="submit" disabled={pending}>
+        <GradientButton type="submit" disabled={pending}>
             {pending ? <Loader2 className="animate-spin" /> : <><Sparkles className="mr-2 h-4 w-4" /> Generate Questions</>}
-        </Button>
+        </GradientButton>
     )
 }
 
@@ -89,7 +90,7 @@ export default function AddCompanyQuestionPage() {
           </div>
         </header>
         <main className="flex flex-1 flex-col gap-4 overflow-auto p-4 md:gap-6 md:p-6 custom-scrollbar">
-          <div className="flex gap-4 w-full h-full">
+          <div className="flex gap-2 w-full h-full">
             <div className="w-[60%] h-full">
               <form action={formAction} className="w-full h-full">
                 <input type="hidden" name="libraryType" value="custom" />
@@ -205,7 +206,7 @@ export default function AddCompanyQuestionPage() {
                 </Card>
               </form>
             </div>
-            <div className="w-[40%] h-full">
+            <div className="w-[40%] h-full rounded-lg p-1 bg-gradient-to-br from-purple-500 to-pink-500">
                 <Card className="h-full flex flex-col w-full">
                     <CardHeader>
                         <CardTitle className="font-headline text-2xl">Generate Questions with AI</CardTitle>
