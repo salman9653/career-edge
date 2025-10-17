@@ -19,7 +19,7 @@ import type { GenerateAiInterviewInput } from '@/ai/flows/generate-ai-interview-
 import { regenerateQuestion, refineTone, addFollowUps, regenerateFollowUps, regenerateIntro, regenerateOutro } from '@/ai/flows/edit-ai-interview-flow';
 import type { RegenerateQuestionInput, RefineToneInput, AddFollowUpsInput, RegenerateFollowUpsInput, RegenerateIntroInput, RegenerateOutroInput } from '@/ai/flows/edit-ai-interview-flow-types';
 import { generateAiQuestions } from "@/ai/flows/generate-ai-questions-flow";
-import type { GenerateAiQuestionsInput } from "@/ai/flows/generate-ai-questions-flow-types";
+import type { GenerateAiQuestionsInput, GenerateAiQuestionsOutput } from "@/ai/flows/generate-ai-questions-flow-types";
 
 
 async function fileToDataURI(file: File) {
@@ -221,22 +221,18 @@ export async function generateQuestionsAction(prevState: any, formData: FormData
 
     await batch.commit();
 
-    // Re-fetch the generated questions to return them with IDs
-    const generatedQuestions = result.questions.map(q => ({
-        ...q,
-        id: 'temp-' + Math.random(), // Temporary ID for display
-        difficulty: difficultyMap[difficulty],
-        createdAt: new Date().toISOString(),
-        libraryType,
-        addedBy,
-        addedByName,
-        status: 'active',
-    }));
-
     revalidatePath('/dashboard/company/questions');
-    return { success: true, generatedQuestions };
+    revalidatePath('/dashboard/admin/questions');
+
+    return { 
+        success: true, 
+        numQuestions,
+        questionType,
+        difficulty,
+    };
   } catch (e: any) {
-    return { error: e.message };
+    console.error('Error in generateQuestionsAction:', e);
+    return { error: e.message || "An unexpected error occurred during AI generation." };
   }
 }
 
@@ -1140,3 +1136,4 @@ export async function updateAiInterviewAction(interviewId: string, interviewData
     return { error: e.message || 'An unexpected error occurred.' };
   }
 }
+

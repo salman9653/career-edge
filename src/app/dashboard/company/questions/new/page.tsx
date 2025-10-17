@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useActionState, useState, useEffect } from 'react';
@@ -13,12 +14,10 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { ArrowLeft, Loader2, Plus, Trash2, Sparkles } from 'lucide-react';
+import { ArrowLeft, Loader2, Plus, Trash2, Sparkles, CheckCircle } from 'lucide-react';
 import { useFormStatus } from 'react-dom';
 import { GradientButton } from '@/components/ui/gradient-button';
-import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from '@/components/ui/alert-dialog';
-import type { Question } from '@/lib/types';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 
 const addInitialState = {
@@ -43,10 +42,15 @@ function AiGenerateButton() {
     )
 }
 
-const aiInitialState = {
+const aiInitialState: {
+  error?: string | null;
+  success: boolean;
+  numQuestions?: number;
+  questionType?: string;
+  difficulty?: string;
+} = {
   error: null,
   success: false,
-  generatedQuestions: [],
 };
 
 export default function AddCompanyQuestionPage() {
@@ -65,8 +69,7 @@ export default function AddCompanyQuestionPage() {
   const from = searchParams.get('from');
 
   useEffect(() => {
-    if (aiState.success && aiState.generatedQuestions && aiState.generatedQuestions.length > 0) {
-      toast({ title: 'Success!', description: `${aiState.generatedQuestions.length} questions have been generated and saved.` });
+    if (aiState.success) {
       setIsGeneratedQuestionsDialogOpen(true);
     } else if (aiState.error) {
       toast({ variant: 'destructive', title: 'Generation Failed', description: aiState.error });
@@ -100,32 +103,35 @@ export default function AddCompanyQuestionPage() {
   }
 
   const libraryType = session.role === 'admin' ? 'library' : 'custom';
+  
+  const handleGoToQuestions = () => {
+      const tab = libraryType === 'custom' ? 'custom' : 'library';
+      const sort = 'createdAt:desc';
+      router.push(`/dashboard/company/questions?tab=${tab}&sort=${sort}`);
+  }
 
   return (
     <>
     <AlertDialog open={isGeneratedQuestionsDialogOpen} onOpenChange={setIsGeneratedQuestionsDialogOpen}>
-        <AlertDialogContent className="sm:max-w-2xl">
+        <AlertDialogContent>
             <AlertDialogHeader>
-                <AlertDialogTitle>AI Generated Questions</AlertDialogTitle>
-                <AlertDialogDescription>
-                    The following questions have been generated and added to your question bank.
+                <div className="flex justify-center mb-2">
+                    <div className="h-12 w-12 rounded-full bg-green-500/10 flex items-center justify-center">
+                        <CheckCircle className="h-6 w-6 text-green-500"/>
+                    </div>
+                </div>
+                <AlertDialogTitle className="text-center">Questions Generated!</AlertDialogTitle>
+                <AlertDialogDescription className="text-center">
+                    Successfully generated {aiState.numQuestions} {aiState.questionType} questions with {aiState.difficulty} difficulty.
                 </AlertDialogDescription>
             </AlertDialogHeader>
-            <ScrollArea className="max-h-[60vh] pr-4">
-                <div className="space-y-4">
-                    {(aiState.generatedQuestions as Question[] | undefined)?.map((q, index) => (
-                        <div key={index} className="p-4 border rounded-lg">
-                            <p className="font-semibold">{q.question}</p>
-                            <p className="text-sm text-muted-foreground">Category: {q.category.join(', ')}</p>
-                        </div>
-                    ))}
-                </div>
-            </ScrollArea>
-            <AlertDialogFooter>
-                <AlertDialogAction onClick={() => setIsGeneratedQuestionsDialogOpen(false)}>Close</AlertDialogAction>
+            <AlertDialogFooter className="sm:justify-center gap-2">
+                <AlertDialogAction onClick={() => setIsGeneratedQuestionsDialogOpen(false)} variant="outline">Generate More</AlertDialogAction>
+                <AlertDialogAction onClick={handleGoToQuestions}>Go to Questions List</AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
     </AlertDialog>
+
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <DashboardSidebar role={session.role} user={session} />
       <div className="flex flex-col max-h-screen">
