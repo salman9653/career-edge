@@ -89,7 +89,7 @@ export default function AddCompanyQuestionPage() {
           </div>
         </header>
         <main className="flex flex-1 flex-col gap-4 overflow-auto p-4 md:gap-6 md:p-6 custom-scrollbar">
-          <div className="flex gap-6 w-full h-full">
+          <div className="flex gap-4 w-full h-full">
             <div className="w-[60%] h-full">
               <form action={formAction} className="w-full h-full">
                 <input type="hidden" name="libraryType" value="custom" />
@@ -220,7 +220,19 @@ export default function AddCompanyQuestionPage() {
                             <Label htmlFor="ai-skills">Key Skills (comma-separated)</Label>
                             <Input id="ai-skills" placeholder="e.g., React, TypeScript, GraphQL" />
                         </div>
-                            <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="ai-question-type">Question Type</Label>
+                             <Select name="ai-question-type">
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="mcq">MCQ (Multiple Choice)</SelectItem>
+                                    <SelectItem value="subjective">Subjective</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="ai-num-questions">Number of Questions</Label>
                                 <Input id="ai-num-questions" type="number" min="1" max="10" placeholder="5" />
