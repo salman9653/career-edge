@@ -29,7 +29,9 @@ const SubjectiveQuestionSchema = z.object({
     answerSummary: z.string().describe("A brief summary of what a good answer should contain."),
 });
 
+const QuestionSchema = z.union([McqQuestionSchema, SubjectiveQuestionSchema]);
+
 export const GenerateAiQuestionsOutputSchema = z.object({
-    questions: z.array(z.union([McqQuestionSchema, SubjectiveQuestionSchema]))
+    questions: z.array(QuestionSchema)
 });
 export type GenerateAiQuestionsOutput = z.infer<typeof GenerateAiQuestionsOutputSchema>;
