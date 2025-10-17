@@ -8,7 +8,7 @@ import { db, auth, storage } from "@/lib/firebase/config";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import type { Price, Round, Job } from "@/lib/types";
+import type { Price, Round, Job, AiInterview } from "@/lib/types";
 import { updateProfile, reauthenticateWithCredential, EmailAuthProvider, updatePassword } from "firebase/auth";
 import { randomUUID } from 'crypto';
 import { careerChat } from "@/ai/flows/career-chat-flow";
@@ -1054,5 +1054,24 @@ export async function regenerateOutroAction(input: RegenerateOutroInput) {
     return await regenerateOutro(input);
   } catch (e: any) {
     return { error: e.message || 'Failed to regenerate outro.' };
+  }
+}
+
+export async function updateAiInterviewAction(interviewId: string, interviewData: AiInterview) {
+  if (!interviewId || !interviewData) {
+    return { error: 'Invalid data provided.' };
+  }
+  
+  try {
+    const interviewRef = doc(db, 'ai-interviews', interviewId);
+    await updateDoc(interviewRef, {
+        ...interviewData,
+        // any server-side timestamps or updates would go here
+    });
+    revalidatePath(`/dashboard/company/templates/ai-interviews/${interviewId}`);
+    return { success: true };
+  } catch (e: any) {
+    console.error('Error updating AI interview:', e);
+    return { error: e.message || 'An unexpected error occurred.' };
   }
 }

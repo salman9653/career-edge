@@ -29,7 +29,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Textarea } from '@/components/ui/textarea';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { GradientButton } from '@/components/ui/gradient-button';
-import { regenerateQuestionAction, refineToneAction, addFollowUpsAction, regenerateFollowUpsAction, regenerateIntroAction, regenerateOutroAction } from '@/app/actions';
+import { regenerateQuestionAction, refineToneAction, addFollowUpsAction, regenerateFollowUpsAction, regenerateIntroAction, regenerateOutroAction, updateAiInterviewAction } from '@/app/actions';
 
 export default function AiInterviewDetailPage() {
     const { session, loading: sessionLoading } = useSession();
@@ -44,6 +44,7 @@ export default function AiInterviewDetailPage() {
     const [isDeletePending, startDeleteTransition] = useTransition();
     const [isEditing, setIsEditing] = useState(false);
     const [isGenerating, setIsGenerating] = useState<string | number | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
 
     const interviewId = params.id as string;
 
@@ -74,12 +75,22 @@ export default function AiInterviewDetailPage() {
         setEditableInterview(interview);
     };
 
-    const handleSave = () => {
-        // Placeholder for save action
-        toast({ title: "Save not implemented yet." });
-        // In the future, this would call a server action
-        // setInterview(editableInterview);
-        // setIsEditing(false);
+    const handleSave = async () => {
+        if (!editableInterview) return;
+        setIsSaving(true);
+        try {
+            const result = await updateAiInterviewAction(interviewId, editableInterview);
+            if (result.success) {
+                toast({ title: "Interview Saved!", description: "Your changes have been saved." });
+                setIsEditing(false);
+            } else {
+                throw new Error(result.error || "An unknown error occurred.");
+            }
+        } catch(e: any) {
+            toast({ variant: 'destructive', title: "Save Failed", description: e.message });
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     const handleDelete = () => {
@@ -295,7 +306,10 @@ export default function AiInterviewDetailPage() {
                                                 AI Suggestions
                                             </GradientButton>
                                             <Button variant="outline" onClick={handleCancel}>Cancel</Button>
-                                            <Button onClick={handleSave}>Save Changes</Button>
+                                            <Button onClick={handleSave} disabled={isSaving}>
+                                                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                                Save Changes
+                                            </Button>
                                         </>
                                      ) : (
                                         <>
