@@ -31,9 +31,9 @@ The questions should be of **{{difficulty}}** difficulty and focus on these key 
 
 The questions must be of type: **{{questionType}}**.
 
-- For "mcq" type, provide 4 options and specify the correct answer.
-- For "subjective" type, provide a brief summary of the expected answer.
+- For "mcq" type, provide 4 options and specify the correct answer. The 'answerSummary' field should be omitted.
+- For "subjective" type, provide a brief summary of the expected answer. The 'options' and 'correctAnswer' fields should be omitted.
 
-Assign relevant categories to each question.
+Assign relevant categories to each question. Ensure each question object has a 'type' field set to '{{questionType}}'.
 `,
 });

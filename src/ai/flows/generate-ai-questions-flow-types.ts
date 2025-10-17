@@ -13,23 +13,17 @@ export const GenerateAiQuestionsInputSchema = z.object({
 });
 export type GenerateAiQuestionsInput = z.infer<typeof GenerateAiQuestionsInputSchema>;
 
-
-const McqQuestionSchema = z.object({
-    question: z.string().describe("The statement of the multiple-choice question."),
-    type: z.literal('mcq'),
+// Unified schema for both question types
+const QuestionSchema = z.object({
+    question: z.string().describe("The statement of the question."),
+    type: z.enum(['mcq', 'subjective']),
     category: z.array(z.string()).describe("A list of relevant categories for the question."),
-    options: z.array(z.string()).min(4).max(4).describe("An array of 4 possible answers."),
-    correctAnswer: z.string().describe("The correct answer from the options array."),
+    // Fields for MCQ
+    options: z.array(z.string()).min(4).max(4).optional().describe("An array of 4 possible answers for an MCQ. Should be null for subjective questions."),
+    correctAnswer: z.string().optional().describe("The correct answer from the options array. Should be null for subjective questions."),
+    // Field for Subjective
+    answerSummary: z.string().optional().describe("A brief summary of what a good answer should contain. Should be null for MCQs."),
 });
-
-const SubjectiveQuestionSchema = z.object({
-    question: z.string().describe("The statement of the subjective question."),
-    type: z.literal('subjective'),
-    category: z.array(z.string()).describe("A list of relevant categories for the question."),
-    answerSummary: z.string().describe("A brief summary of what a good answer should contain."),
-});
-
-const QuestionSchema = z.union([McqQuestionSchema, SubjectiveQuestionSchema]);
 
 export const GenerateAiQuestionsOutputSchema = z.object({
     questions: z.array(QuestionSchema)
