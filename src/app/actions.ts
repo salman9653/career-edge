@@ -16,6 +16,9 @@ import { streamText } from 'genkit';
 import type { CareerChatInput } from "@/ai/flows/career-chat-flow-types";
 import { generateAiInterview } from '@/ai/flows/generate-ai-interview-flow';
 import type { GenerateAiInterviewInput } from '@/ai/flows/generate-ai-interview-flow-types';
+import { regenerateQuestion, refineTone, addFollowUps } from '@/ai/flows/edit-ai-interview-flow';
+import type { RegenerateQuestionInput, RefineToneInput, AddFollowUpsInput } from '@/ai/flows/edit-ai-interview-flow-types';
+
 
 async function fileToDataURI(file: File) {
     const arrayBuffer = await file.arrayBuffer();
@@ -1006,3 +1009,26 @@ export async function generateAiInterviewAction(prevState: any, formData: FormDa
   }
 }
 
+export async function regenerateQuestionAction(input: RegenerateQuestionInput) {
+  try {
+    return await regenerateQuestion(input);
+  } catch (e: any) {
+    return { error: e.message || 'Failed to regenerate question.' };
+  }
+}
+
+export async function refineToneAction(input: RefineToneInput) {
+  try {
+    return await refineTone(input);
+  } catch (e: any) {
+    return { error: e.message || 'Failed to refine tone.' };
+  }
+}
+
+export async function addFollowUpsAction(input: AddFollowUpsInput) {
+  try {
+    return await addFollowUps(input);
+  } catch (e: any) {
+    return { error: e.message || 'Failed to add follow-ups.' };
+  }
+}

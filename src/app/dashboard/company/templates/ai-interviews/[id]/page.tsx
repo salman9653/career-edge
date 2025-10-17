@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useEffect, useState, useTransition } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -26,8 +27,9 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Textarea } from '@/components/ui/textarea';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger } from '@/components/ui/dropdown-menu';
 import { GradientButton } from '@/components/ui/gradient-button';
+import { regenerateQuestionAction, refineToneAction, addFollowUpsAction } from '@/app/actions';
 
 export default function AiInterviewDetailPage() {
     const { session, loading: sessionLoading } = useSession();
@@ -41,6 +43,7 @@ export default function AiInterviewDetailPage() {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isDeletePending, startDeleteTransition] = useTransition();
     const [isEditing, setIsEditing] = useState(false);
+    const [isGenerating, setIsGenerating] = useState<number | null>(null); // Tracks index of generating question
 
     const interviewId = params.id as string;
 
@@ -60,15 +63,15 @@ export default function AiInterviewDetailPage() {
             return () => unsub();
         }
     }, [interviewId]);
-
+    
     const handleEdit = () => {
-        setEditableInterview(interview); // Reset edits on re-entering edit mode
+        setEditableInterview(JSON.parse(JSON.stringify(interview))); // Deep copy
         setIsEditing(true);
     };
 
     const handleCancel = () => {
         setIsEditing(false);
-        setEditableInterview(interview); // Discard changes
+        setEditableInterview(interview);
     };
 
     const handleSave = () => {
@@ -85,6 +88,82 @@ export default function AiInterviewDetailPage() {
         setIsDeleteDialogOpen(false);
     }
     
+    const handleInputChange = (field: keyof AiInterview, value: string) => {
+        setEditableInterview(prev => prev ? { ...prev, [field]: value } : null);
+    };
+
+    const handleQuestionChange = (qIndex: number, value: string) => {
+        const newQuestions = [...(editableInterview?.questions ?? [])];
+        newQuestions[qIndex].question = value;
+        setEditableInterview(prev => prev ? { ...prev, questions: newQuestions } : null);
+    };
+
+    const handleFollowupChange = (qIndex: number, fIndex: number, value: string) => {
+        const newQuestions = [...(editableInterview?.questions ?? [])];
+        newQuestions[qIndex].followUps[fIndex] = value;
+        setEditableInterview(prev => prev ? { ...prev, questions: newQuestions } : null);
+    };
+
+    const handleRegenerate = async (index: number) => {
+      if (!editableInterview) return;
+      setIsGenerating(index);
+      try {
+        const result = await regenerateQuestionAction({
+          ...editableInterview,
+          originalQuestion: editableInterview.questions[index].question,
+        });
+        if ('error' in result) throw new Error(result.error);
+        const newQuestions = [...editableInterview.questions];
+        newQuestions[index] = { question: result.question, followUps: result.followUps };
+        setEditableInterview(prev => prev ? { ...prev, questions: newQuestions } : null);
+        toast({ title: "Question Regenerated!" });
+      } catch (e: any) {
+        toast({ variant: 'destructive', title: "Error", description: e.message });
+      } finally {
+        setIsGenerating(null);
+      }
+    };
+    
+    const handleRefineTone = async (index: number, newTone: 'Formal' | 'Conversational' | 'Technical') => {
+      if (!editableInterview) return;
+      setIsGenerating(index);
+       try {
+        const result = await refineToneAction({
+          question: editableInterview.questions[index].question,
+          newTone,
+        });
+        if ('error'in result) throw new Error(result.error);
+        const newQuestions = [...editableInterview.questions];
+        newQuestions[index].question = result.refinedQuestion;
+        setEditableInterview(prev => prev ? { ...prev, questions: newQuestions } : null);
+        toast({ title: `Tone refined to ${newTone}` });
+      } catch (e: any) {
+        toast({ variant: 'destructive', title: "Error", description: e.message });
+      } finally {
+        setIsGenerating(null);
+      }
+    };
+
+    const handleAddFollowUps = async (index: number) => {
+       if (!editableInterview) return;
+       setIsGenerating(index);
+        try {
+            const result = await addFollowUpsAction({
+                ...editableInterview,
+                question: editableInterview.questions[index].question,
+            });
+            if ('error' in result) throw new Error(result.error);
+            const newQuestions = [...editableInterview.questions];
+            newQuestions[index].followUps.push(...result.followUps);
+            setEditableInterview(prev => prev ? { ...prev, questions: newQuestions } : null);
+            toast({ title: "Follow-ups added!" });
+        } catch (e: any) {
+            toast({ variant: 'destructive', title: "Error", description: e.message });
+        } finally {
+            setIsGenerating(null);
+        }
+    };
+
     if (sessionLoading || loading) {
          return (
             <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
@@ -102,30 +181,13 @@ export default function AiInterviewDetailPage() {
         )
     }
 
-    if (!session || (interview && interview.createdBy !== session.uid)) {
+    if (!session || (interview && interview.companyId !== (session.role === 'company' ? session.uid : session.company_uid))) {
         return <div className="flex min-h-screen items-center justify-center"><p>Access Denied</p></div>;
     }
 
     if (!interview || !editableInterview) {
         return <div className="flex min-h-screen items-center justify-center"><p>Interview not found.</p></div>;
     }
-    
-    const handleInputChange = (field: keyof AiInterview, value: string) => {
-        setEditableInterview(prev => prev ? { ...prev, [field]: value } : null);
-    };
-
-    const handleQuestionChange = (qIndex: number, value: string) => {
-        const newQuestions = [...editableInterview.questions];
-        newQuestions[qIndex].question = value;
-        setEditableInterview(prev => prev ? { ...prev, questions: newQuestions } : null);
-    };
-
-    const handleFollowupChange = (qIndex: number, fIndex: number, value: string) => {
-        const newQuestions = [...editableInterview.questions];
-        newQuestions[qIndex].followUps[fIndex] = value;
-        setEditableInterview(prev => prev ? { ...prev, questions: newQuestions } : null);
-    };
-
 
     return (
         <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
@@ -242,14 +304,21 @@ export default function AiInterviewDetailPage() {
                                                 {isEditing && (
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" size="icon">
-                                                                <Sparkles className="h-4 w-4" />
+                                                            <Button variant="ghost" size="icon" disabled={isGenerating !== null}>
+                                                                {isGenerating === index ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                                                             </Button>
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent>
-                                                            <DropdownMenuItem disabled><RefreshCw className="mr-2 h-4 w-4" />Regenerate</DropdownMenuItem>
-                                                            <DropdownMenuItem disabled><Wand2 className="mr-2 h-4 w-4" />Refine Tone</DropdownMenuItem>
-                                                            <DropdownMenuItem disabled><Plus className="mr-2 h-4 w-4" />Add Follow-ups</DropdownMenuItem>
+                                                            <DropdownMenuItem onSelect={() => handleRegenerate(index)}><RefreshCw className="mr-2 h-4 w-4" />Regenerate</DropdownMenuItem>
+                                                            <DropdownMenuSub>
+                                                                <DropdownMenuSubTrigger><Wand2 className="mr-2 h-4 w-4" />Refine Tone</DropdownMenuSubTrigger>
+                                                                <DropdownMenuSubContent>
+                                                                    <DropdownMenuItem onSelect={() => handleRefineTone(index, 'Formal')}>Formal</DropdownMenuItem>
+                                                                    <DropdownMenuItem onSelect={() => handleRefineTone(index, 'Conversational')}>Conversational</DropdownMenuItem>
+                                                                    <DropdownMenuItem onSelect={() => handleRefineTone(index, 'Technical')}>Technical</DropdownMenuItem>
+                                                                </DropdownMenuSubContent>
+                                                            </DropdownMenuSub>
+                                                            <DropdownMenuItem onSelect={() => handleAddFollowUps(index)}><Plus className="mr-2 h-4 w-4" />Add Follow-ups</DropdownMenuItem>
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
                                                 )}
