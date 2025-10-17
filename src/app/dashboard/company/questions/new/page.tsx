@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useActionState, useState, useEffect } from 'react';
@@ -126,8 +125,8 @@ export default function AddCompanyQuestionPage() {
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="sm:justify-center gap-2">
-                <AlertDialogAction onClick={() => setIsGeneratedQuestionsDialogOpen(false)} variant="outline">Generate More</AlertDialogAction>
-                <AlertDialogAction onClick={handleGoToQuestions}>Go to Questions List</AlertDialogAction>
+                <AlertDialogAction onClick={handleGoToQuestions} variant="outline">Go to Questions List</AlertDialogAction>
+                <AlertDialogAction onClick={() => setIsGeneratedQuestionsDialogOpen(false)}>Generate More</AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
     </AlertDialog>
