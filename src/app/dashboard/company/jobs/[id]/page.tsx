@@ -305,7 +305,7 @@ export default function JobDetailsPage() {
                                       <div className="flex-1 text-sm">
                                           <p className="font-medium">{round.name} <span className="text-muted-foreground capitalize">({round.type})</span></p>
                                           {round.assessmentName && <p className="text-xs text-muted-foreground">Assessment: {round.assessmentName}</p>}
-                                          {round.aiInterviewName && <p className="text-xs text-muted-foreground">AI Interview: {round.aiInterviewName}</p>}
+                                          {round.aiInterviewName && <p className="text-xs text-muted-foreground">AI Interview Name: {round.aiInterviewName}</p>}
                                           {round.selectionCriteria && <p className="text-xs text-muted-foreground">Passing Criteria: {round.selectionCriteria}%</p>}
                                       </div>
                                     </div>
