@@ -40,6 +40,11 @@ export const AiInterviewProvider = ({ children }: { children: ReactNode }) => {
             unsubscribe = onSnapshot(q, (snapshot) => {
                 const interviewList = snapshot.docs.map(doc => {
                     const data = doc.data();
+                    // Handle both Timestamp and string/null for createdAt
+                    const createdAt = data.createdAt && typeof data.createdAt.toDate === 'function'
+                        ? data.createdAt.toDate().toISOString()
+                        : data.createdAt;
+
                     return {
                         id: doc.id,
                         name: data.name,
@@ -52,7 +57,7 @@ export const AiInterviewProvider = ({ children }: { children: ReactNode }) => {
                         questions: data.questions,
                         createdBy: data.createdBy,
                         createdByName: data.createdByName,
-                        createdAt: data.createdAt?.toDate()?.toISOString() || null,
+                        createdAt: createdAt,
                         duration: data.duration,
                         questionCount: data.questionCount,
                         difficulty: data.difficulty,
