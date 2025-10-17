@@ -27,9 +27,9 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Textarea } from '@/components/ui/textarea';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { GradientButton } from '@/components/ui/gradient-button';
-import { regenerateQuestionAction, refineToneAction, addFollowUpsAction } from '@/app/actions';
+import { regenerateQuestionAction, refineToneAction, addFollowUpsAction, regenerateFollowUpsAction } from '@/app/actions';
 
 export default function AiInterviewDetailPage() {
     const { session, loading: sessionLoading } = useSession();
@@ -103,6 +103,12 @@ export default function AiInterviewDetailPage() {
         newQuestions[qIndex].followUps[fIndex] = value;
         setEditableInterview(prev => prev ? { ...prev, questions: newQuestions } : null);
     };
+    
+    const handleRemoveFollowup = (qIndex: number, fIndex: number) => {
+        const newQuestions = [...(editableInterview?.questions ?? [])];
+        newQuestions[qIndex].followUps.splice(fIndex, 1);
+        setEditableInterview(prev => prev ? { ...prev, questions: newQuestions } : null);
+    }
 
     const handleRegenerate = async (index: number) => {
       if (!editableInterview) return;
@@ -157,6 +163,26 @@ export default function AiInterviewDetailPage() {
             newQuestions[index].followUps.push(...result.followUps);
             setEditableInterview(prev => prev ? { ...prev, questions: newQuestions } : null);
             toast({ title: "Follow-ups added!" });
+        } catch (e: any) {
+            toast({ variant: 'destructive', title: "Error", description: e.message });
+        } finally {
+            setIsGenerating(null);
+        }
+    };
+    
+    const handleRegenerateFollowUps = async (index: number) => {
+        if (!editableInterview) return;
+        setIsGenerating(index);
+        try {
+            const result = await regenerateFollowUpsAction({
+                ...editableInterview,
+                question: editableInterview.questions[index].question,
+            });
+            if ('error' in result) throw new Error(result.error);
+            const newQuestions = [...editableInterview.questions];
+            newQuestions[index].followUps = result.followUps;
+            setEditableInterview(prev => prev ? { ...prev, questions: newQuestions } : null);
+            toast({ title: "Follow-ups regenerated!" });
         } catch (e: any) {
             toast({ variant: 'destructive', title: "Error", description: e.message });
         } finally {
@@ -318,7 +344,9 @@ export default function AiInterviewDetailPage() {
                                                                     <DropdownMenuItem onSelect={() => handleRefineTone(index, 'Technical')}>Technical</DropdownMenuItem>
                                                                 </DropdownMenuSubContent>
                                                             </DropdownMenuSub>
+                                                            <DropdownMenuSeparator />
                                                             <DropdownMenuItem onSelect={() => handleAddFollowUps(index)}><Plus className="mr-2 h-4 w-4" />Add Follow-ups</DropdownMenuItem>
+                                                            <DropdownMenuItem onSelect={() => handleRegenerateFollowUps(index)}><RefreshCw className="mr-2 h-4 w-4" />Regenerate Follow-ups</DropdownMenuItem>
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
                                                 )}
@@ -332,14 +360,19 @@ export default function AiInterviewDetailPage() {
                                                 <CollapsibleContent>
                                                      <ul className="mt-2 ml-4 list-disc space-y-2 text-sm text-muted-foreground">
                                                         {q.followUps.map((fu, fuIndex) => (
-                                                            <li key={fuIndex}>
+                                                            <li key={fuIndex} className="flex items-start gap-2">
                                                                 {isEditing ? (
+                                                                    <>
                                                                     <Textarea 
                                                                         value={fu} 
                                                                         onChange={(e) => handleFollowupChange(index, fuIndex, e.target.value)}
-                                                                        className="text-xs bg-background"
+                                                                        className="text-xs bg-background flex-1"
                                                                         rows={2}
                                                                     />
+                                                                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => handleRemoveFollowup(index, fuIndex)}>
+                                                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                                                    </Button>
+                                                                    </>
                                                                 ) : (
                                                                     fu
                                                                 )}

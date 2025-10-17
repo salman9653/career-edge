@@ -17,6 +17,10 @@ import {
   AddFollowUpsInputSchema,
   AddFollowUpsOutput,
   AddFollowUpsOutputSchema,
+  RegenerateFollowUpsInput,
+  RegenerateFollowUpsInputSchema,
+  RegenerateFollowUpsOutput,
+  RegenerateFollowUpsOutputSchema,
 } from './edit-ai-interview-flow-types';
 
 export async function regenerateQuestion(
@@ -40,6 +44,14 @@ export async function addFollowUps(
 ): Promise<AddFollowUpsOutput> {
   const { output } = await addFollowUpsPrompt(input);
    if (!output) throw new Error("Failed to add follow-ups.");
+  return output;
+}
+
+export async function regenerateFollowUps(
+  input: RegenerateFollowUpsInput
+): Promise<RegenerateFollowUpsOutput> {
+  const { output } = await regenerateFollowUpsPrompt(input);
+  if (!output) throw new Error("Failed to regenerate follow-ups.");
   return output;
 }
 
@@ -88,4 +100,21 @@ Main Question:
 "{{question}}"
 
 Generate new follow-up questions that probe deeper into the candidate's response to the main question.`,
+});
+
+
+const regenerateFollowUpsPrompt = ai.definePrompt({
+  name: 'regenerateFollowUpsPrompt',
+  input: { schema: RegenerateFollowUpsInputSchema },
+  output: { schema: RegenerateFollowUpsOutputSchema },
+  prompt: `You are an expert interviewer. Your task is to regenerate a new list of 2-3 insightful follow-up questions for the given main question, based on the job context.
+
+Job Title: {{jobTitle}}
+Job Description: {{jobDescription}}
+Key Skills: {{keySkills}}
+
+Main Question:
+"{{question}}"
+
+Do not repeat previous follow-up questions. Generate a completely new set of follow-ups.`,
 });

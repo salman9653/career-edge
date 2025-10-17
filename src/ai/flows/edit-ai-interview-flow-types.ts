@@ -36,3 +36,13 @@ export const AddFollowUpsOutputSchema = z.object({
   followUps: z.array(z.string()).describe("A list of 2-3 new follow-up questions."),
 });
 export type AddFollowUpsOutput = z.infer<typeof AddFollowUpsOutputSchema>;
+
+export const RegenerateFollowUpsInputSchema = GenerateAiInterviewInputSchema.extend({
+  question: z.string().describe("The main question whose follow-ups need regenerating."),
+});
+export type RegenerateFollowUpsInput = z.infer<typeof RegenerateFollowUpsInputSchema>;
+
+export const RegenerateFollowUpsOutputSchema = z.object({
+  followUps: z.array(z.string()).describe("A new list of 2-3 regenerated follow-up questions."),
+});
+export type RegenerateFollowUpsOutput = z.infer<typeof RegenerateFollowUpsOutputSchema>;

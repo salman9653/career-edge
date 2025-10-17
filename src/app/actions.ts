@@ -16,8 +16,8 @@ import { streamText } from 'genkit';
 import type { CareerChatInput } from "@/ai/flows/career-chat-flow-types";
 import { generateAiInterview } from '@/ai/flows/generate-ai-interview-flow';
 import type { GenerateAiInterviewInput } from '@/ai/flows/generate-ai-interview-flow-types';
-import { regenerateQuestion, refineTone, addFollowUps } from '@/ai/flows/edit-ai-interview-flow';
-import type { RegenerateQuestionInput, RefineToneInput, AddFollowUpsInput } from '@/ai/flows/edit-ai-interview-flow-types';
+import { regenerateQuestion, refineTone, addFollowUps, regenerateFollowUps } from '@/ai/flows/edit-ai-interview-flow';
+import type { RegenerateQuestionInput, RefineToneInput, AddFollowUpsInput, RegenerateFollowUpsInput } from '@/ai/flows/edit-ai-interview-flow-types';
 
 
 async function fileToDataURI(file: File) {
@@ -1030,5 +1030,13 @@ export async function addFollowUpsAction(input: AddFollowUpsInput) {
     return await addFollowUps(input);
   } catch (e: any) {
     return { error: e.message || 'Failed to add follow-ups.' };
+  }
+}
+
+export async function regenerateFollowUpsAction(input: RegenerateFollowUpsInput) {
+  try {
+    return await regenerateFollowUps(input);
+  } catch (e: any) {
+    return { error: e.message || 'Failed to regenerate follow-ups.' };
   }
 }
