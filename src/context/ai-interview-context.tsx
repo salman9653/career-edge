@@ -43,6 +43,7 @@ export const AiInterviewProvider = ({ children }: { children: ReactNode }) => {
                     return {
                         id: doc.id,
                         name: data.name,
+                        companyId: data.companyId,
                         jobTitle: data.jobTitle,
                         jobDescription: data.jobDescription,
                         keySkills: data.keySkills,
@@ -51,7 +52,7 @@ export const AiInterviewProvider = ({ children }: { children: ReactNode }) => {
                         questions: data.questions,
                         createdBy: data.createdBy,
                         createdByName: data.createdByName,
-                        createdAt: data.createdAt,
+                        createdAt: data.createdAt?.toDate()?.toISOString() || null,
                         duration: data.duration,
                         questionCount: data.questionCount,
                         difficulty: data.difficulty,
