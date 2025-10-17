@@ -1,5 +1,4 @@
 
-
 'use client';
 import { useSession } from '@/hooks/use-session';
 import { DashboardSidebar } from '@/components/dashboard-sidebar';
@@ -23,6 +22,7 @@ import { Reorder } from 'framer-motion';
 import { createJobAction } from '@/app/actions';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { AiInterviewContext } from '@/context/ai-interview-context';
 
 interface Manager {
     id: string;
@@ -33,6 +33,7 @@ export default function NewJobPage() {
   const { session } = useSession();
   const router = useRouter();
   const { assessments } = useContext(AssessmentContext);
+  const { interviews: aiInterviews } = useContext(AiInterviewContext);
 
   const [step, setStep] = useState(1);
   const [jobDetails, setJobDetails] = useState({
@@ -52,6 +53,7 @@ export default function NewJobPage() {
   const [newRoundName, setNewRoundName] = useState('');
   const [newRoundType, setNewRoundType] = useState('');
   const [newRoundAssessmentId, setNewRoundAssessmentId] = useState('');
+  const [newRoundAiInterviewId, setNewRoundAiInterviewId] = useState('');
   const [newRoundSelectionCriteria, setNewRoundSelectionCriteria] = useState('');
   const [newRoundAutoProceed, setNewRoundAutoProceed] = useState(false);
   const [isScreeningSheetOpen, setIsScreeningSheetOpen] = useState(false);
@@ -109,6 +111,7 @@ export default function NewJobPage() {
     setNewRoundName('');
     setNewRoundType('');
     setNewRoundAssessmentId('');
+    setNewRoundAiInterviewId('');
     setNewRoundSelectionCriteria('');
     setNewRoundAutoProceed(false);
     setScreeningQuestions([]);
@@ -118,7 +121,7 @@ export default function NewJobPage() {
   const handleSaveRound = () => {
     if (newRoundName.trim() === '' || newRoundType.trim() === '') return;
 
-    let roundData: Omit<Round, 'id' | 'assessmentName' | 'questions'> & { assessmentName?: string; questions?: Question[]; questionIds?: string[] } = {
+    let roundData: Omit<Round, 'id' | 'assessmentName' | 'questions'> & { assessmentName?: string; questions?: Question[]; questionIds?: string[]; aiInterviewId?: string, aiInterviewName?: string } = {
         name: newRoundName,
         type: newRoundType,
         autoProceed: newRoundType !== 'screening' ? newRoundAutoProceed : false,
@@ -134,6 +137,10 @@ export default function NewJobPage() {
         if (newRoundType === 'assessment') {
             roundData.selectionCriteria = Number(newRoundSelectionCriteria);
         }
+    } else if (newRoundType === 'ai interview') {
+        const selectedAiInterview = aiInterviews.find(i => i.id === newRoundAiInterviewId);
+        roundData.aiInterviewId = newRoundAiInterviewId;
+        roundData.aiInterviewName = selectedAiInterview?.name;
     }
     
     if (editingRoundId !== null) {
@@ -154,6 +161,7 @@ export default function NewJobPage() {
     setNewRoundName(round.name);
     setNewRoundType(round.type);
     setNewRoundAssessmentId(round.assessmentId || '');
+    setNewRoundAiInterviewId(round.aiInterviewId || '');
     setNewRoundSelectionCriteria(String(round.selectionCriteria || ''));
     setNewRoundAutoProceed(round.autoProceed || false);
     setScreeningQuestions(round.questions || []);
@@ -184,11 +192,10 @@ export default function NewJobPage() {
       };
 
       const finalRounds = rounds.map(round => {
-        if(round.type === 'screening') {
-            const { questions, ...rest } = round;
+        const { questions, ...rest } = round; // remove questions prop from all rounds
+        if (round.type === 'screening') {
             return { ...rest, questionIds: questions?.map(q => q.id) || [] };
         }
-        const { questions, ...rest } = round; // remove questions prop from all rounds
         return rest;
       });
 
@@ -366,6 +373,7 @@ export default function NewJobPage() {
                                                     <div>
                                                         <p className="font-medium">{round.name} <span className="text-muted-foreground capitalize">({round.type})</span></p>
                                                         {round.assessmentName && <p className="text-xs text-muted-foreground">Assessment: {round.assessmentName}</p>}
+                                                        {round.aiInterviewName && <p className="text-xs text-muted-foreground">AI Interview: {round.aiInterviewName}</p>}
                                                         {round.selectionCriteria && <p className="text-xs text-muted-foreground">Passing Criteria: {round.selectionCriteria}%</p>}
                                                         {round.type === 'screening' && round.questions && (
                                                             <p className="text-xs text-muted-foreground mt-1">
@@ -424,8 +432,7 @@ export default function NewJobPage() {
                                         <SelectItem value="telephonic" disabled>Telephonic</SelectItem>
                                         <SelectItem value="assessment">Assessment</SelectItem>
                                         <SelectItem value="coding assessment" disabled>Coding Assessment</SelectItem>
-                                        <SelectItem value="live coding" disabled>Live Coding</SelectItem>
-                                        <SelectItem value="ai interview" disabled>AI Interview</SelectItem>
+                                        <SelectItem value="ai interview">AI Interview</SelectItem>
                                         <SelectItem value="live interview" disabled>Live Interview</SelectItem>
                                     </SelectContent>
                                     </Select>
@@ -450,6 +457,23 @@ export default function NewJobPage() {
                                     </SelectContent>
                                     </Select>
                                 </div>
+                                )}
+
+                                {newRoundType === 'ai interview' && (
+                                    <div className="space-y-2">
+                                        <Label htmlFor="new-round-ai-interview">AI Interview Name</Label>
+                                        <Select value={newRoundAiInterviewId} onValueChange={setNewRoundAiInterviewId}>
+                                            <SelectTrigger><SelectValue placeholder="Select AI interview..." /></SelectTrigger>
+                                            <SelectContent>
+                                                {aiInterviews.map(interview => (
+                                                    <SelectItem key={interview.id} value={interview.id}>
+                                                        {interview.name}
+                                                    </SelectItem>
+                                                ))}
+                                                {aiInterviews.length === 0 && <p className="p-2 text-sm text-muted-foreground">No AI interviews found.</p>}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 )}
 
                                 {newRoundType === 'screening' && (
