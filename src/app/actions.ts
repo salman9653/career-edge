@@ -16,8 +16,8 @@ import { streamText } from 'genkit';
 import type { CareerChatInput } from "@/ai/flows/career-chat-flow-types";
 import { generateAiInterview } from '@/ai/flows/generate-ai-interview-flow';
 import type { GenerateAiInterviewInput } from '@/ai/flows/generate-ai-interview-flow-types';
-import { regenerateQuestion, refineTone, addFollowUps, regenerateFollowUps } from '@/ai/flows/edit-ai-interview-flow';
-import type { RegenerateQuestionInput, RefineToneInput, AddFollowUpsInput, RegenerateFollowUpsInput } from '@/ai/flows/edit-ai-interview-flow-types';
+import { regenerateQuestion, refineTone, addFollowUps, regenerateFollowUps, regenerateIntro, regenerateOutro } from '@/ai/flows/edit-ai-interview-flow';
+import type { RegenerateQuestionInput, RefineToneInput, AddFollowUpsInput, RegenerateFollowUpsInput, RegenerateIntroInput, RegenerateOutroInput } from '@/ai/flows/edit-ai-interview-flow-types';
 
 
 async function fileToDataURI(file: File) {
@@ -1038,5 +1038,21 @@ export async function regenerateFollowUpsAction(input: RegenerateFollowUpsInput)
     return await regenerateFollowUps(input);
   } catch (e: any) {
     return { error: e.message || 'Failed to regenerate follow-ups.' };
+  }
+}
+
+export async function regenerateIntroAction(input: RegenerateIntroInput) {
+  try {
+    return await regenerateIntro(input);
+  } catch (e: any) {
+    return { error: e.message || 'Failed to regenerate intro.' };
+  }
+}
+
+export async function regenerateOutroAction(input: RegenerateOutroInput) {
+  try {
+    return await regenerateOutro(input);
+  } catch (e: any) {
+    return { error: e.message || 'Failed to regenerate outro.' };
   }
 }

@@ -21,6 +21,14 @@ import {
   RegenerateFollowUpsInputSchema,
   RegenerateFollowUpsOutput,
   RegenerateFollowUpsOutputSchema,
+  RegenerateIntroInput,
+  RegenerateIntroInputSchema,
+  RegenerateIntroOutput,
+  RegenerateIntroOutputSchema,
+  RegenerateOutroInput,
+  RegenerateOutroInputSchema,
+  RegenerateOutroOutput,
+  RegenerateOutroOutputSchema,
 } from './edit-ai-interview-flow-types';
 
 export async function regenerateQuestion(
@@ -52,6 +60,23 @@ export async function regenerateFollowUps(
 ): Promise<RegenerateFollowUpsOutput> {
   const { output } = await regenerateFollowUpsPrompt(input);
   if (!output) throw new Error("Failed to regenerate follow-ups.");
+  return output;
+}
+
+
+export async function regenerateIntro(
+  input: RegenerateIntroInput
+): Promise<RegenerateIntroOutput> {
+  const { output } = await regenerateIntroPrompt(input);
+  if (!output) throw new Error("Failed to regenerate intro.");
+  return output;
+}
+
+export async function regenerateOutro(
+  input: RegenerateOutroInput
+): Promise<RegenerateOutroOutput> {
+  const { output } = await regenerateOutroPrompt(input);
+  if (!output) throw new Error("Failed to regenerate outro.");
   return output;
 }
 
@@ -117,4 +142,31 @@ Main Question:
 "{{question}}"
 
 Do not repeat previous follow-up questions. Generate a completely new set of follow-ups.`,
+});
+
+
+const regenerateIntroPrompt = ai.definePrompt({
+  name: 'regenerateIntroPrompt',
+  input: { schema: RegenerateIntroInputSchema },
+  output: { schema: RegenerateIntroOutputSchema },
+  prompt: `You are an expert hiring manager and AI assistant. Your task is to regenerate a welcoming introductory script for the start of an interview.
+It should be welcoming and set a positive tone for the candidate.
+
+The interview is for the role of: **{{jobTitle}}**.
+The interview tone should be **{{tone}}**.
+
+Generate a new, different introductory script.`,
+});
+
+const regenerateOutroPrompt = ai.definePrompt({
+  name: 'regenerateOutroPrompt',
+  input: { schema: RegenerateOutroInputSchema },
+  output: { schema: RegenerateOutroOutputSchema },
+  prompt: `You are an expert hiring manager and AI assistant. Your task is to regenerate a concluding script for the end of an interview.
+It should thank the candidate for their time and briefly explain the next steps.
+
+The interview is for the role of: **{{jobTitle}}**.
+The interview tone should be **{{tone}}**.
+
+Generate a new, different concluding script.`,
 });

@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useEffect, useState, useTransition } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -28,7 +29,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Textarea } from '@/components/ui/textarea';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { GradientButton } from '@/components/ui/gradient-button';
-import { regenerateQuestionAction, refineToneAction, addFollowUpsAction, regenerateFollowUpsAction } from '@/app/actions';
+import { regenerateQuestionAction, refineToneAction, addFollowUpsAction, regenerateFollowUpsAction, regenerateIntroAction, regenerateOutroAction } from '@/app/actions';
 
 export default function AiInterviewDetailPage() {
     const { session, loading: sessionLoading } = useSession();
@@ -149,7 +150,7 @@ export default function AiInterviewDetailPage() {
       }
     };
     
-     const handleRefineScript = async (scriptType: 'intro' | 'outro', newTone: 'Formal' | 'Conversational' | 'Technical') => {
+    const handleRefineScript = async (scriptType: 'intro' | 'outro', newTone: 'Formal' | 'Conversational' | 'Technical') => {
         if (!editableInterview) return;
         const currentText = editableInterview[scriptType];
         setIsGenerating(scriptType);
@@ -203,6 +204,36 @@ export default function AiInterviewDetailPage() {
         } finally {
             setIsGenerating(null);
         }
+    };
+
+    const handleRegenerateIntro = async () => {
+      if (!editableInterview) return;
+      setIsGenerating('intro');
+      try {
+        const result = await regenerateIntroAction(editableInterview);
+        if ('error' in result) throw new Error(result.error);
+        setEditableInterview(prev => prev ? { ...prev, intro: result.intro } : null);
+        toast({ title: "Intro Regenerated!" });
+      } catch (e: any) {
+        toast({ variant: 'destructive', title: "Error", description: e.message });
+      } finally {
+        setIsGenerating(null);
+      }
+    };
+
+    const handleRegenerateOutro = async () => {
+      if (!editableInterview) return;
+      setIsGenerating('outro');
+      try {
+        const result = await regenerateOutroAction(editableInterview);
+        if ('error' in result) throw new Error(result.error);
+        setEditableInterview(prev => prev ? { ...prev, outro: result.outro } : null);
+        toast({ title: "Outro Regenerated!" });
+      } catch (e: any) {
+        toast({ variant: 'destructive', title: "Error", description: e.message });
+      } finally {
+        setIsGenerating(null);
+      }
     };
 
     if (sessionLoading || loading) {
@@ -320,7 +351,7 @@ export default function AiInterviewDetailPage() {
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent>
-                                            <DropdownMenuItem disabled><RefreshCw className="mr-2 h-4 w-4" />Regenerate</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={handleRegenerateIntro}><RefreshCw className="mr-2 h-4 w-4" />Regenerate</DropdownMenuItem>
                                             <DropdownMenuSub>
                                                 <DropdownMenuSubTrigger><Wand2 className="mr-2 h-4 w-4" />Refine Tone</DropdownMenuSubTrigger>
                                                 <DropdownMenuSubContent>
@@ -433,7 +464,7 @@ export default function AiInterviewDetailPage() {
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent>
-                                            <DropdownMenuItem disabled><RefreshCw className="mr-2 h-4 w-4" />Regenerate</DropdownMenuItem>
+                                            <DropdownMenuItem onSelect={handleRegenerateOutro}><RefreshCw className="mr-2 h-4 w-4" />Regenerate</DropdownMenuItem>
                                              <DropdownMenuSub>
                                                 <DropdownMenuSubTrigger><Wand2 className="mr-2 h-4 w-4" />Refine Tone</DropdownMenuSubTrigger>
                                                 <DropdownMenuSubContent>

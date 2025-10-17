@@ -46,3 +46,19 @@ export const RegenerateFollowUpsOutputSchema = z.object({
   followUps: z.array(z.string()).describe("A new list of 2-3 regenerated follow-up questions."),
 });
 export type RegenerateFollowUpsOutput = z.infer<typeof RegenerateFollowUpsOutputSchema>;
+
+// New Types for Intro/Outro
+export const RegenerateIntroInputSchema = GenerateAiInterviewInputSchema;
+export type RegenerateIntroInput = z.infer<typeof RegenerateIntroInputSchema>;
+export const RegenerateIntroOutputSchema = z.object({
+  intro: z.string().describe("A new, welcoming introductory script for the start of the interview."),
+});
+export type RegenerateIntroOutput = z.infer<typeof RegenerateIntroOutputSchema>;
+
+
+export const RegenerateOutroInputSchema = GenerateAiInterviewInputSchema;
+export type RegenerateOutroInput = z.infer<typeof RegenerateOutroInputSchema>;
+export const RegenerateOutroOutputSchema = z.object({
+  outro: z.string().describe("A new, concluding script for the end of the interview."),
+});
+export type RegenerateOutroOutput = z.infer<typeof RegenerateOutroOutputSchema>;
