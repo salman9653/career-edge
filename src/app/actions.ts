@@ -18,6 +18,8 @@ import { generateAiInterview } from '@/ai/flows/generate-ai-interview-flow';
 import type { GenerateAiInterviewInput } from '@/ai/flows/generate-ai-interview-flow-types';
 import { regenerateQuestion, refineTone, addFollowUps, regenerateFollowUps, regenerateIntro, regenerateOutro } from '@/ai/flows/edit-ai-interview-flow';
 import type { RegenerateQuestionInput, RefineToneInput, AddFollowUpsInput, RegenerateFollowUpsInput, RegenerateIntroInput, RegenerateOutroInput } from '@/ai/flows/edit-ai-interview-flow-types';
+import { generateAiQuestions } from "@/ai/flows/generate-ai-questions-flow";
+import type { GenerateAiQuestionsInput } from "@/ai/flows/generate-ai-questions-flow-types";
 
 
 async function fileToDataURI(file: File) {
@@ -172,6 +174,69 @@ export async function addQuestionAction(prevState: any, formData: FormData) {
       redirect('/dashboard/company/questions?tab=custom');
     }
     redirect('/dashboard/company/questions');
+  }
+}
+
+export async function generateQuestionsAction(prevState: any, formData: FormData) {
+  const jobTitle = formData.get('ai-job-title') as string;
+  const keySkills = formData.get('ai-skills') as string;
+  const questionType = formData.get('ai-question-type') as 'mcq' | 'subjective';
+  const numQuestions = parseInt(formData.get('ai-num-questions') as string, 10);
+  const difficulty = formData.get('ai-difficulty') as 'Easy' | 'Medium' | 'Hard';
+  const addedBy = formData.get('addedBy') as string;
+  const addedByName = formData.get('addedByName') as string;
+  const libraryType = formData.get('libraryType') as 'library' | 'custom';
+  
+  if (!jobTitle || !keySkills || !questionType || !numQuestions || !difficulty) {
+    return { error: 'Please fill out all AI generation fields.' };
+  }
+  
+  const input: GenerateAiQuestionsInput = {
+      jobTitle,
+      keySkills: keySkills.split(',').map(s => s.trim()),
+      questionType,
+      numQuestions,
+      difficulty,
+  };
+  
+  try {
+    const result = await generateAiQuestions(input);
+    const batch = writeBatch(db);
+
+    const difficultyMap: { [key: string]: number } = { 'Easy': 1, 'Medium': 2, 'Hard': 3 };
+
+    result.questions.forEach(q => {
+        const questionRef = doc(collection(db, 'questions'));
+        const questionDoc = {
+            ...q,
+            difficulty: difficultyMap[difficulty],
+            libraryType,
+            addedBy,
+            addedByName,
+            createdAt: serverTimestamp(),
+            status: 'active',
+        };
+        batch.set(questionRef, questionDoc);
+    });
+
+    await batch.commit();
+
+    // Re-fetch the generated questions to return them with IDs
+    const generatedQuestions = result.questions.map(q => ({
+        ...q,
+        id: 'temp-' + Math.random(), // Temporary ID for display
+        difficulty: difficultyMap[difficulty],
+        createdAt: new Date().toISOString(),
+        libraryType,
+        addedBy,
+        addedByName,
+        status: 'active',
+    }));
+
+    revalidatePath('/dashboard/company/questions');
+    return { success: true, generatedQuestions };
+  } catch (e: any) {
+    return { error: e.message };
   }
 }
 

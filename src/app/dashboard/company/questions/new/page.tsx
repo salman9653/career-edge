@@ -1,10 +1,10 @@
 
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from '@/hooks/use-session';
-import { addQuestionAction } from '@/app/actions';
+import { addQuestionAction, generateQuestionsAction } from '@/app/actions';
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
@@ -16,8 +16,12 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ArrowLeft, Loader2, Plus, Trash2, Sparkles } from 'lucide-react';
 import { useFormStatus } from 'react-dom';
 import { GradientButton } from '@/components/ui/gradient-button';
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from '@/components/ui/alert-dialog';
+import type { Question } from '@/lib/types';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useToast } from '@/hooks/use-toast';
 
-const initialState = {
+const addInitialState = {
   error: null,
 };
 
@@ -39,16 +43,35 @@ function AiGenerateButton() {
     )
 }
 
+const aiInitialState = {
+  error: null,
+  success: false,
+  generatedQuestions: [],
+};
+
 export default function AddCompanyQuestionPage() {
   const { session, loading } = useSession();
-  const [state, formAction] = useActionState(addQuestionAction, initialState);
+  const [addState, addFormAction] = useActionState(addQuestionAction, addInitialState);
+  const [aiState, aiFormAction] = useActionState(generateQuestionsAction, aiInitialState);
+  
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { toast } = useToast();
 
   const [questionType, setQuestionType] = useState<string>('');
   const [options, setOptions] = useState<string[]>(['', '']);
+  const [isGeneratedQuestionsDialogOpen, setIsGeneratedQuestionsDialogOpen] = useState(false);
   
   const from = searchParams.get('from');
+
+  useEffect(() => {
+    if (aiState.success && aiState.generatedQuestions && aiState.generatedQuestions.length > 0) {
+      toast({ title: 'Success!', description: `${aiState.generatedQuestions.length} questions have been generated and saved.` });
+      setIsGeneratedQuestionsDialogOpen(true);
+    } else if (aiState.error) {
+      toast({ variant: 'destructive', title: 'Generation Failed', description: aiState.error });
+    }
+  }, [aiState, toast]);
 
   const handleOptionChange = (index: number, value: string) => {
     const newOptions = [...options];
@@ -72,11 +95,37 @@ export default function AddCompanyQuestionPage() {
   if (loading) {
     return <div className="flex min-h-screen items-center justify-center"><p>Loading...</p></div>;
   }
-  if (!session || session.role !== 'company') {
+  if (!session || (session.role !== 'company' && session.role !== 'admin')) {
     return <div className="flex min-h-screen items-center justify-center"><p>Access Denied</p></div>;
   }
 
+  const libraryType = session.role === 'admin' ? 'library' : 'custom';
+
   return (
+    <>
+    <AlertDialog open={isGeneratedQuestionsDialogOpen} onOpenChange={setIsGeneratedQuestionsDialogOpen}>
+        <AlertDialogContent className="sm:max-w-2xl">
+            <AlertDialogHeader>
+                <AlertDialogTitle>AI Generated Questions</AlertDialogTitle>
+                <AlertDialogDescription>
+                    The following questions have been generated and added to your question bank.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <ScrollArea className="max-h-[60vh] pr-4">
+                <div className="space-y-4">
+                    {(aiState.generatedQuestions as Question[] | undefined)?.map((q, index) => (
+                        <div key={index} className="p-4 border rounded-lg">
+                            <p className="font-semibold">{q.question}</p>
+                            <p className="text-sm text-muted-foreground">Category: {q.category.join(', ')}</p>
+                        </div>
+                    ))}
+                </div>
+            </ScrollArea>
+            <AlertDialogFooter>
+                <AlertDialogAction onClick={() => setIsGeneratedQuestionsDialogOpen(false)}>Close</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <DashboardSidebar role={session.role} user={session} />
       <div className="flex flex-col max-h-screen">
@@ -89,11 +138,11 @@ export default function AddCompanyQuestionPage() {
             <h1 className="font-headline text-xl font-semibold">Add Custom Question</h1>
           </div>
         </header>
-        <main className="flex flex-1 flex-col gap-2 overflow-auto p-4 md:gap-6 md:p-6 custom-scrollbar">
+        <main className="flex flex-1 flex-col gap-2 overflow-auto p-4 md:p-6 custom-scrollbar">
           <div className="flex gap-2 w-full h-full">
             <div className="w-[60%] h-full">
-              <form action={formAction} className="w-full h-full">
-                <input type="hidden" name="libraryType" value="custom" />
+              <form action={addFormAction} className="w-full h-full">
+                <input type="hidden" name="libraryType" value={libraryType} />
                 <input type="hidden" name="addedBy" value={session.uid} />
                 <input type="hidden" name="addedByName" value={session.displayName} />
                 {from && <input type="hidden" name="from" value={from} />}
@@ -196,7 +245,7 @@ export default function AddCompanyQuestionPage() {
                             </div>
                         </div>
                         )}
-                        {state?.error && <p className="text-sm text-destructive mt-4">{state.error}</p>}
+                        {addState?.error && <p className="text-sm text-destructive mt-4">{addState.error}</p>}
                 
                         <div className="flex justify-end gap-2 pt-4">
                             <Button type="button" variant="secondary">Preview</Button>
@@ -213,46 +262,53 @@ export default function AddCompanyQuestionPage() {
                         <CardDescription>Describe what you're looking for, and let AI do the work.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6 flex-1 overflow-auto custom-scrollbar">
-                        <div className="space-y-2">
-                            <Label htmlFor="ai-job-title">Job Title</Label>
-                            <Input id="ai-job-title" placeholder="e.g., Senior Frontend Developer" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="ai-skills">Key Skills (comma-separated)</Label>
-                            <Input id="ai-skills" placeholder="e.g., React, TypeScript, GraphQL" />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="ai-question-type">Question Type</Label>
-                             <Select name="ai-question-type">
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select a type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="mcq">MCQ (Multiple Choice)</SelectItem>
-                                    <SelectItem value="subjective">Subjective</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="ai-num-questions">Number of Questions</Label>
-                                <Input id="ai-num-questions" type="number" min="1" max="10" placeholder="5" />
+                        <form action={aiFormAction}>
+                            <input type="hidden" name="addedBy" value={session.uid} />
+                            <input type="hidden" name="addedByName" value={session.displayName} />
+                            <input type="hidden" name="libraryType" value={libraryType} />
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="ai-job-title">Job Title</Label>
+                                    <Input id="ai-job-title" name="ai-job-title" placeholder="e.g., Senior Frontend Developer" required />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="ai-skills">Key Skills (comma-separated)</Label>
+                                    <Input id="ai-skills" name="ai-skills" placeholder="e.g., React, TypeScript, GraphQL" required />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="ai-question-type">Question Type</Label>
+                                    <Select name="ai-question-type" required>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a type" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="mcq">MCQ (Multiple Choice)</SelectItem>
+                                            <SelectItem value="subjective">Subjective</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="ai-num-questions">Number of Questions</Label>
+                                        <Input id="ai-num-questions" name="ai-num-questions" type="number" min="1" max="10" placeholder="5" required />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="ai-difficulty">Difficulty</Label>
+                                        <Select name="ai-difficulty" required>
+                                            <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Easy">Easy</SelectItem>
+                                                <SelectItem value="Medium">Medium</SelectItem>
+                                                <SelectItem value="Hard">Hard</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                                <div className="flex justify-end pt-4">
+                                <AiGenerateButton />
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="ai-difficulty">Difficulty</Label>
-                                <Select name="ai-difficulty">
-                                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="easy">Easy</SelectItem>
-                                        <SelectItem value="medium">Medium</SelectItem>
-                                        <SelectItem value="hard">Hard</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                            <div className="flex justify-end pt-4">
-                            <AiGenerateButton />
-                            </div>
+                        </form>
                     </CardContent>
                 </Card>
             </div>
@@ -260,5 +316,6 @@ export default function AddCompanyQuestionPage() {
         </main>
       </div>
     </div>
+    </>
   );
 }
