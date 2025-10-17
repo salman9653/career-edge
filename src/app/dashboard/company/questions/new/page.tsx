@@ -89,7 +89,7 @@ export default function AddCompanyQuestionPage() {
             <h1 className="font-headline text-xl font-semibold">Add Custom Question</h1>
           </div>
         </header>
-        <main className="flex flex-1 flex-col gap-4 overflow-auto p-4 md:gap-6 md:p-6 custom-scrollbar">
+        <main className="flex flex-1 flex-col gap-2 overflow-auto p-4 md:gap-6 md:p-6 custom-scrollbar">
           <div className="flex gap-2 w-full h-full">
             <div className="w-[60%] h-full">
               <form action={formAction} className="w-full h-full">
@@ -206,7 +206,7 @@ export default function AddCompanyQuestionPage() {
                 </Card>
               </form>
             </div>
-            <div className="w-[40%] h-full rounded-lg p-1 bg-gradient-to-br from-purple-500 to-pink-500">
+            <div className="w-[40%] h-full rounded-lg p-0.5 bg-gradient-to-br from-purple-500 to-pink-500">
                 <Card className="h-full flex flex-col w-full">
                     <CardHeader>
                         <CardTitle className="font-headline text-2xl">Generate Questions with AI</CardTitle>
