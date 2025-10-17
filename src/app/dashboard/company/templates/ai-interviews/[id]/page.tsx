@@ -1,5 +1,4 @@
 
-
 'use client';
 import { useEffect, useState, useTransition } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -43,7 +42,7 @@ export default function AiInterviewDetailPage() {
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [isDeletePending, startDeleteTransition] = useTransition();
     const [isEditing, setIsEditing] = useState(false);
-    const [isGenerating, setIsGenerating] = useState<number | null>(null); // Tracks index of generating question
+    const [isGenerating, setIsGenerating] = useState<string | number | null>(null);
 
     const interviewId = params.id as string;
 
@@ -148,6 +147,22 @@ export default function AiInterviewDetailPage() {
       } finally {
         setIsGenerating(null);
       }
+    };
+    
+     const handleRefineScript = async (scriptType: 'intro' | 'outro', newTone: 'Formal' | 'Conversational' | 'Technical') => {
+        if (!editableInterview) return;
+        const currentText = editableInterview[scriptType];
+        setIsGenerating(scriptType);
+        try {
+            const result = await refineToneAction({ question: currentText, newTone });
+            if ('error' in result) throw new Error(result.error);
+            setEditableInterview(prev => prev ? { ...prev, [scriptType]: result.refinedQuestion } : null);
+            toast({ title: `Script tone refined to ${newTone}` });
+        } catch (e: any) {
+            toast({ variant: 'destructive', title: "Error", description: e.message });
+        } finally {
+            setIsGenerating(null);
+        }
     };
 
     const handleAddFollowUps = async (index: number) => {
@@ -295,12 +310,33 @@ export default function AiInterviewDetailPage() {
                             </div>
 
                              <div className="prose prose-sm dark:prose-invert max-w-full">
-                                <h3 className="font-semibold text-lg">Introductory Script</h3>
+                                <div className="flex items-center justify-between">
+                                  <h3 className="font-semibold text-lg">Introductory Script</h3>
+                                  {isEditing && (
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" disabled={isGenerating !== null}>
+                                                {isGenerating === 'intro' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            <DropdownMenuItem disabled><RefreshCw className="mr-2 h-4 w-4" />Regenerate</DropdownMenuItem>
+                                            <DropdownMenuSub>
+                                                <DropdownMenuSubTrigger><Wand2 className="mr-2 h-4 w-4" />Refine Tone</DropdownMenuSubTrigger>
+                                                <DropdownMenuSubContent>
+                                                    <DropdownMenuItem onSelect={() => handleRefineScript('intro', 'Formal')}>Formal</DropdownMenuItem>
+                                                    <DropdownMenuItem onSelect={() => handleRefineScript('intro', 'Conversational')}>Conversational</DropdownMenuItem>
+                                                </DropdownMenuSubContent>
+                                            </DropdownMenuSub>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  )}
+                                </div>
                                 {isEditing ? (
                                     <Textarea 
                                         value={editableInterview.intro} 
                                         onChange={(e) => handleInputChange('intro', e.target.value)}
-                                        className="min-h-[100px]"
+                                        className="min-h-[100px] mt-2"
                                     />
                                 ) : (
                                     <blockquote className="border-l-4 border-dash-primary pl-4 italic">
@@ -387,12 +423,33 @@ export default function AiInterviewDetailPage() {
                             </div>
                             
                              <div className="prose prose-sm dark:prose-invert max-w-full">
-                                <h3 className="font-semibold text-lg">Concluding Script</h3>
+                                <div className="flex items-center justify-between">
+                                  <h3 className="font-semibold text-lg">Concluding Script</h3>
+                                   {isEditing && (
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" disabled={isGenerating !== null}>
+                                                {isGenerating === 'outro' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            <DropdownMenuItem disabled><RefreshCw className="mr-2 h-4 w-4" />Regenerate</DropdownMenuItem>
+                                             <DropdownMenuSub>
+                                                <DropdownMenuSubTrigger><Wand2 className="mr-2 h-4 w-4" />Refine Tone</DropdownMenuSubTrigger>
+                                                <DropdownMenuSubContent>
+                                                    <DropdownMenuItem onSelect={() => handleRefineScript('outro', 'Formal')}>Formal</DropdownMenuItem>
+                                                    <DropdownMenuItem onSelect={() => handleRefineScript('outro', 'Conversational')}>Conversational</DropdownMenuItem>
+                                                </DropdownMenuSubContent>
+                                            </DropdownMenuSub>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  )}
+                                </div>
                                 {isEditing ? (
                                     <Textarea 
                                         value={editableInterview.outro} 
                                         onChange={(e) => handleInputChange('outro', e.target.value)}
-                                        className="min-h-[100px]"
+                                        className="min-h-[100px] mt-2"
                                     />
                                 ) : (
                                     <blockquote className="border-l-4 border-dash-primary pl-4 italic">
