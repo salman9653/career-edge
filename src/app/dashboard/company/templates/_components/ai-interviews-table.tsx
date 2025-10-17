@@ -102,15 +102,10 @@ export function AiInterviewsTable({ onCreate }: AiInterviewsTableProps) {
         return sortableItems;
     }, [interviews, searchQuery, sortConfig, filters]);
 
-    const formatDate = (date: any) => {
-      if (!date) return "N/A";
-      try {
-        const dateObj = date.toDate ? date.toDate() : new Date(date);
-        return format(dateObj, "dd MMM yyyy");
-      } catch (e) {
-        return "Invalid Date";
-      }
-    };
+    const formatDate = (dateString: string | null) => {
+        if (!dateString) return "N/A";
+        return format(new Date(dateString), "dd MMM yyyy");
+    }
 
     const toggleSelectMode = () => {
         setIsSelectModeActive(!isSelectModeActive);

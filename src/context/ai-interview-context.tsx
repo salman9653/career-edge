@@ -42,14 +42,15 @@ export const AiInterviewProvider = ({ children }: { children: ReactNode }) => {
                     const data = doc.data();
                     
                     let createdAt = null;
-                    if (data.createdAt) {
-                        if (typeof data.createdAt.toDate === 'function') {
-                            createdAt = data.createdAt.toDate().toISOString();
-                        } else if (typeof data.createdAt === 'string') {
-                            createdAt = data.createdAt;
-                        } else if (data.createdAt.seconds) { // Handle object format
-                            createdAt = new Date(data.createdAt.seconds * 1000).toISOString();
-                        }
+                    if (data.createdAt && typeof data.createdAt.toDate === 'function') {
+                        // This is a Firestore Timestamp object
+                        createdAt = data.createdAt.toDate().toISOString();
+                    } else if (typeof data.createdAt === 'string') {
+                        // This is already a string
+                        createdAt = data.createdAt;
+                    } else if (data.createdAt && data.createdAt.seconds) {
+                        // This is a plain object from SSR or serialization
+                        createdAt = new Date(data.createdAt.seconds * 1000).toISOString();
                     }
 
                     return {
