@@ -40,10 +40,17 @@ export const AiInterviewProvider = ({ children }: { children: ReactNode }) => {
             unsubscribe = onSnapshot(q, (snapshot) => {
                 const interviewList = snapshot.docs.map(doc => {
                     const data = doc.data();
-                    // Handle both Timestamp and string/null for createdAt
-                    const createdAt = data.createdAt && typeof data.createdAt.toDate === 'function'
-                        ? data.createdAt.toDate().toISOString()
-                        : data.createdAt;
+                    
+                    let createdAt = null;
+                    if (data.createdAt) {
+                        if (typeof data.createdAt.toDate === 'function') {
+                            createdAt = data.createdAt.toDate().toISOString();
+                        } else if (typeof data.createdAt === 'string') {
+                            createdAt = data.createdAt;
+                        } else if (data.createdAt.seconds) { // Handle object format
+                            createdAt = new Date(data.createdAt.seconds * 1000).toISOString();
+                        }
+                    }
 
                     return {
                         id: doc.id,
