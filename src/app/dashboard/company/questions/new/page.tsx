@@ -15,7 +15,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ArrowLeft, Loader2, Plus, Trash2, Sparkles } from 'lucide-react';
 import { useFormStatus } from 'react-dom';
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 
 const initialState = {
   error: null,
@@ -90,9 +89,8 @@ export default function AddCompanyQuestionPage() {
           </div>
         </header>
         <main className="flex flex-1 flex-col gap-4 overflow-auto p-4 md:gap-6 md:p-6 custom-scrollbar">
-          <ResizablePanelGroup direction="horizontal" className="w-full h-full">
-            <ResizablePanel defaultSize={60}>
-              <div className="flex h-full items-center justify-center p-1">
+          <div className="flex gap-6 w-full h-full">
+            <div className="w-[60%] h-full">
               <form action={formAction} className="w-full h-full">
                 <input type="hidden" name="libraryType" value="custom" />
                 <input type="hidden" name="addedBy" value={session.uid} />
@@ -206,50 +204,46 @@ export default function AddCompanyQuestionPage() {
                     </CardContent>
                 </Card>
               </form>
-              </div>
-            </ResizablePanel>
-            <ResizableHandle withHandle />
-            <ResizablePanel defaultSize={40}>
-                <div className="flex h-full items-center justify-center p-1">
-                    <Card className="h-full flex flex-col w-full">
-                        <CardHeader>
-                            <CardTitle className="font-headline text-2xl">Generate Questions with AI</CardTitle>
-                            <CardDescription>Describe what you're looking for, and let AI do the work.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6 flex-1 overflow-auto custom-scrollbar">
-                           <div className="space-y-2">
-                                <Label htmlFor="ai-job-title">Job Title</Label>
-                                <Input id="ai-job-title" placeholder="e.g., Senior Frontend Developer" />
+            </div>
+            <div className="w-[40%] h-full">
+                <Card className="h-full flex flex-col w-full">
+                    <CardHeader>
+                        <CardTitle className="font-headline text-2xl">Generate Questions with AI</CardTitle>
+                        <CardDescription>Describe what you're looking for, and let AI do the work.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6 flex-1 overflow-auto custom-scrollbar">
+                        <div className="space-y-2">
+                            <Label htmlFor="ai-job-title">Job Title</Label>
+                            <Input id="ai-job-title" placeholder="e.g., Senior Frontend Developer" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="ai-skills">Key Skills (comma-separated)</Label>
+                            <Input id="ai-skills" placeholder="e.g., React, TypeScript, GraphQL" />
+                        </div>
+                            <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="ai-num-questions">Number of Questions</Label>
+                                <Input id="ai-num-questions" type="number" min="1" max="10" placeholder="5" />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="ai-skills">Key Skills (comma-separated)</Label>
-                                <Input id="ai-skills" placeholder="e.g., React, TypeScript, GraphQL" />
+                                <Label htmlFor="ai-difficulty">Difficulty</Label>
+                                <Select name="ai-difficulty">
+                                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="easy">Easy</SelectItem>
+                                        <SelectItem value="medium">Medium</SelectItem>
+                                        <SelectItem value="hard">Hard</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
-                             <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="ai-num-questions">Number of Questions</Label>
-                                    <Input id="ai-num-questions" type="number" min="1" max="10" placeholder="5" />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="ai-difficulty">Difficulty</Label>
-                                    <Select name="ai-difficulty">
-                                        <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="easy">Easy</SelectItem>
-                                            <SelectItem value="medium">Medium</SelectItem>
-                                            <SelectItem value="hard">Hard</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
+                        </div>
+                            <div className="flex justify-end pt-4">
+                            <AiGenerateButton />
                             </div>
-                             <div className="flex justify-end pt-4">
-                                <AiGenerateButton />
-                             </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            </ResizablePanel>
-          </ResizablePanelGroup>
+                    </CardContent>
+                </Card>
+            </div>
+          </div>
         </main>
       </div>
     </div>
