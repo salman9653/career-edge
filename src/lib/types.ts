@@ -163,6 +163,7 @@ export interface Assessment {
 
 export interface AiInterview {
     id: string;
+    companyId: string;
     name: string;
     jobTitle: string;
     jobDescription: string;
@@ -188,6 +189,8 @@ export interface Round {
     type: string;
     assessmentId?: string;
     assessmentName?: string;
+    aiInterviewId?: string;
+    aiInterviewName?: string;
     selectionCriteria?: number;
     questions?: Question[];
     questionIds?: string[];
