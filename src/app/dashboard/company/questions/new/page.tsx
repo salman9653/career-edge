@@ -20,8 +20,7 @@ import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, A
 import { useToast } from '@/hooks/use-toast';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Textarea } from '@/components/ui/textarea';
-import { enhanceText, generateTextFromPrompt } from '@/ai/flows/text-generation-flows';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 
 const addInitialState = {
   error: null,
@@ -118,7 +117,11 @@ export default function AddCompanyQuestionPage() {
   };
 
   const addExample = () => setExamples([...examples, { input: '', output: '' }]);
-  const removeExample = (index: number) => setExamples(examples.filter((_, i) => i !== index));
+  const removeExample = (index: number) => {
+      if (examples.length > 1) {
+        setExamples(examples.filter((_, i) => i !== index));
+      }
+  };
 
   const handleTestCaseChange = (index: number, field: 'input' | 'output' | 'sample', value: string | boolean) => {
     const newTestCases = [...testCases];
@@ -131,7 +134,11 @@ export default function AddCompanyQuestionPage() {
   };
 
   const addTestCase = () => setTestCases([...testCases, { input: '', output: '', sample: false }]);
-  const removeTestCase = (index: number) => setTestCases(testCases.filter((_, i) => i !== index));
+  const removeTestCase = (index: number) => {
+      if (testCases.length > 1) {
+        setTestCases(testCases.filter((_, i) => i !== index));
+      }
+  };
 
   const handleConstraintChange = (index: number, value: string) => {
     const newConstraints = [...constraints];
@@ -376,7 +383,7 @@ export default function AddCompanyQuestionPage() {
                                     {examples.map((ex, index) => (
                                         <div key={index} className="space-y-2">
                                              <div className="flex items-center justify-between">
-                                                <Label htmlFor={`example-input-${index}`} className="text-xs text-muted-foreground">Example {index + 1}</Label>
+                                                <Label className="text-xs text-muted-foreground">Example {index + 1}</Label>
                                                 {examples.length > 1 && (
                                                     <Button type="button" variant="ghost" size="icon" onClick={() => removeExample(index)} className="shrink-0 h-6 w-6">
                                                         <Trash2 className="h-4 w-4 text-destructive" />
@@ -398,10 +405,10 @@ export default function AddCompanyQuestionPage() {
                                     {testCases.map((tc, index) => (
                                         <div key={index} className="space-y-2">
                                             <div className="flex items-center justify-between">
-                                                <Label htmlFor={`testcase_input_${index}`} className="text-xs text-muted-foreground">Test Case {index + 1}</Label>
+                                                <Label className="text-xs text-muted-foreground">Test Case {index + 1}</Label>
                                                 <div className="flex items-center gap-2">
                                                     <div className="flex items-center gap-1.5">
-                                                        <Checkbox id={`testcase_sample_${index}`} name={`testcase_sample_${index}`} checked={tc.sample} onCheckedChange={(checked) => handleTestCaseChange(index, 'sample', !!checked)} />
+                                                        <Switch id={`testcase_sample_${index}`} name={`testcase_sample_${index}`} checked={tc.sample} onCheckedChange={(checked) => handleTestCaseChange(index, 'sample', !!checked)} />
                                                         <Label htmlFor={`testcase_sample_${index}`} className="text-xs font-normal">Sample</Label>
                                                     </div>
                                                     {testCases.length > 1 && (
