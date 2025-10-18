@@ -150,9 +150,10 @@ export default function ApplyWithLinkPage() {
                 return (
                     <div>
                         <h3 className="font-semibold mb-2">Job Description</h3>
-                        <p className={cn("text-muted-foreground whitespace-pre-wrap", !isDescriptionExpanded && "line-clamp-[10]")}>
-                            {job.description}
-                        </p>
+                        <div 
+                            className={cn("prose dark:prose-invert max-w-full text-sm text-muted-foreground", !isDescriptionExpanded && "line-clamp-[10]")}
+                            dangerouslySetInnerHTML={{ __html: job.description }}
+                        />
                         {descriptionLineCount > 10 && (
                              <Button variant="link" onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)} className="p-0 h-auto">
                                 {isDescriptionExpanded ? 'Show Less' : 'Show More'}

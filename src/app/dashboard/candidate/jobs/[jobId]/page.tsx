@@ -517,16 +517,10 @@ export default function CandidateJobDetailsPage() {
                                     </TabsContent>
                                     <TabsContent value="description" className="pt-6">
                                       {job.status === 'Live' ? (
-                                          <div>
-                                              <p className={cn("text-muted-foreground whitespace-pre-wrap", !isDescriptionExpanded && "line-clamp-[10]")}>
-                                                  {job.description}
-                                              </p>
-                                              {descriptionLineCount > 10 && (
-                                                  <Button variant="link" onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)} className="p-0 h-auto">
-                                                      {isDescriptionExpanded ? 'Show Less' : 'Show More'}
-                                                  </Button>
-                                              )}
-                                          </div>
+                                        <div 
+                                            className={cn("prose dark:prose-invert max-w-full text-sm", !isDescriptionExpanded && "line-clamp-[10]")}
+                                            dangerouslySetInnerHTML={{ __html: job.description }}
+                                        />
                                       ) : (
                                            <Card className="bg-muted/30 border-dashed">
                                               <CardContent className="p-8 text-center space-y-2">

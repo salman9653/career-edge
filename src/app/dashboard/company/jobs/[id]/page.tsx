@@ -259,9 +259,10 @@ export default function JobDetailsPage() {
                         </TabsList>
                     </CardContent>
                     <TabsContent value="description" className="px-6 pb-6">
-                        <div className={cn("whitespace-pre-wrap text-sm", !isDescriptionExpanded && "line-clamp-[10]")}>
-                            {job.description}
-                        </div>
+                        <div 
+                            className={cn("prose dark:prose-invert max-w-full text-sm", !isDescriptionExpanded && "line-clamp-[10]")}
+                            dangerouslySetInnerHTML={{ __html: job.description }}
+                        />
                          {descriptionLineCount > 10 && (
                             <Button variant="link" onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)} className="p-0 h-auto">
                                 {isDescriptionExpanded ? 'Show Less' : 'Show More'}
