@@ -90,7 +90,8 @@ export default function EditJobPage() {
             location: data.location,
             recruiter: data.recruiter.id,
             workExperience: data.workExperience,
-            salary: { min: String(data.salary.min), max: String(data.salary.max) },
+            minSalary: String(data.salary.min),
+            maxSalary: String(data.salary.max),
             positions: String(data.positions),
           });
           setRounds(data.rounds);
@@ -380,7 +381,7 @@ export default function EditJobPage() {
                                     name="minSalary" 
                                     placeholder="Min" 
                                     step="0.1" 
-                                    defaultValue={jobDetails.salary.min}
+                                    defaultValue={jobDetails.minSalary}
                                     className="border-0 rounded-r-none focus-visible:ring-0"
                                 />
                                 <div className="h-6 border-l border-input"></div>
@@ -389,14 +390,14 @@ export default function EditJobPage() {
                                     name="maxSalary" 
                                     placeholder="Max" 
                                     step="0.1" 
-                                    defaultValue={jobDetails.salary.max}
+                                    defaultValue={jobDetails.maxSalary}
                                     className="border-0 rounded-l-none focus-visible:ring-0"
                                 />
                             </div>
                         </div>
                     </div>
                   </CardContent>
-                   <CardFooter className="flex justify-end pt-4">
+                   <CardFooter className="flex justify-end">
                       <Button type="submit">Next: Define Rounds</Button>
                     </CardFooter>
                 </form>
@@ -571,7 +572,7 @@ export default function EditJobPage() {
                             </div>
                         </div>
                     </CardContent>
-                    <CardFooter className="flex justify-between pt-4">
+                    <CardFooter className="flex justify-between">
                         <Button variant="outline" onClick={() => setStep(1)} className="px-6">Back</Button>
                          <Button onClick={handleFinalSubmit} disabled={isSubmitting} className="px-6">
                             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

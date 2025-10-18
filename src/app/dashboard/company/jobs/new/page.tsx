@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Trash2, Loader2, GripVertical, Edit } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -348,7 +347,7 @@ export default function NewJobPage() {
                         </div>
                     </div>
                   </CardContent>
-                   <CardFooter className="flex justify-end pt-4">
+                   <CardFooter className="flex justify-end">
                       <Button type="submit">Next: Define Rounds</Button>
                     </CardFooter>
                 </form>
@@ -523,7 +522,7 @@ export default function NewJobPage() {
                             </div>
                         </div>
                     </CardContent>
-                    <CardFooter className="flex justify-between pt-4">
+                    <CardFooter className="flex justify-between">
                         <Button variant="outline" onClick={() => setStep(1)} className="px-6">Back</Button>
                          <Button onClick={handleFinalSubmit} disabled={isSubmitting} className="px-6">
                             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
