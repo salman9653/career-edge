@@ -222,8 +222,6 @@ export default function AddCompanyQuestionPage() {
                              <RichTextEditor 
                                 value={questionStatement} 
                                 onChange={setQuestionStatement} 
-                                enhanceContext="question-statement" 
-                                generatePromptPlaceholder='e.g. "React.js questions for useState hook"'
                             />
                         </div>
 
@@ -372,12 +370,12 @@ export default function AddCompanyQuestionPage() {
                                     {examples.map((ex, index) => (
                                         <div key={index} className="space-y-2">
                                             <Label htmlFor={`example-input-${index}`} className="text-xs text-muted-foreground">Example {index + 1}</Label>
-                                            <div className="flex items-center gap-2 rounded-md p-1 bg-muted/50">
+                                            <div className="flex items-center rounded-md p-1 bg-muted">
                                                 <div className="flex-1">
-                                                    <Textarea id={`example_input_${index}`} name={`example_input_${index}`} value={ex.input} onChange={(e) => handleExampleChange(index, 'input', e.target.value)} placeholder="Example Input" rows={2} className="rounded-r-none focus-visible:ring-0 focus-visible:ring-offset-0 !mt-0" />
+                                                    <Textarea id={`example_input_${index}`} name={`example_input_${index}`} value={ex.input} onChange={(e) => handleExampleChange(index, 'input', e.target.value)} placeholder="Example Input" rows={2} className="bg-background rounded-r-none focus-visible:ring-0 focus-visible:ring-offset-0 !mt-0" />
                                                 </div>
                                                 <div className="flex-1">
-                                                     <Textarea id={`example_output_${index}`} name={`example_output_${index}`} value={ex.output} onChange={(e) => handleExampleChange(index, 'output', e.target.value)} placeholder="Example Output" rows={2} className="rounded-l-none focus-visible:ring-0 focus-visible:ring-offset-0 !mt-0" />
+                                                     <Textarea id={`example_output_${index}`} name={`example_output_${index}`} value={ex.output} onChange={(e) => handleExampleChange(index, 'output', e.target.value)} placeholder="Example Output" rows={2} className="bg-background rounded-l-none focus-visible:ring-0 focus-visible:ring-offset-0 !mt-0" />
                                                 </div>
                                                 <Button type="button" variant="ghost" size="icon" onClick={() => removeExample(index)} className="shrink-0 self-center">
                                                     <Trash2 className="h-4 w-4 text-destructive" />
