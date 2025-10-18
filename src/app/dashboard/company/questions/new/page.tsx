@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useActionState, useState, useEffect } from 'react';
@@ -20,6 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Textarea } from '@/components/ui/textarea';
 import { enhanceText, generateTextFromPrompt } from '@/ai/flows/text-generation-flows';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const addInitialState = {
   error: null,
@@ -70,7 +72,7 @@ export default function AddCompanyQuestionPage() {
   const [isGeneratedQuestionsDialogOpen, setIsGeneratedQuestionsDialogOpen] = useState(false);
   
   const [examples, setExamples] = useState([{ input: '', output: '' }]);
-  const [testCases, setTestCases] = useState([{ input: '', output: '' }]);
+  const [testCases, setTestCases] = useState([{ input: '', output: '', sample: false }]);
   const [constraints, setConstraints] = useState(['']);
   const [hints, setHints] = useState(['']);
 
@@ -118,13 +120,17 @@ export default function AddCompanyQuestionPage() {
   const addExample = () => setExamples([...examples, { input: '', output: '' }]);
   const removeExample = (index: number) => setExamples(examples.filter((_, i) => i !== index));
 
-  const handleTestCaseChange = (index: number, field: 'input' | 'output', value: string) => {
+  const handleTestCaseChange = (index: number, field: 'input' | 'output' | 'sample', value: string | boolean) => {
     const newTestCases = [...testCases];
-    newTestCases[index][field] = value;
+    if (field === 'sample') {
+        newTestCases[index][field] = value as boolean;
+    } else {
+        newTestCases[index][field] = value as string;
+    }
     setTestCases(newTestCases);
   };
 
-  const addTestCase = () => setTestCases([...testCases, { input: '', output: '' }]);
+  const addTestCase = () => setTestCases([...testCases, { input: '', output: '', sample: false }]);
   const removeTestCase = (index: number) => setTestCases(testCases.filter((_, i) => i !== index));
 
   const handleConstraintChange = (index: number, value: string) => {
@@ -369,17 +375,17 @@ export default function AddCompanyQuestionPage() {
                                     <Label className="text-base">Examples</Label>
                                     {examples.map((ex, index) => (
                                         <div key={index} className="space-y-2">
-                                            <Label htmlFor={`example-input-${index}`} className="text-xs text-muted-foreground">Example {index + 1}</Label>
+                                             <div className="flex items-center justify-between">
+                                                <Label htmlFor={`example-input-${index}`} className="text-xs text-muted-foreground">Example {index + 1}</Label>
+                                                {examples.length > 1 && (
+                                                    <Button type="button" variant="ghost" size="icon" onClick={() => removeExample(index)} className="shrink-0 h-6 w-6">
+                                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                                    </Button>
+                                                )}
+                                            </div>
                                             <div className="flex items-center rounded-md p-1 bg-muted">
-                                                <div className="flex-1">
-                                                    <Textarea id={`example_input_${index}`} name={`example_input_${index}`} value={ex.input} onChange={(e) => handleExampleChange(index, 'input', e.target.value)} placeholder="Example Input" rows={2} className="bg-background rounded-r-none focus-visible:ring-0 focus-visible:ring-offset-0 !mt-0" />
-                                                </div>
-                                                <div className="flex-1">
-                                                     <Textarea id={`example_output_${index}`} name={`example_output_${index}`} value={ex.output} onChange={(e) => handleExampleChange(index, 'output', e.target.value)} placeholder="Example Output" rows={2} className="bg-background rounded-l-none focus-visible:ring-0 focus-visible:ring-offset-0 !mt-0" />
-                                                </div>
-                                                <Button type="button" variant="ghost" size="icon" onClick={() => removeExample(index)} className="shrink-0 self-center">
-                                                    <Trash2 className="h-4 w-4 text-destructive" />
-                                                </Button>
+                                                <Textarea name={`example_input_${index}`} value={ex.input} onChange={(e) => handleExampleChange(index, 'input', e.target.value)} placeholder="Input" rows={2} className="bg-background rounded-r-none focus-visible:ring-0 focus-visible:ring-offset-0 !mt-0" />
+                                                <Textarea name={`example_output_${index}`} value={ex.output} onChange={(e) => handleExampleChange(index, 'output', e.target.value)} placeholder="Output" rows={2} className="bg-background rounded-l-none focus-visible:ring-0 focus-visible:ring-offset-0 !mt-0" />
                                             </div>
                                         </div>
                                     ))}
@@ -388,17 +394,32 @@ export default function AddCompanyQuestionPage() {
                                     </Button>
                                 </div>
                                  <div className="space-y-4">
-                                    <Label>Test Cases</Label>
+                                    <Label className="text-base">Test Cases</Label>
                                     {testCases.map((tc, index) => (
-                                        <div key={index} className="p-3 border rounded-md space-y-2 relative">
-                                            {testCases.length > 1 && <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => removeTestCase(index)}><Trash2 className="h-4 w-4 text-destructive" /></Button>}
-                                            <Label htmlFor={`testcase-input-${index}`} className="text-xs">Input</Label>
-                                            <Textarea id={`testcase-input-${index}`} name={`testcase_input_${index}`} value={tc.input} onChange={(e) => handleTestCaseChange(index, 'input', e.target.value)} placeholder="e.g., [3,2,4], 6" rows={2} />
-                                            <Label htmlFor={`testcase-output-${index}`} className="text-xs">Expected Output</Label>
-                                            <Textarea id={`testcase-output-${index}`} name={`testcase_output_${index}`} value={tc.output} onChange={(e) => handleTestCaseChange(index, 'output', e.target.value)} placeholder="e.g., [1,2]" rows={1} />
+                                        <div key={index} className="space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                <Label htmlFor={`testcase_input_${index}`} className="text-xs text-muted-foreground">Test Case {index + 1}</Label>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Checkbox id={`testcase_sample_${index}`} name={`testcase_sample_${index}`} checked={tc.sample} onCheckedChange={(checked) => handleTestCaseChange(index, 'sample', !!checked)} />
+                                                        <Label htmlFor={`testcase_sample_${index}`} className="text-xs font-normal">Sample</Label>
+                                                    </div>
+                                                    {testCases.length > 1 && (
+                                                        <Button type="button" variant="ghost" size="icon" onClick={() => removeTestCase(index)} className="shrink-0 h-6 w-6">
+                                                            <Trash2 className="h-4 w-4 text-destructive" />
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center rounded-md p-1 bg-muted">
+                                                <Textarea name={`testcase_input_${index}`} value={tc.input} onChange={(e) => handleTestCaseChange(index, 'input', e.target.value)} placeholder="Input" rows={2} className="bg-background rounded-r-none focus-visible:ring-0 focus-visible:ring-offset-0 !mt-0" />
+                                                <Textarea name={`testcase_output_${index}`} value={tc.output} onChange={(e) => handleTestCaseChange(index, 'output', e.target.value)} placeholder="Output" rows={2} className="bg-background rounded-l-none focus-visible:ring-0 focus-visible:ring-offset-0 !mt-0" />
+                                            </div>
                                         </div>
                                     ))}
-                                    <Button type="button" variant="outline" size="sm" onClick={addTestCase}><Plus className="mr-2 h-4 w-4" /> Add Test Case</Button>
+                                    <Button type="button" variant="link" size="sm" onClick={addTestCase} className="p-0 h-auto">
+                                        + Add Test Case
+                                    </Button>
                                 </div>
                             </div>
                         )}

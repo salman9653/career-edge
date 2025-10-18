@@ -101,9 +101,9 @@ export interface Question {
     // Coding
     functionName?: string;
     boilerplate?: string;
-    examples?: { input: string; output: string; explanation?: string }[];
+    examples?: { input: string; output: string }[];
     constraints?: string[];
-    testCases?: { input: string; output: string }[];
+    testCases?: { input: string; output: string; sample: boolean }[];
     hints?: string[];
 }
 

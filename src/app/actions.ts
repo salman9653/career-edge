@@ -175,8 +175,6 @@ export async function addQuestionAction(prevState: any, formData: FormData) {
     questionDoc.hints = hints.filter(h => h.trim() !== '');
 
     const examples: { input: string; output: string }[] = [];
-    const testCases: { input: string; output: string }[] = [];
-    
     let i = 0;
     while(formData.has(`example_input_${i}`)) {
         examples.push({
@@ -185,12 +183,14 @@ export async function addQuestionAction(prevState: any, formData: FormData) {
         });
         i++;
     }
-    
+
+    const testCases: { input: string; output: string; sample: boolean }[] = [];
     let j = 0;
     while(formData.has(`testcase_input_${j}`)) {
         testCases.push({
             input: formData.get(`testcase_input_${j}`) as string,
             output: formData.get(`testcase_output_${j}`) as string,
+            sample: formData.get(`testcase_sample_${j}`) === 'on',
         });
         j++;
     }
@@ -1205,5 +1205,6 @@ export async function generateTextAction(prevState: any, formData: FormData): Pr
     return { error: e.message };
   }
 }
+
 
 
