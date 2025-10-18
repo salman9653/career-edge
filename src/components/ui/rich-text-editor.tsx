@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils';
 import { useState, useRef } from 'react';
 import { Button } from './button';
 
-const TiptapToolbar = ({ editor }: { editor: Editor | null }) => {
+const TiptapToolbar = ({ editor, showImageOption = true }: { editor: Editor | null, showImageOption?: boolean }) => {
   if (!editor) {
     return null;
   }
@@ -99,13 +99,17 @@ const TiptapToolbar = ({ editor }: { editor: Editor | null }) => {
       >
         <Code className="h-4 w-4" />
       </Toggle>
-      <Separator orientation="vertical" className="h-8 w-[1px]" />
-        <Toggle
-        size="sm"
-        onPressedChange={triggerImageUpload}
-      >
-        <ImageIcon className="h-4 w-4" />
-      </Toggle>
+      {showImageOption && (
+        <>
+            <Separator orientation="vertical" className="h-8 w-[1px]" />
+            <Toggle
+                size="sm"
+                onPressedChange={triggerImageUpload}
+            >
+                <ImageIcon className="h-4 w-4" />
+            </Toggle>
+        </>
+      )}
     </div>
   );
 };
@@ -113,9 +117,10 @@ const TiptapToolbar = ({ editor }: { editor: Editor | null }) => {
 interface RichTextEditorProps {
     value: string;
     onChange: (value: string) => void;
+    showImageOption?: boolean;
 }
 
-export const RichTextEditor = ({ value, onChange }: RichTextEditorProps) => {
+export const RichTextEditor = ({ value, onChange, showImageOption = true }: RichTextEditorProps) => {
   const [isFocused, setIsFocused] = useState(false);
   
   const editor = useEditor({
@@ -153,7 +158,7 @@ export const RichTextEditor = ({ value, onChange }: RichTextEditorProps) => {
 
   return (
     <div className={cn("rounded-md border border-input transition-colors", isFocused && "border-b-ring border-b-2")}>
-      <TiptapToolbar editor={editor} />
+      <TiptapToolbar editor={editor} showImageOption={showImageOption} />
       <EditorContent editor={editor} />
     </div>
   );

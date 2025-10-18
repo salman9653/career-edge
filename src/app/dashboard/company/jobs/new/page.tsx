@@ -17,12 +17,13 @@ import { db } from '@/lib/firebase/config';
 import { AssessmentContext } from '@/context/assessment-context';
 import type { Assessment, Question, Round } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { SelectScreeningQuestions } from '../_components/select-screening-questions';
+import { SelectScreeningQuestions } from '../../_components/select-screening-questions';
 import { Reorder } from 'framer-motion';
 import { createJobAction } from '@/app/actions';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { AiInterviewContext } from '@/context/ai-interview-context';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 
 interface Manager {
     id: string;
@@ -101,9 +102,7 @@ export default function NewJobPage() {
         form.reportValidity();
         return;
     }
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
-    setJobDetails(prev => ({...prev, ...data}));
+    // No need to get data from form, it's already in state
     setStep(2);
   }
 
@@ -243,11 +242,11 @@ export default function NewJobPage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                       <div className="space-y-2">
                         <Label htmlFor="title">Job Title</Label>
-                        <Input id="title" name="title" placeholder="e.g., Senior Frontend Developer" defaultValue={jobDetails.title} required />
+                        <Input id="title" name="title" placeholder="e.g., Senior Frontend Developer" value={jobDetails.title} onChange={(e) => setJobDetails(p => ({...p, title: e.target.value}))} required />
                       </div>
                       <div className="space-y-2">
                           <Label htmlFor="type">Job Type</Label>
-                          <Select name="type" defaultValue={jobDetails.type} required onValueChange={(value) => setJobDetails(p => ({...p, type: value}))}>
+                          <Select name="type" value={jobDetails.type} required onValueChange={(value) => setJobDetails(p => ({...p, type: value}))}>
                           <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
                           <SelectContent>
                               <SelectItem value="Full-time">Full-time</SelectItem>
@@ -260,7 +259,7 @@ export default function NewJobPage() {
                       </div>
                        <div className="space-y-2">
                           <Label htmlFor="recruiter">Recruiter Assigned</Label>
-                          <Select name="recruiter" defaultValue={jobDetails.recruiter}>
+                          <Select name="recruiter" value={jobDetails.recruiter} onValueChange={(value) => setJobDetails(p => ({...p, recruiter: value}))}>
                               <SelectTrigger><SelectValue placeholder="Select a recruiter..." /></SelectTrigger>
                               <SelectContent>
                                   {managers.map(manager => (
@@ -273,13 +272,13 @@ export default function NewJobPage() {
 
                     <div className="space-y-2">
                       <Label htmlFor="description">Job Description</Label>
-                      <Textarea id="description" name="description" placeholder="Describe the role and responsibilities..." className="min-h-32" defaultValue={jobDetails.description} required/>
+                      <RichTextEditor value={jobDetails.description} onChange={(value) => setJobDetails(p => ({...p, description: value}))} showImageOption={false} />
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="preference">Job Preference</Label>
-                            <Select name="preference" defaultValue={jobDetails.preference} required onValueChange={(value) => setJobDetails(p => ({...p, preference: value, location: value === 'Remote' ? 'Remote' : ''}))}>
+                            <Select name="preference" value={jobDetails.preference} required onValueChange={(value) => setJobDetails(p => ({...p, preference: value, location: value === 'Remote' ? 'Remote' : ''}))}>
                             <SelectTrigger><SelectValue placeholder="Select preference" /></SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="Remote">Remote</SelectItem>
@@ -306,11 +305,11 @@ export default function NewJobPage() {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="positions">No. of Positions</Label>
-                                <Input id="positions" name="positions" type="number" min="1" defaultValue={jobDetails.positions} required />
+                                <Input id="positions" name="positions" type="number" min="1" value={jobDetails.positions} onChange={(e) => setJobDetails(p => ({...p, positions: e.target.value}))} required />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="workExperience">Work Experience</Label>
-                                <Select name="workExperience" defaultValue={jobDetails.workExperience} onValueChange={(value) => setJobDetails(p => ({...p, workExperience: value}))}>
+                                <Select name="workExperience" value={jobDetails.workExperience} onValueChange={(value) => setJobDetails(p => ({...p, workExperience: value}))}>
                                     <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="Fresher">Fresher</SelectItem>
@@ -331,7 +330,8 @@ export default function NewJobPage() {
                                     name="minSalary" 
                                     placeholder="Min" 
                                     step="0.1" 
-                                    defaultValue={jobDetails.minSalary}
+                                    value={jobDetails.minSalary}
+                                    onChange={(e) => setJobDetails(p => ({...p, minSalary: e.target.value}))}
                                     className="border-0 rounded-r-none focus-visible:ring-0"
                                 />
                                 <div className="h-6 border-l border-input"></div>
@@ -340,7 +340,8 @@ export default function NewJobPage() {
                                     name="maxSalary" 
                                     placeholder="Max" 
                                     step="0.1" 
-                                    defaultValue={jobDetails.maxSalary}
+                                    value={jobDetails.maxSalary}
+                                    onChange={(e) => setJobDetails(p => ({...p, maxSalary: e.target.value}))}
                                     className="border-0 rounded-l-none focus-visible:ring-0"
                                 />
                             </div>

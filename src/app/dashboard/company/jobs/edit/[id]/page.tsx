@@ -24,6 +24,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { AiInterviewContext } from '@/context/ai-interview-context';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 
 interface Manager {
     id: string;
@@ -136,9 +137,7 @@ export default function EditJobPage() {
         form.reportValidity();
         return;
     }
-    const formData = new FormData(form);
-    const data = Object.fromEntries(formData.entries());
-    setJobDetails(prev => ({...prev, ...data}));
+    // No need to get data from form, it's already in state
     setStep(2);
   }
 
@@ -324,7 +323,7 @@ export default function EditJobPage() {
 
                     <div className="space-y-2">
                       <Label htmlFor="description">Job Description</Label>
-                      <Textarea id="description" name="description" placeholder="Describe the role and responsibilities..." className="min-h-32" defaultValue={jobDetails.description} required/>
+                      <RichTextEditor value={jobDetails.description} onChange={(value) => setJobDetails(p => ({...p, description: value}))} showImageOption={false} />
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -509,6 +508,7 @@ export default function EditJobPage() {
                                     </Select>
                                 </div>
                                 )}
+
                                 {newRoundType === 'ai interview' && (
                                     <div className="space-y-2">
                                         <Label htmlFor="new-round-ai-interview">AI Interview Name</Label>
