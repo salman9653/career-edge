@@ -18,6 +18,7 @@ import { GradientButton } from '@/components/ui/gradient-button';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { Textarea } from '@/components/ui/textarea';
 
 const addInitialState = {
   error: null,
@@ -66,6 +67,9 @@ export default function AddCompanyQuestionPage() {
   const [options, setOptions] = useState<string[]>(['', '']);
   const [isGeneratedQuestionsDialogOpen, setIsGeneratedQuestionsDialogOpen] = useState(false);
   
+  const [examples, setExamples] = useState([{ input: '', output: '', explanation: '' }]);
+  const [testCases, setTestCases] = useState([{ input: '', output: '' }]);
+
   const from = searchParams.get('from');
 
   useEffect(() => {
@@ -75,6 +79,13 @@ export default function AddCompanyQuestionPage() {
       toast({ variant: 'destructive', title: 'Generation Failed', description: aiState.error });
     }
   }, [aiState, toast]);
+  
+  useEffect(() => {
+    if(addState.success) {
+      toast({ title: "Question added", description: "The new question has been added to your custom library." });
+      router.push('/dashboard/company/questions?tab=custom');
+    }
+  }, [addState.success, router, toast]);
 
   const handleOptionChange = (index: number, value: string) => {
     const newOptions = [...options];
@@ -90,15 +101,32 @@ export default function AddCompanyQuestionPage() {
 
   const removeOption = (index: number) => {
     if (options.length > 2) {
-      const newOptions = options.filter((_, i) => i !== index);
-      setOptions(newOptions);
+      setOptions(options.filter((_, i) => i !== index));
     }
   };
+
+   const handleExampleChange = (index: number, field: 'input' | 'output' | 'explanation', value: string) => {
+    const newExamples = [...examples];
+    newExamples[index][field] = value;
+    setExamples(newExamples);
+  };
+
+  const addExample = () => setExamples([...examples, { input: '', output: '', explanation: '' }]);
+  const removeExample = (index: number) => setExamples(examples.filter((_, i) => i !== index));
+
+  const handleTestCaseChange = (index: number, field: 'input' | 'output', value: string) => {
+    const newTestCases = [...testCases];
+    newTestCases[index][field] = value;
+    setTestCases(newTestCases);
+  };
+
+  const addTestCase = () => setTestCases([...testCases, { input: '', output: '' }]);
+  const removeTestCase = (index: number) => setTestCases(testCases.filter((_, i) => i !== index));
 
   if (loading) {
     return <div className="flex min-h-screen items-center justify-center"><p>Loading...</p></div>;
   }
-  if (!session || (session.role !== 'company' && session.role !== 'admin')) {
+  if (!session || (session.role !== 'company' && session.role !== 'admin' && session.role !== 'manager')) {
     return <div className="flex min-h-screen items-center justify-center"><p>Access Denied</p></div>;
   }
 
@@ -174,6 +202,7 @@ export default function AddCompanyQuestionPage() {
                                 <SelectContent>
                                     <SelectItem value="mcq">MCQ (Multiple Choice)</SelectItem>
                                     <SelectItem value="subjective">Subjective</SelectItem>
+                                    <SelectItem value="code">Coding</SelectItem>
                                 </SelectContent>
                             </Select>
                             </div>
@@ -246,6 +275,52 @@ export default function AddCompanyQuestionPage() {
                             </div>
                         </div>
                         )}
+                        
+                        {questionType === 'code' && (
+                            <div className="space-y-6">
+                                <div className="space-y-2">
+                                    <Label htmlFor="functionName">Function Name</Label>
+                                    <Input id="functionName" name="functionName" placeholder="e.g., twoSum" required />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="constraints">Constraints</Label>
+                                    <Textarea id="constraints" name="constraints" placeholder="e.g., 2 <= nums.length <= 10^4" className="min-h-[80px]" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="boilerplate">Boilerplate Code</Label>
+                                    <Textarea id="boilerplate" name="boilerplate" placeholder="function twoSum(nums, target) {&#10;  // Your code here&#10;}" className="min-h-[120px] font-mono" />
+                                </div>
+                                 <div className="space-y-4">
+                                    <Label>Examples</Label>
+                                    {examples.map((ex, index) => (
+                                        <div key={index} className="p-3 border rounded-md space-y-2 relative">
+                                            {examples.length > 1 && <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => removeExample(index)}><Trash2 className="h-4 w-4 text-destructive" /></Button>}
+                                            <Label htmlFor={`example-input-${index}`} className="text-xs">Input</Label>
+                                            <Textarea id={`example-input-${index}`} name={`example_input_${index}`} value={ex.input} onChange={(e) => handleExampleChange(index, 'input', e.target.value)} placeholder="e.g., nums = [2,7,11,15], target = 9" rows={2} />
+                                            <Label htmlFor={`example-output-${index}`} className="text-xs">Output</Label>
+                                            <Textarea id={`example-output-${index}`} name={`example_output_${index}`} value={ex.output} onChange={(e) => handleExampleChange(index, 'output', e.target.value)} placeholder="e.g., [0,1]" rows={1} />
+                                            <Label htmlFor={`example-explanation-${index}`} className="text-xs">Explanation (Optional)</Label>
+                                            <Textarea id={`example-explanation-${index}`} name={`example_explanation_${index}`} value={ex.explanation} onChange={(e) => handleExampleChange(index, 'explanation', e.target.value)} placeholder="e.g., Because nums[0] + nums[1] == 9, we return [0, 1]." rows={2} />
+                                        </div>
+                                    ))}
+                                    <Button type="button" variant="outline" size="sm" onClick={addExample}><Plus className="mr-2 h-4 w-4" /> Add Example</Button>
+                                </div>
+                                 <div className="space-y-4">
+                                    <Label>Test Cases</Label>
+                                    {testCases.map((tc, index) => (
+                                        <div key={index} className="p-3 border rounded-md space-y-2 relative">
+                                            {testCases.length > 1 && <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => removeTestCase(index)}><Trash2 className="h-4 w-4 text-destructive" /></Button>}
+                                            <Label htmlFor={`testcase-input-${index}`} className="text-xs">Input</Label>
+                                            <Textarea id={`testcase-input-${index}`} name={`testcase_input_${index}`} value={tc.input} onChange={(e) => handleTestCaseChange(index, 'input', e.target.value)} placeholder="e.g., [3,2,4], 6" rows={2} />
+                                            <Label htmlFor={`testcase-output-${index}`} className="text-xs">Expected Output</Label>
+                                            <Textarea id={`testcase-output-${index}`} name={`testcase_output_${index}`} value={tc.output} onChange={(e) => handleTestCaseChange(index, 'output', e.target.value)} placeholder="e.g., [1,2]" rows={1} />
+                                        </div>
+                                    ))}
+                                    <Button type="button" variant="outline" size="sm" onClick={addTestCase}><Plus className="mr-2 h-4 w-4" /> Add Test Case</Button>
+                                </div>
+                            </div>
+                        )}
+
                         {addState?.error && <p className="text-sm text-destructive mt-4">{addState.error}</p>}
                 
                         <div className="flex justify-end gap-2 pt-4">

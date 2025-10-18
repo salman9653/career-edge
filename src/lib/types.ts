@@ -90,11 +90,20 @@ export interface Question {
     libraryType: 'library' | 'custom';
     addedBy: string;
     addedByName: string;
+    // Subjective
     answerSummary?: string;
+    // MCQ
     options?: string[];
     correctAnswer?: string;
+    // Screening
     acceptableAnswer?: string[];
     isStrict?: boolean;
+    // Coding
+    functionName?: string;
+    boilerplate?: string;
+    examples?: { input: string; output: string; explanation?: string }[];
+    constraints?: string;
+    testCases?: { input: string; output: string }[];
 }
 
 export interface PlanFeature {

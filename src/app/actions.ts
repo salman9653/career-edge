@@ -80,7 +80,7 @@ export async function analyzeResumeAction(
 
 export async function addQuestionAction(prevState: any, formData: FormData) {
   const question = formData.get('question') as string;
-  const type = formData.get('type') as string;
+  const type = formData.get('type') as 'mcq' | 'subjective' | 'screening' | 'code';
   const difficultyString = formData.get('difficulty') as string;
   const categoryString = formData.get('category') as string;
   const libraryType = formData.get('libraryType') as 'library' | 'custom';
@@ -94,6 +94,11 @@ export async function addQuestionAction(prevState: any, formData: FormData) {
   const correctAnswer = formData.get('correctAnswer') as string;
   const acceptableAnswers = formData.getAll('acceptableAnswer') as string[];
   const isStrict = formData.get('isStrict') === 'on';
+
+  // Coding specific fields
+  const functionName = formData.get('functionName') as string;
+  const boilerplate = formData.get('boilerplate') as string;
+  const constraints = formData.get('constraints') as string;
 
   if (!question || !type || !libraryType || !addedBy) {
     return { error: 'Please fill out all required fields.' };
@@ -158,22 +163,60 @@ export async function addQuestionAction(prevState: any, formData: FormData) {
     questionDoc.isStrict = isStrict;
   }
 
+  if (type === 'code') {
+    if (!functionName) {
+        return { error: 'Function name is required for coding questions.' };
+    }
+    questionDoc.functionName = functionName;
+    questionDoc.boilerplate = boilerplate;
+    questionDoc.constraints = constraints;
+
+    const examples: { input: string; output: string; explanation?: string }[] = [];
+    const testCases: { input: string; output: string }[] = [];
+    
+    let i = 0;
+    while(formData.has(`example_input_${i}`)) {
+        examples.push({
+            input: formData.get(`example_input_${i}`) as string,
+            output: formData.get(`example_output_${i}`) as string,
+            explanation: formData.get(`example_explanation_${i}`) as string || undefined,
+        });
+        i++;
+    }
+    
+    let j = 0;
+    while(formData.has(`testcase_input_${j}`)) {
+        testCases.push({
+            input: formData.get(`testcase_input_${j}`) as string,
+            output: formData.get(`testcase_output_${j}`) as string,
+        });
+        j++;
+    }
+    
+    if (examples.length === 0 || examples.some(ex => !ex.input || !ex.output)) {
+        return { error: 'At least one complete example is required for coding questions.' };
+    }
+     if (testCases.length === 0 || testCases.some(tc => !tc.input || !tc.output)) {
+        return { error: 'At least one complete test case is required for coding questions.' };
+    }
+
+    questionDoc.examples = examples;
+    questionDoc.testCases = testCases;
+  }
+
   try {
     const docRef = await addDoc(collection(db, 'questions'), questionDoc);
+    
     if(type === 'screening'){
       return { success: true, newQuestionId: docRef.id, from: 'screening' };
     }
+
+    revalidatePath('/dashboard/company/questions');
+    revalidatePath('/dashboard/admin/questions');
+    
+    return { success: true };
   } catch (e: any) {
     return { error: e.message };
-  }
-
-  if (libraryType === 'library') {
-    redirect('/dashboard/admin/questions');
-  } else {
-    if (from === 'custom') {
-      redirect('/dashboard/company/questions?tab=custom');
-    }
-    redirect('/dashboard/company/questions');
   }
 }
 
