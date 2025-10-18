@@ -17,7 +17,7 @@ import { db } from '@/lib/firebase/config';
 import { AssessmentContext } from '@/context/assessment-context';
 import type { Assessment, Question, Round } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { SelectScreeningQuestions } from '../../_components/select-screening-questions';
+import { SelectScreeningQuestions } from '../_components/select-screening-questions';
 import { Reorder } from 'framer-motion';
 import { createJobAction } from '@/app/actions';
 import { Switch } from '@/components/ui/switch';
