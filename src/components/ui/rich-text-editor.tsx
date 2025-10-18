@@ -119,14 +119,20 @@ export const RichTextEditor = ({ value, onChange }: RichTextEditorProps) => {
   const [isFocused, setIsFocused] = useState(false);
   
   const editor = useEditor({
-    extensions: [StarterKit.configure({
-      codeBlock: {
-        languageClassPrefix: 'language-',
-      },
-    }), Image.configure({
-      inline: false,
-      allowBase64: true,
-    })],
+    extensions: [
+        StarterKit.configure({
+            codeBlock: {
+                languageClassPrefix: 'language-',
+            },
+        }), 
+        Image.configure({
+            inline: false,
+            allowBase64: true,
+            HTMLAttributes: {
+                class: 'max-w-[100px] h-auto rounded-md',
+            },
+        })
+    ],
     content: value,
     editorProps: {
       attributes: {
