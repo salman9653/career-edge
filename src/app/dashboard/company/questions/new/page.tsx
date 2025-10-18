@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useActionState, useState, useEffect } from 'react';
@@ -69,6 +68,7 @@ export default function AddCompanyQuestionPage() {
   
   const [examples, setExamples] = useState([{ input: '', output: '', explanation: '' }]);
   const [testCases, setTestCases] = useState([{ input: '', output: '' }]);
+  const [constraints, setConstraints] = useState(['']);
 
   const from = searchParams.get('from');
 
@@ -122,6 +122,19 @@ export default function AddCompanyQuestionPage() {
 
   const addTestCase = () => setTestCases([...testCases, { input: '', output: '' }]);
   const removeTestCase = (index: number) => setTestCases(testCases.filter((_, i) => i !== index));
+
+  const handleConstraintChange = (index: number, value: string) => {
+    const newConstraints = [...constraints];
+    newConstraints[index] = value;
+    setConstraints(newConstraints);
+  };
+
+  const addConstraint = () => setConstraints([...constraints, '']);
+  const removeConstraint = (index: number) => {
+    if (constraints.length > 1) {
+        setConstraints(constraints.filter((_, i) => i !== index));
+    }
+  };
 
   if (loading) {
     return <div className="flex min-h-screen items-center justify-center"><p>Loading...</p></div>;
@@ -283,8 +296,27 @@ export default function AddCompanyQuestionPage() {
                                     <Input id="functionName" name="functionName" placeholder="e.g., twoSum" required />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="constraints">Constraints</Label>
-                                    <Textarea id="constraints" name="constraints" placeholder="e.g., 2 <= nums.length <= 10^4" className="min-h-[80px]" />
+                                    <Label>Constraints</Label>
+                                    <div className="space-y-2">
+                                    {constraints.map((constraint, index) => (
+                                        <div key={index} className="flex items-center gap-2">
+                                        <Input
+                                            name="constraints"
+                                            placeholder={`Constraint ${index + 1}`}
+                                            value={constraint}
+                                            onChange={(e) => handleConstraintChange(index, e.target.value)}
+                                        />
+                                        {constraints.length > 1 && (
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => removeConstraint(index)}>
+                                            <Trash2 className="h-4 w-4 text-destructive" />
+                                            </Button>
+                                        )}
+                                        </div>
+                                    ))}
+                                    </div>
+                                    <Button type="button" variant="link" size="sm" onClick={addConstraint} className="p-0 h-auto">
+                                    + Add Constraint
+                                    </Button>
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="boilerplate">Boilerplate Code</Label>

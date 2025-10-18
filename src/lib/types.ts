@@ -102,7 +102,7 @@ export interface Question {
     functionName?: string;
     boilerplate?: string;
     examples?: { input: string; output: string; explanation?: string }[];
-    constraints?: string;
+    constraints?: string[];
     testCases?: { input: string; output: string }[];
 }
 
