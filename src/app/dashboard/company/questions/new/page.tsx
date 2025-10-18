@@ -80,7 +80,7 @@ export default function AddCompanyQuestionPage() {
   const [testCases, setTestCases] = useState([{ input: '', output: '', sample: false }]);
   const [constraints, setConstraints] = useState(['']);
   const [hints, setHints] = useState(['']);
-  const [languageSnippets, setLanguageSnippets] = useState<LanguageSnippet[]>([{ language: '', functionName: '', boilerplate: '' }]);
+  const [languageSnippets, setLanguageSnippets] = useState<LanguageSnippet[]>([{ language: 'javascript', functionName: '', boilerplate: '' }]);
 
   const from = searchParams.get('from');
 
@@ -174,7 +174,7 @@ export default function AddCompanyQuestionPage() {
   };
 
   const handleAddLanguage = () => {
-    setLanguageSnippets([...languageSnippets, { language: '', functionName: '', boilerplate: '' }]);
+    setLanguageSnippets([...languageSnippets, { language: 'javascript', functionName: '', boilerplate: '' }]);
   };
 
   const handleSnippetChange = (index: number, field: 'language' | 'functionName' | 'boilerplate', value: string) => {
@@ -359,7 +359,7 @@ export default function AddCompanyQuestionPage() {
                                 </div>
                                 <div className="space-y-4">
                                     {languageSnippets.map((snippet, index) => (
-                                        <Card key={index} className="bg-muted/50">
+                                        <Card key={index}>
                                             <CardHeader className="p-4 flex flex-row items-center justify-between">
                                                 <Select value={snippet.language} onValueChange={(value) => handleSnippetChange(index, 'language', value)}>
                                                     <SelectTrigger className="w-[200px] bg-background"><SelectValue placeholder="Select language" /></SelectTrigger>
