@@ -21,6 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
+import { languageOptions } from '@/lib/languageOptions.js';
 
 const addInitialState = {
   error: null,
@@ -360,20 +361,20 @@ export default function AddCompanyQuestionPage() {
                                 <div className="space-y-4">
                                     {languageSnippets.map((snippet, index) => (
                                         <Card key={index}>
-                                            <CardHeader className="p-4 flex flex-row items-center justify-between">
+                                            <CardHeader className="p-4 pb-0 flex flex-row items-center justify-between">
                                                 <Select value={snippet.language} onValueChange={(value) => handleSnippetChange(index, 'language', value)}>
                                                     <SelectTrigger className="w-[200px] bg-background"><SelectValue placeholder="Select language" /></SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="javascript">JavaScript</SelectItem>
-                                                        <SelectItem value="python">Python</SelectItem>
-                                                        <SelectItem value="java">Java</SelectItem>
+                                                        {languageOptions.map(option => (
+                                                            <SelectItem key={option.id} value={option.value}>{option.label}</SelectItem>
+                                                        ))}
                                                     </SelectContent>
                                                 </Select>
                                                 <Button type="button" variant="ghost" size="icon" onClick={() => removeLanguage(index)}>
                                                     <Trash2 className="h-4 w-4 text-destructive" />
                                                 </Button>
                                             </CardHeader>
-                                            <CardContent className="p-4 pt-0 space-y-4">
+                                            <CardContent className="p-4 space-y-4">
                                                 <div className="space-y-2">
                                                     <Label>Function Name</Label>
                                                     <Input placeholder="e.g., twoSum" value={snippet.functionName} onChange={(e) => handleSnippetChange(index, 'functionName', e.target.value)} />
