@@ -142,7 +142,7 @@ export const RichTextEditor = ({ value, onChange, showImageOption = true }: Rich
     editorProps: {
       attributes: {
         class:
-          'prose dark:prose-invert prose-sm sm:prose-base prose-p:my-2 min-h-[150px] w-full bg-transparent px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 custom-scrollbar',
+          'prose dark:prose-invert prose-sm sm:prose-base prose-p:my-0 min-h-[150px] w-full bg-transparent px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 custom-scrollbar',
       },
     },
     onUpdate({ editor }) {
