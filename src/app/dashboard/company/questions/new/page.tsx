@@ -56,6 +56,12 @@ const aiInitialState: {
   success: false,
 };
 
+type LanguageSnippet = {
+    language: string;
+    functionName: string;
+    boilerplate: string;
+};
+
 export default function AddCompanyQuestionPage() {
   const { session, loading } = useSession();
   const [addState, addFormAction] = useActionState(addQuestionAction, addInitialState);
@@ -74,6 +80,8 @@ export default function AddCompanyQuestionPage() {
   const [testCases, setTestCases] = useState([{ input: '', output: '', sample: false }]);
   const [constraints, setConstraints] = useState(['']);
   const [hints, setHints] = useState(['']);
+  const [languageSnippets, setLanguageSnippets] = useState<LanguageSnippet[]>([]);
+  const [selectedLanguage, setSelectedLanguage] = useState('');
 
   const from = searchParams.get('from');
 
@@ -166,6 +174,23 @@ export default function AddCompanyQuestionPage() {
     }
   };
 
+  const handleAddLanguage = () => {
+    if (selectedLanguage && !languageSnippets.some(s => s.language === selectedLanguage)) {
+        setLanguageSnippets([...languageSnippets, { language: selectedLanguage, functionName: '', boilerplate: '' }]);
+    }
+  };
+
+  const handleSnippetChange = (index: number, field: 'functionName' | 'boilerplate', value: string) => {
+    const newSnippets = [...languageSnippets];
+    newSnippets[index][field] = value;
+    setLanguageSnippets(newSnippets);
+  };
+
+  const removeLanguage = (index: number) => {
+    setLanguageSnippets(languageSnippets.filter((_, i) => i !== index));
+  }
+
+
   if (loading) {
     return <div className="flex min-h-screen items-center justify-center"><p>Loading...</p></div>;
   }
@@ -224,6 +249,13 @@ export default function AddCompanyQuestionPage() {
                 <input type="hidden" name="addedBy" value={session.uid} />
                 <input type="hidden" name="addedByName" value={session.displayName} />
                 {from && <input type="hidden" name="from" value={from} />}
+                {languageSnippets.map((snippet, index) => (
+                    <React.Fragment key={index}>
+                        <input type="hidden" name={`language_${index}`} value={snippet.language} />
+                        <input type="hidden" name={`functionName_${index}`} value={snippet.functionName} />
+                        <input type="hidden" name={`boilerplate_${index}`} value={snippet.boilerplate} />
+                    </React.Fragment>
+                ))}
                 <Card className="h-full flex flex-col">
                     <CardHeader>
                         <CardTitle className="font-headline text-2xl">Create Custom Question</CardTitle>
@@ -325,8 +357,40 @@ export default function AddCompanyQuestionPage() {
                         {questionType === 'code' && (
                             <div className="space-y-6">
                                 <div className="space-y-2">
-                                    <Label htmlFor="functionName">Function Name</Label>
-                                    <Input id="functionName" name="functionName" placeholder="e.g., twoSum" required />
+                                    <Label className="text-base">Language Specific Details</Label>
+                                     <div className="flex items-center gap-2">
+                                        <Select onValueChange={setSelectedLanguage}>
+                                            <SelectTrigger><SelectValue placeholder="Select language to add" /></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="javascript">JavaScript</SelectItem>
+                                                <SelectItem value="python">Python</SelectItem>
+                                                <SelectItem value="java">Java</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <Button type="button" onClick={handleAddLanguage}>Add</Button>
+                                    </div>
+                                </div>
+                                <div className="space-y-4">
+                                    {languageSnippets.map((snippet, index) => (
+                                        <Card key={index}>
+                                            <CardHeader className="flex flex-row items-center justify-between p-4">
+                                                <CardTitle className="text-lg capitalize">{snippet.language}</CardTitle>
+                                                <Button type="button" variant="ghost" size="icon" onClick={() => removeLanguage(index)}>
+                                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                                </Button>
+                                            </CardHeader>
+                                            <CardContent className="p-4 pt-0 space-y-4">
+                                                <div className="space-y-2">
+                                                    <Label>Function Name</Label>
+                                                    <Input placeholder="e.g., twoSum" value={snippet.functionName} onChange={(e) => handleSnippetChange(index, 'functionName', e.target.value)} />
+                                                </div>
+                                                 <div className="space-y-2">
+                                                    <Label>Boilerplate Code</Label>
+                                                    <Textarea placeholder="function twoSum(nums, target) {&#10;  // Your code here&#10;}" className="min-h-[120px] font-mono" value={snippet.boilerplate} onChange={(e) => handleSnippetChange(index, 'boilerplate', e.target.value)} />
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Constraints</Label>
@@ -339,11 +403,11 @@ export default function AddCompanyQuestionPage() {
                                             value={constraint}
                                             onChange={(e) => handleConstraintChange(index, e.target.value)}
                                         />
-                                        {constraints.length > 1 && (
+                                        {constraints.length > 1 ? (
                                             <Button type="button" variant="ghost" size="icon" onClick={() => removeConstraint(index)}>
                                             <Trash2 className="h-4 w-4 text-destructive" />
                                             </Button>
-                                        )}
+                                        ) : <div className="w-10 h-10"></div>}
                                         </div>
                                     ))}
                                     </div>
@@ -373,10 +437,6 @@ export default function AddCompanyQuestionPage() {
                                     <Button type="button" variant="link" size="sm" onClick={addHint} className="p-0 h-auto">
                                     + Add Hint
                                     </Button>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="boilerplate">Boilerplate Code</Label>
-                                    <Textarea id="boilerplate" name="boilerplate" placeholder="function twoSum(nums, target) {&#10;  // Your code here&#10;}" className="min-h-[120px] font-mono" />
                                 </div>
                                 <div className="space-y-4">
                                     <Label className="text-base">Examples</Label>

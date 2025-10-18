@@ -97,8 +97,6 @@ export async function addQuestionAction(prevState: any, formData: FormData) {
   const isStrict = formData.get('isStrict') === 'on';
 
   // Coding specific fields
-  const functionName = formData.get('functionName') as string;
-  const boilerplate = formData.get('boilerplate') as string;
   const constraints = formData.getAll('constraints') as string[];
   const hints = formData.getAll('hints') as string[];
 
@@ -166,11 +164,25 @@ export async function addQuestionAction(prevState: any, formData: FormData) {
   }
 
   if (type === 'code') {
-    if (!functionName) {
-        return { error: 'Function name is required for coding questions.' };
+    const functionNames: { [key: string]: string } = {};
+    const boilerplates: { [key: string]: string } = {};
+    let langIndex = 0;
+    while(formData.has(`language_${langIndex}`)) {
+        const lang = formData.get(`language_${langIndex}`) as string;
+        const funcName = formData.get(`functionName_${langIndex}`) as string;
+        const boilerplateText = formData.get(`boilerplate_${langIndex}`) as string;
+        if(lang && funcName && boilerplateText) {
+            functionNames[lang] = funcName;
+            boilerplates[lang] = boilerplateText;
+        }
+        langIndex++;
     }
-    questionDoc.functionName = functionName;
-    questionDoc.boilerplate = boilerplate;
+
+    if (Object.keys(functionNames).length === 0) {
+        return { error: 'At least one language with function name and boilerplate is required for coding questions.' };
+    }
+    questionDoc.functionName = functionNames;
+    questionDoc.boilerplate = boilerplates;
     questionDoc.constraints = constraints.filter(c => c.trim() !== '');
     questionDoc.hints = hints.filter(h => h.trim() !== '');
 
@@ -1205,6 +1217,3 @@ export async function generateTextAction(prevState: any, formData: FormData): Pr
     return { error: e.message };
   }
 }
-
-
-

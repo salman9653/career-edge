@@ -99,9 +99,9 @@ export interface Question {
     acceptableAnswer?: string[];
     isStrict?: boolean;
     // Coding
-    functionName?: string;
-    boilerplate?: string;
-    examples?: { input: string; output: string }[];
+    functionName?: { [language: string]: string };
+    boilerplate?: { [language: string]: string };
+    examples?: { input: string; output: string; }[];
     constraints?: string[];
     testCases?: { input: string; output: string; sample: boolean }[];
     hints?: string[];
