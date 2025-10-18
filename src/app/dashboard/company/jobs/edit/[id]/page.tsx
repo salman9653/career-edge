@@ -90,8 +90,7 @@ export default function EditJobPage() {
             location: data.location,
             recruiter: data.recruiter.id,
             workExperience: data.workExperience,
-            minSalary: String(data.salary.min),
-            maxSalary: String(data.salary.max),
+            salary: { min: String(data.salary.min), max: String(data.salary.max) },
             positions: String(data.positions),
           });
           setRounds(data.rounds);
@@ -289,8 +288,8 @@ export default function EditJobPage() {
                     <CardTitle>1. Job Details</CardTitle>
                     <CardDescription>Update the primary details for the job posting.</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="title">Job Title</Label>
                         <Input id="title" name="title" placeholder="e.g., Senior Frontend Developer" defaultValue={jobDetails.title} required />
@@ -326,7 +325,7 @@ export default function EditJobPage() {
                       <RichTextEditor value={jobDetails.description} onChange={(value) => setJobDetails(p => ({...p, description: value}))} showImageOption={false} />
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="preference">Job Preference</Label>
                             <Select name="preference" defaultValue={jobDetails.preference} required onValueChange={(value) => setJobDetails(p => ({...p, preference: value, location: value === 'Remote' ? 'Remote' : ''}))}>
@@ -352,7 +351,7 @@ export default function EditJobPage() {
                         </div>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-2 gap-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="positions">No. of Positions</Label>
@@ -381,7 +380,7 @@ export default function EditJobPage() {
                                     name="minSalary" 
                                     placeholder="Min" 
                                     step="0.1" 
-                                    defaultValue={jobDetails.minSalary}
+                                    defaultValue={jobDetails.salary.min}
                                     className="border-0 rounded-r-none focus-visible:ring-0"
                                 />
                                 <div className="h-6 border-l border-input"></div>
@@ -390,7 +389,7 @@ export default function EditJobPage() {
                                     name="maxSalary" 
                                     placeholder="Max" 
                                     step="0.1" 
-                                    defaultValue={jobDetails.maxSalary}
+                                    defaultValue={jobDetails.salary.max}
                                     className="border-0 rounded-l-none focus-visible:ring-0"
                                 />
                             </div>

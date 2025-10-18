@@ -238,8 +238,8 @@ export default function NewJobPage() {
                     <CardTitle>1. Job Details</CardTitle>
                     <CardDescription>Fill out the primary details for the job posting.</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="title">Job Title</Label>
                         <Input id="title" name="title" placeholder="e.g., Senior Frontend Developer" value={jobDetails.title} onChange={(e) => setJobDetails(p => ({...p, title: e.target.value}))} required />
@@ -275,7 +275,7 @@ export default function NewJobPage() {
                       <RichTextEditor value={jobDetails.description} onChange={(value) => setJobDetails(p => ({...p, description: value}))} showImageOption={false} />
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="preference">Job Preference</Label>
                             <Select name="preference" value={jobDetails.preference} required onValueChange={(value) => setJobDetails(p => ({...p, preference: value, location: value === 'Remote' ? 'Remote' : ''}))}>
@@ -301,7 +301,7 @@ export default function NewJobPage() {
                         </div>
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-2 gap-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="positions">No. of Positions</Label>
