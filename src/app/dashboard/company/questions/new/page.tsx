@@ -80,8 +80,7 @@ export default function AddCompanyQuestionPage() {
   const [testCases, setTestCases] = useState([{ input: '', output: '', sample: false }]);
   const [constraints, setConstraints] = useState(['']);
   const [hints, setHints] = useState(['']);
-  const [languageSnippets, setLanguageSnippets] = useState<LanguageSnippet[]>([]);
-  const [selectedLanguage, setSelectedLanguage] = useState('');
+  const [languageSnippets, setLanguageSnippets] = useState<LanguageSnippet[]>([{ language: '', functionName: '', boilerplate: '' }]);
 
   const from = searchParams.get('from');
 
@@ -175,14 +174,12 @@ export default function AddCompanyQuestionPage() {
   };
 
   const handleAddLanguage = () => {
-    if (selectedLanguage && !languageSnippets.some(s => s.language === selectedLanguage)) {
-        setLanguageSnippets([...languageSnippets, { language: selectedLanguage, functionName: '', boilerplate: '' }]);
-    }
+    setLanguageSnippets([...languageSnippets, { language: '', functionName: '', boilerplate: '' }]);
   };
 
-  const handleSnippetChange = (index: number, field: 'functionName' | 'boilerplate', value: string) => {
+  const handleSnippetChange = (index: number, field: 'language' | 'functionName' | 'boilerplate', value: string) => {
     const newSnippets = [...languageSnippets];
-    newSnippets[index][field] = value;
+    newSnippets[index][field as keyof LanguageSnippet] = value;
     setLanguageSnippets(newSnippets);
   };
 
@@ -356,25 +353,22 @@ export default function AddCompanyQuestionPage() {
                         
                         {questionType === 'code' && (
                             <div className="space-y-6">
-                                <div className="space-y-2">
+                                <div>
                                     <Label className="text-base">Language Specific Details</Label>
-                                     <div className="flex items-center gap-2">
-                                        <Select onValueChange={setSelectedLanguage}>
-                                            <SelectTrigger><SelectValue placeholder="Select language to add" /></SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="javascript">JavaScript</SelectItem>
-                                                <SelectItem value="python">Python</SelectItem>
-                                                <SelectItem value="java">Java</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <Button type="button" onClick={handleAddLanguage}>Add</Button>
-                                    </div>
+                                    <p className="text-sm text-muted-foreground">Add boilerplate code for each language you want to support.</p>
                                 </div>
                                 <div className="space-y-4">
                                     {languageSnippets.map((snippet, index) => (
-                                        <Card key={index}>
-                                            <CardHeader className="flex flex-row items-center justify-between p-4">
-                                                <CardTitle className="text-lg capitalize">{snippet.language}</CardTitle>
+                                        <Card key={index} className="bg-muted/50">
+                                            <CardHeader className="p-4 flex flex-row items-center justify-between">
+                                                <Select value={snippet.language} onValueChange={(value) => handleSnippetChange(index, 'language', value)}>
+                                                    <SelectTrigger className="w-[200px] bg-background"><SelectValue placeholder="Select language" /></SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="javascript">JavaScript</SelectItem>
+                                                        <SelectItem value="python">Python</SelectItem>
+                                                        <SelectItem value="java">Java</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
                                                 <Button type="button" variant="ghost" size="icon" onClick={() => removeLanguage(index)}>
                                                     <Trash2 className="h-4 w-4 text-destructive" />
                                                 </Button>
@@ -386,11 +380,14 @@ export default function AddCompanyQuestionPage() {
                                                 </div>
                                                  <div className="space-y-2">
                                                     <Label>Boilerplate Code</Label>
-                                                    <Textarea placeholder="function twoSum(nums, target) {&#10;  // Your code here&#10;}" className="min-h-[120px] font-mono" value={snippet.boilerplate} onChange={(e) => handleSnippetChange(index, 'boilerplate', e.target.value)} />
+                                                    <Textarea placeholder="function twoSum(nums, target) {&#10;  // Your code here&#10;}" className="min-h-[120px] font-mono bg-background" value={snippet.boilerplate} onChange={(e) => handleSnippetChange(index, 'boilerplate', e.target.value)} />
                                                 </div>
                                             </CardContent>
                                         </Card>
                                     ))}
+                                    <Button type="button" variant="link" size="sm" onClick={handleAddLanguage} className="p-0 h-auto">
+                                        + Add Language
+                                    </Button>
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Constraints</Label>
