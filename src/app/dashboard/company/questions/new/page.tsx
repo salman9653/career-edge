@@ -69,6 +69,7 @@ export default function AddCompanyQuestionPage() {
   const [examples, setExamples] = useState([{ input: '', output: '', explanation: '' }]);
   const [testCases, setTestCases] = useState([{ input: '', output: '' }]);
   const [constraints, setConstraints] = useState(['']);
+  const [hints, setHints] = useState(['']);
 
   const from = searchParams.get('from');
 
@@ -133,6 +134,19 @@ export default function AddCompanyQuestionPage() {
   const removeConstraint = (index: number) => {
     if (constraints.length > 1) {
         setConstraints(constraints.filter((_, i) => i !== index));
+    }
+  };
+
+  const handleHintChange = (index: number, value: string) => {
+    const newHints = [...hints];
+    newHints[index] = value;
+    setHints(newHints);
+  };
+
+  const addHint = () => setHints([...hints, '']);
+  const removeHint = (index: number) => {
+    if (hints.length > 1) {
+        setHints(hints.filter((_, i) => i !== index));
     }
   };
 
@@ -316,6 +330,29 @@ export default function AddCompanyQuestionPage() {
                                     </div>
                                     <Button type="button" variant="link" size="sm" onClick={addConstraint} className="p-0 h-auto">
                                     + Add Constraint
+                                    </Button>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Hints</Label>
+                                    <div className="space-y-2">
+                                    {hints.map((hint, index) => (
+                                        <div key={index} className="flex items-center gap-2">
+                                        <Input
+                                            name="hints"
+                                            placeholder={`Hint ${index + 1}`}
+                                            value={hint}
+                                            onChange={(e) => handleHintChange(index, e.target.value)}
+                                        />
+                                        {hints.length > 1 ? (
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => removeHint(index)}>
+                                            <Trash2 className="h-4 w-4 text-destructive" />
+                                            </Button>
+                                        ) : <div className="w-10 h-10"></div>}
+                                        </div>
+                                    ))}
+                                    </div>
+                                    <Button type="button" variant="link" size="sm" onClick={addHint} className="p-0 h-auto">
+                                    + Add Hint
                                     </Button>
                                 </div>
                                 <div className="space-y-2">

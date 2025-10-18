@@ -99,6 +99,7 @@ export async function addQuestionAction(prevState: any, formData: FormData) {
   const functionName = formData.get('functionName') as string;
   const boilerplate = formData.get('boilerplate') as string;
   const constraints = formData.getAll('constraints') as string[];
+  const hints = formData.getAll('hints') as string[];
 
   if (!question || !type || !libraryType || !addedBy) {
     return { error: 'Please fill out all required fields.' };
@@ -170,6 +171,7 @@ export async function addQuestionAction(prevState: any, formData: FormData) {
     questionDoc.functionName = functionName;
     questionDoc.boilerplate = boilerplate;
     questionDoc.constraints = constraints.filter(c => c.trim() !== '');
+    questionDoc.hints = hints.filter(h => h.trim() !== '');
 
     const examples: { input: string; output: string; explanation?: string }[] = [];
     const testCases: { input: string; output: string }[] = [];
@@ -1179,5 +1181,6 @@ export async function updateAiInterviewAction(interviewId: string, interviewData
     return { error: e.message || 'An unexpected error occurred.' };
   }
 }
+
 
 

@@ -104,6 +104,7 @@ export interface Question {
     examples?: { input: string; output: string; explanation?: string }[];
     constraints?: string[];
     testCases?: { input: string; output: string }[];
+    hints?: string[];
 }
 
 export interface PlanFeature {
