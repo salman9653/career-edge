@@ -19,6 +19,7 @@ import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, A
 import { useToast } from '@/hooks/use-toast';
 import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Textarea } from '@/components/ui/textarea';
+import { enhanceText, generateTextFromPrompt } from '@/ai/flows/text-generation-flows';
 
 const addInitialState = {
   error: null,
@@ -370,15 +371,16 @@ export default function AddCompanyQuestionPage() {
                                     {examples.map((ex, index) => (
                                         <div key={index} className="space-y-2">
                                             <Label htmlFor={`example-input-${index}`} className="text-xs text-muted-foreground">Example {index + 1}</Label>
-                                            <div className="flex items-start gap-2 p-3 border rounded-md">
+                                            <div className="flex items-start gap-0.5 border rounded-md p-3">
                                                 <div className="grid gap-1.5 flex-1">
-                                                    <Textarea name={`example_input_${index}`} value={ex.input} onChange={(e) => handleExampleChange(index, 'input', e.target.value)} placeholder="Example Input" rows={2} />
+                                                    <Label htmlFor={`example_input_${index}`} className="text-xs">Input</Label>
+                                                    <Textarea id={`example_input_${index}`} name={`example_input_${index}`} value={ex.input} onChange={(e) => handleExampleChange(index, 'input', e.target.value)} placeholder="Example Input" rows={2} className="rounded-r-none focus-visible:ring-0 focus-visible:ring-offset-0" />
                                                 </div>
-                                                <div className="h-full border-l mx-2"></div>
                                                 <div className="grid gap-1.5 flex-1">
-                                                     <Textarea name={`example_output_${index}`} value={ex.output} onChange={(e) => handleExampleChange(index, 'output', e.target.value)} placeholder="Example Output" rows={2} />
+                                                    <Label htmlFor={`example_output_${index}`} className="text-xs">Output</Label>
+                                                     <Textarea id={`example_output_${index}`} name={`example_output_${index}`} value={ex.output} onChange={(e) => handleExampleChange(index, 'output', e.target.value)} placeholder="Example Output" rows={2} className="rounded-l-none focus-visible:ring-0 focus-visible:ring-offset-0" />
                                                 </div>
-                                                <Button type="button" variant="ghost" size="icon" onClick={() => removeExample(index)} className="shrink-0">
+                                                <Button type="button" variant="ghost" size="icon" onClick={() => removeExample(index)} className="shrink-0 self-center">
                                                     <Trash2 className="h-4 w-4 text-destructive" />
                                                 </Button>
                                             </div>
