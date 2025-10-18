@@ -360,8 +360,8 @@ export default function AddCompanyQuestionPage() {
                                 </div>
                                 <div className="space-y-4">
                                     {languageSnippets.map((snippet, index) => (
-                                        <Card key={index}>
-                                            <CardHeader className="p-4 pb-0 flex flex-row items-center justify-between">
+                                        <div key={index} className="p-4 border rounded-lg">
+                                            <div className="flex flex-row items-center justify-between mb-4">
                                                 <Select value={snippet.language} onValueChange={(value) => handleSnippetChange(index, 'language', value)}>
                                                     <SelectTrigger className="w-[200px] bg-background"><SelectValue placeholder="Select language" /></SelectTrigger>
                                                     <SelectContent>
@@ -373,8 +373,8 @@ export default function AddCompanyQuestionPage() {
                                                 <Button type="button" variant="ghost" size="icon" onClick={() => removeLanguage(index)}>
                                                     <Trash2 className="h-4 w-4 text-destructive" />
                                                 </Button>
-                                            </CardHeader>
-                                            <CardContent className="p-4 space-y-4">
+                                            </div>
+                                            <div className="space-y-4">
                                                 <div className="space-y-2">
                                                     <Label>Function Name</Label>
                                                     <Input placeholder="e.g., twoSum" value={snippet.functionName} onChange={(e) => handleSnippetChange(index, 'functionName', e.target.value)} />
@@ -385,8 +385,8 @@ export default function AddCompanyQuestionPage() {
   // Your code here
 }" className="min-h-[120px] font-mono bg-background" value={snippet.boilerplate} onChange={(e) => handleSnippetChange(index, 'boilerplate', e.target.value)} />
                                                 </div>
-                                            </CardContent>
-                                        </Card>
+                                            </div>
+                                        </div>
                                     ))}
                                     <Button type="button" variant="link" size="sm" onClick={handleAddLanguage} className="p-0 h-auto">
                                         + Add Language
