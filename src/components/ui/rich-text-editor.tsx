@@ -1,7 +1,9 @@
+
 'use client';
 
 import { useEditor, EditorContent, type Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import Image from '@tiptap/extension-image';
 import {
   Bold,
   Italic,
@@ -12,19 +14,40 @@ import {
   Quote,
   Undo,
   Redo,
+  ImageIcon,
 } from 'lucide-react';
 import { Toggle } from '@/components/ui/toggle';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { useEffect, useState } from 'react';
+import { useState, useRef } from 'react';
+import { Button } from './button';
 
 const TiptapToolbar = ({ editor }: { editor: Editor | null }) => {
   if (!editor) {
     return null;
   }
+  
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const src = e.target?.result as string;
+        if (src) {
+          editor.chain().focus().setImage({ src }).run();
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const triggerImageUpload = () => {
+    document.getElementById('tiptap-image-upload')?.click();
+  }
 
   return (
     <div className="flex flex-wrap items-center gap-1 rounded-t-md border-x border-t border-input bg-transparent p-2">
+      <input id="tiptap-image-upload" type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
       <Toggle
         size="sm"
         pressed={editor.isActive('bold')}
@@ -76,6 +99,13 @@ const TiptapToolbar = ({ editor }: { editor: Editor | null }) => {
       >
         <Code className="h-4 w-4" />
       </Toggle>
+      <Separator orientation="vertical" className="h-8 w-[1px]" />
+        <Toggle
+        size="sm"
+        onPressedChange={triggerImageUpload}
+      >
+        <ImageIcon className="h-4 w-4" />
+      </Toggle>
     </div>
   );
 };
@@ -93,6 +123,9 @@ export const RichTextEditor = ({ value, onChange }: RichTextEditorProps) => {
       codeBlock: {
         languageClassPrefix: 'language-',
       },
+    }), Image.configure({
+      inline: false,
+      allowBase64: true,
     })],
     content: value,
     editorProps: {
