@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { Toggle } from '@/components/ui/toggle';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
+import { useEffect, useState } from 'react';
 
 const TiptapToolbar = ({ editor }: { editor: Editor | null }) => {
   if (!editor) {
@@ -22,7 +24,7 @@ const TiptapToolbar = ({ editor }: { editor: Editor | null }) => {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-1 rounded-t-md border border-input bg-transparent p-2">
+    <div className="flex flex-wrap items-center gap-1 rounded-t-md border-x border-t border-input bg-transparent p-2">
       <Toggle
         size="sm"
         pressed={editor.isActive('bold')}
@@ -84,6 +86,8 @@ interface RichTextEditorProps {
 }
 
 export const RichTextEditor = ({ value, onChange }: RichTextEditorProps) => {
+  const [isFocused, setIsFocused] = useState(false);
+  
   const editor = useEditor({
     extensions: [StarterKit.configure({
       codeBlock: {
@@ -94,16 +98,22 @@ export const RichTextEditor = ({ value, onChange }: RichTextEditorProps) => {
     editorProps: {
       attributes: {
         class:
-          'prose dark:prose-invert prose-sm sm:prose-base min-h-[150px] w-full rounded-b-md border border-input bg-transparent px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 custom-scrollbar',
+          'prose dark:prose-invert prose-sm sm:prose-base prose-p:my-2 min-h-[150px] w-full bg-transparent px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 custom-scrollbar',
       },
     },
     onUpdate({ editor }) {
       onChange(editor.getHTML());
     },
+    onFocus() {
+      setIsFocused(true);
+    },
+    onBlur() {
+      setIsFocused(false);
+    }
   });
 
   return (
-    <div>
+    <div className={cn("rounded-md border border-input transition-colors", isFocused && "border-b-ring border-b-2")}>
       <TiptapToolbar editor={editor} />
       <EditorContent editor={editor} />
     </div>
