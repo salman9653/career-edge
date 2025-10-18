@@ -20,6 +20,7 @@ import { regenerateQuestion, refineTone, addFollowUps, regenerateFollowUps, rege
 import type { RegenerateQuestionInput, RefineToneInput, AddFollowUpsInput, RegenerateFollowUpsInput, RegenerateIntroInput, RegenerateOutroInput } from '@/ai/flows/edit-ai-interview-flow-types';
 import { generateAiQuestions } from "@/ai/flows/generate-ai-questions-flow";
 import type { GenerateAiQuestionsInput, GenerateAiQuestionsOutput } from "@/ai/flows/generate-ai-questions-flow-types";
+import { enhanceText, generateTextFromPrompt } from '@/ai/flows/text-generation-flows';
 
 
 async function fileToDataURI(file: File) {
@@ -173,7 +174,7 @@ export async function addQuestionAction(prevState: any, formData: FormData) {
     questionDoc.constraints = constraints.filter(c => c.trim() !== '');
     questionDoc.hints = hints.filter(h => h.trim() !== '');
 
-    const examples: { input: string; output: string; explanation?: string }[] = [];
+    const examples: { input: string; output: string }[] = [];
     const testCases: { input: string; output: string }[] = [];
     
     let i = 0;
@@ -181,7 +182,6 @@ export async function addQuestionAction(prevState: any, formData: FormData) {
         examples.push({
             input: formData.get(`example_input_${i}`) as string,
             output: formData.get(`example_output_${i}`) as string,
-            explanation: formData.get(`example_explanation_${i}`) as string || undefined,
         });
         i++;
     }
@@ -1182,5 +1182,28 @@ export async function updateAiInterviewAction(interviewId: string, interviewData
   }
 }
 
+export async function enhanceTextAction(prevState: any, formData: FormData): Promise<{ text?: string, error?: string }> {
+  const text = formData.get('text') as string;
+  const context = formData.get('context') as string;
+  if (!text || !context) return { error: 'Missing text or context.' };
+  try {
+    const result = await enhanceText({ text, context });
+    return { text: result.enhancedText };
+  } catch (e: any) {
+    return { error: e.message };
+  }
+}
+
+export async function generateTextAction(prevState: any, formData: FormData): Promise<{ text?: string, error?: string }> {
+  const prompt = formData.get('prompt') as string;
+  const context = formData.get('context') as string;
+  if (!prompt || !context) return { error: 'Missing prompt or context.' };
+  try {
+    const result = await generateTextFromPrompt({ prompt, context });
+    return { text: result.generatedText };
+  } catch (e: any) {
+    return { error: e.message };
+  }
+}
 
 

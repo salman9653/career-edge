@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useActionState, useState, useEffect } from 'react';
@@ -66,7 +67,7 @@ export default function AddCompanyQuestionPage() {
   const [options, setOptions] = useState<string[]>(['', '']);
   const [isGeneratedQuestionsDialogOpen, setIsGeneratedQuestionsDialogOpen] = useState(false);
   
-  const [examples, setExamples] = useState([{ input: '', output: '', explanation: '' }]);
+  const [examples, setExamples] = useState([{ input: '', output: '' }]);
   const [testCases, setTestCases] = useState([{ input: '', output: '' }]);
   const [constraints, setConstraints] = useState(['']);
   const [hints, setHints] = useState(['']);
@@ -106,13 +107,13 @@ export default function AddCompanyQuestionPage() {
     }
   };
 
-   const handleExampleChange = (index: number, field: 'input' | 'output' | 'explanation', value: string) => {
+   const handleExampleChange = (index: number, field: 'input' | 'output', value: string) => {
     const newExamples = [...examples];
     newExamples[index][field] = value;
     setExamples(newExamples);
   };
 
-  const addExample = () => setExamples([...examples, { input: '', output: '', explanation: '' }]);
+  const addExample = () => setExamples([...examples, { input: '', output: '' }]);
   const removeExample = (index: number) => setExamples(examples.filter((_, i) => i !== index));
 
   const handleTestCaseChange = (index: number, field: 'input' | 'output', value: string) => {
@@ -216,7 +217,12 @@ export default function AddCompanyQuestionPage() {
                     <CardContent className="space-y-6 flex-1 overflow-auto custom-scrollbar">
                         <div className="space-y-2">
                             <Label htmlFor="question" className="text-base">Question Statement</Label>
-                             <RichTextEditor value={questionStatement} onChange={setQuestionStatement} />
+                             <RichTextEditor 
+                                value={questionStatement} 
+                                onChange={setQuestionStatement} 
+                                enhanceContext="question-statement" 
+                                generatePromptPlaceholder='e.g. "React.js questions for useState hook"'
+                            />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -359,20 +365,28 @@ export default function AddCompanyQuestionPage() {
                                     <Label htmlFor="boilerplate">Boilerplate Code</Label>
                                     <Textarea id="boilerplate" name="boilerplate" placeholder="function twoSum(nums, target) {&#10;  // Your code here&#10;}" className="min-h-[120px] font-mono" />
                                 </div>
-                                 <div className="space-y-4">
-                                    <Label>Examples</Label>
+                                <div className="space-y-4">
+                                    <Label className="text-base">Examples</Label>
                                     {examples.map((ex, index) => (
-                                        <div key={index} className="p-3 border rounded-md space-y-2 relative">
-                                            {examples.length > 1 && <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => removeExample(index)}><Trash2 className="h-4 w-4 text-destructive" /></Button>}
-                                            <Label htmlFor={`example-input-${index}`} className="text-xs">Input</Label>
-                                            <Textarea id={`example-input-${index}`} name={`example_input_${index}`} value={ex.input} onChange={(e) => handleExampleChange(index, 'input', e.target.value)} placeholder="e.g., nums = [2,7,11,15], target = 9" rows={2} />
-                                            <Label htmlFor={`example-output-${index}`} className="text-xs">Output</Label>
-                                            <Textarea id={`example-output-${index}`} name={`example_output_${index}`} value={ex.output} onChange={(e) => handleExampleChange(index, 'output', e.target.value)} placeholder="e.g., [0,1]" rows={1} />
-                                            <Label htmlFor={`example-explanation-${index}`} className="text-xs">Explanation (Optional)</Label>
-                                            <Textarea id={`example-explanation-${index}`} name={`example_explanation_${index}`} value={ex.explanation} onChange={(e) => handleExampleChange(index, 'explanation', e.target.value)} placeholder="e.g., Because nums[0] + nums[1] == 9, we return [0, 1]." rows={2} />
+                                        <div key={index} className="space-y-2">
+                                            <Label htmlFor={`example-input-${index}`} className="text-xs text-muted-foreground">Example {index + 1}</Label>
+                                            <div className="flex items-start gap-2 p-3 border rounded-md">
+                                                <div className="grid gap-1.5 flex-1">
+                                                    <Textarea name={`example_input_${index}`} value={ex.input} onChange={(e) => handleExampleChange(index, 'input', e.target.value)} placeholder="Example Input" rows={2} />
+                                                </div>
+                                                <div className="h-full border-l mx-2"></div>
+                                                <div className="grid gap-1.5 flex-1">
+                                                     <Textarea name={`example_output_${index}`} value={ex.output} onChange={(e) => handleExampleChange(index, 'output', e.target.value)} placeholder="Example Output" rows={2} />
+                                                </div>
+                                                <Button type="button" variant="ghost" size="icon" onClick={() => removeExample(index)} className="shrink-0">
+                                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                                </Button>
+                                            </div>
                                         </div>
                                     ))}
-                                    <Button type="button" variant="outline" size="sm" onClick={addExample}><Plus className="mr-2 h-4 w-4" /> Add Example</Button>
+                                    <Button type="button" variant="link" size="sm" onClick={addExample} className="p-0 h-auto">
+                                        + Add Example
+                                    </Button>
                                 </div>
                                  <div className="space-y-4">
                                     <Label>Test Cases</Label>
