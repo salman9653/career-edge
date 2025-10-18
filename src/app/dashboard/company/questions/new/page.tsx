@@ -381,7 +381,9 @@ export default function AddCompanyQuestionPage() {
                                                 </div>
                                                  <div className="space-y-2">
                                                     <Label>Boilerplate Code</Label>
-                                                    <Textarea placeholder="function twoSum(nums, target) {&#10;  // Your code here&#10;}" className="min-h-[120px] font-mono bg-background" value={snippet.boilerplate} onChange={(e) => handleSnippetChange(index, 'boilerplate', e.target.value)} />
+                                                    <Textarea placeholder="function twoSum(nums, target) {
+  // Your code here
+}" className="min-h-[120px] font-mono bg-background" value={snippet.boilerplate} onChange={(e) => handleSnippetChange(index, 'boilerplate', e.target.value)} />
                                                 </div>
                                             </CardContent>
                                         </Card>
