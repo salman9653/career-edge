@@ -8,7 +8,6 @@ import { updateQuestionAction } from '@/app/actions';
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -20,6 +19,8 @@ import { db } from '@/lib/firebase/config';
 import type { Question } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { Textarea } from '@/components/ui/textarea';
 
 const initialState = {
   error: null,
@@ -44,6 +45,7 @@ export default function EditQuestionPage() {
 
   const [question, setQuestion] = useState<Question | null>(null);
   const [loading, setLoading] = useState(true);
+  const [questionStatement, setQuestionStatement] = useState('');
   const [questionType, setQuestionType] = useState<string>('');
   const [options, setOptions] = useState<string[]>(['', '']);
   const [correctAnswer, setCorrectAnswer] = useState<string>('');
@@ -61,6 +63,7 @@ export default function EditQuestionPage() {
           const data = docSnap.data() as Omit<Question, 'id'>;
           const fetchedQuestion = { id: docSnap.id, ...data };
           setQuestion(fetchedQuestion);
+          setQuestionStatement(fetchedQuestion.question);
           setQuestionType(fetchedQuestion.type);
           if (fetchedQuestion.type === 'mcq' && fetchedQuestion.options) {
             setOptions(fetchedQuestion.options);
@@ -156,6 +159,7 @@ export default function EditQuestionPage() {
           <form action={formAction}>
             <input type="hidden" name="questionId" value={question.id} />
             <input type="hidden" name="libraryType" value={question.libraryType} />
+            <input type="hidden" name="question" value={questionStatement} />
             <Card>
                 <CardHeader>
                     <div className="flex items-start justify-between">
@@ -168,13 +172,7 @@ export default function EditQuestionPage() {
                 <CardContent className="space-y-6">
                     <div className="space-y-2">
                         <Label htmlFor="question" className="text-base">Question Statement</Label>
-                        <Textarea
-                            id="question"
-                            name="question"
-                            defaultValue={question.question}
-                            className="min-h-[120px]"
-                            required
-                        />
+                        <RichTextEditor value={questionStatement} onChange={setQuestionStatement} />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

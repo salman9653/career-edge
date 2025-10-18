@@ -8,7 +8,6 @@ import { addQuestionAction, generateQuestionsAction } from '@/app/actions';
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -18,6 +17,7 @@ import { useFormStatus } from 'react-dom';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 
 const addInitialState = {
   error: null,
@@ -61,6 +61,7 @@ export default function AddCompanyQuestionPage() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
 
+  const [questionStatement, setQuestionStatement] = useState('');
   const [questionType, setQuestionType] = useState<string>('');
   const [options, setOptions] = useState<string[]>(['', '']);
   const [isGeneratedQuestionsDialogOpen, setIsGeneratedQuestionsDialogOpen] = useState(false);
@@ -125,8 +126,8 @@ export default function AddCompanyQuestionPage() {
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="sm:justify-center gap-2">
-                <AlertDialogAction onClick={handleGoToQuestions} variant="outline">Go to Questions List</AlertDialogAction>
-                <AlertDialogAction onClick={() => setIsGeneratedQuestionsDialogOpen(false)}>Generate More</AlertDialogAction>
+                <Button onClick={() => setIsGeneratedQuestionsDialogOpen(false)} variant="outline">Generate More</Button>
+                <Button onClick={handleGoToQuestions}>Go to Questions List</Button>
             </AlertDialogFooter>
         </AlertDialogContent>
     </AlertDialog>
@@ -147,6 +148,7 @@ export default function AddCompanyQuestionPage() {
           <div className="flex gap-2 w-full h-full">
             <div className="w-[60%] h-full">
               <form action={addFormAction} className="w-full h-full">
+                <input type="hidden" name="question" value={questionStatement} />
                 <input type="hidden" name="libraryType" value={libraryType} />
                 <input type="hidden" name="addedBy" value={session.uid} />
                 <input type="hidden" name="addedByName" value={session.displayName} />
@@ -159,13 +161,7 @@ export default function AddCompanyQuestionPage() {
                     <CardContent className="space-y-6 flex-1 overflow-auto custom-scrollbar">
                         <div className="space-y-2">
                             <Label htmlFor="question" className="text-base">Question Statement</Label>
-                            <Textarea
-                                id="question"
-                                name="question"
-                                placeholder="e.g., How would you contribute to our company culture?"
-                                className="min-h-[120px]"
-                                required
-                            />
+                             <RichTextEditor value={questionStatement} onChange={setQuestionStatement} />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
