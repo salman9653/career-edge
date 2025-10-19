@@ -22,6 +22,11 @@ import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { languageOptions } from '@/lib/languageOptions.js';
+import 'highlight.js/styles/github-dark.css';
+import { CodeEditor } from '@/components/ui/code-editor';
+import { QuestionPreviewDialog } from '@/components/questions/question-preview-dialog';
+import type { Question } from '@/lib/types';
+
 
 const addInitialState = {
   error: null,
@@ -82,6 +87,13 @@ export default function AddCompanyQuestionPage() {
   const [constraints, setConstraints] = useState(['']);
   const [hints, setHints] = useState(['']);
   const [languageSnippets, setLanguageSnippets] = useState<LanguageSnippet[]>([{ language: 'javascript', functionName: '', boilerplate: '' }]);
+  const [category, setCategory] = useState('');
+  const [difficulty, setDifficulty] = useState('');
+  const [answerSummary, setAnswerSummary] = useState('');
+  const [correctAnswer, setCorrectAnswer] = useState('');
+
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [previewData, setPreviewData] = useState<Question | null>(null);
 
   const from = searchParams.get('from');
 
@@ -187,6 +199,29 @@ export default function AddCompanyQuestionPage() {
   const removeLanguage = (index: number) => {
     setLanguageSnippets(languageSnippets.filter((_, i) => i !== index));
   }
+  
+  const handlePreview = () => {
+    const difficultyMap: { [key: string]: 1 | 2 | 3 } = { 'easy': 1, 'medium': 2, 'hard': 3 };
+
+    const data: Question = {
+        id: 'preview-id',
+        question: questionStatement,
+        type: questionType as Question['type'],
+        category: category.split(',').map(c => c.trim()),
+        difficulty: difficultyMap[difficulty] || 1,
+        options: questionType === 'mcq' ? options : undefined,
+        correctAnswer: questionType === 'mcq' ? correctAnswer : undefined,
+        answerSummary: questionType === 'subjective' ? answerSummary : undefined,
+        // The rest are not needed for preview
+        createdAt: null,
+        status: 'active',
+        libraryType: 'custom',
+        addedBy: '',
+        addedByName: '',
+    };
+    setPreviewData(data);
+    setIsPreviewOpen(true);
+  };
 
 
   if (loading) {
@@ -206,6 +241,7 @@ export default function AddCompanyQuestionPage() {
 
   return (
     <>
+    <QuestionPreviewDialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen} question={previewData} />
     <AlertDialog open={isGeneratedQuestionsDialogOpen} onOpenChange={setIsGeneratedQuestionsDialogOpen}>
         <AlertDialogContent>
             <AlertDialogHeader>
@@ -271,7 +307,7 @@ export default function AddCompanyQuestionPage() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div className="space-y-2">
                             <Label htmlFor="type">Question Type</Label>
-                            <Select name="type" required onValueChange={setQuestionType}>
+                            <Select name="type" required onValueChange={setQuestionType} value={questionType}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select a type" />
                                 </SelectTrigger>
@@ -288,12 +324,14 @@ export default function AddCompanyQuestionPage() {
                                     id="category"
                                     name="category"
                                     placeholder="e.g., Company Culture, Technical"
+                                    value={category}
+                                    onChange={e => setCategory(e.target.value)}
                                     required
                                 />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="difficulty">Difficulty</Label>
-                                <Select name="difficulty" required>
+                                <Select name="difficulty" required value={difficulty} onValueChange={setDifficulty}>
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select a difficulty" />
                                     </SelectTrigger>
@@ -314,6 +352,8 @@ export default function AddCompanyQuestionPage() {
                                 name="answerSummary"
                                 placeholder="Provide a brief summary of the expected answer."
                                 className="min-h-[100px]"
+                                value={answerSummary}
+                                onChange={e => setAnswerSummary(e.target.value)}
                                 required
                             />
                         </div>
@@ -323,7 +363,7 @@ export default function AddCompanyQuestionPage() {
                         <div className="space-y-4">
                             <Label>MCQ Options</Label>
                             <div className="p-4 border rounded-lg bg-muted/50 space-y-4">
-                                <RadioGroup name="correctAnswer" defaultValue="0" className="space-y-2">
+                                <RadioGroup name="correctAnswer" value={correctAnswer} onValueChange={setCorrectAnswer} className="space-y-2">
                                 {options.map((option, index) => (
                                     <div key={index} className="flex items-center gap-2">
                                     <RadioGroupItem value={option} id={`option-${index}`} />
@@ -381,9 +421,7 @@ export default function AddCompanyQuestionPage() {
                                                 </div>
                                                  <div className="space-y-2">
                                                     <Label>Boilerplate Code</Label>
-                                                    <Textarea placeholder="function twoSum(nums, target) {
-  // Your code here
-}" className="min-h-[120px] font-mono bg-background" value={snippet.boilerplate} onChange={(e) => handleSnippetChange(index, 'boilerplate', e.target.value)} />
+                                                    <CodeEditor language={snippet.language} value={snippet.boilerplate} onChange={(value) => handleSnippetChange(index, 'boilerplate', value)} />
                                                 </div>
                                             </div>
                                         </div>
@@ -494,7 +532,7 @@ export default function AddCompanyQuestionPage() {
                         {addState?.error && <p className="text-sm text-destructive mt-4">{addState.error}</p>}
                 
                         <div className="flex justify-end gap-2 pt-4">
-                            <Button type="button" variant="secondary">Preview</Button>
+                            <Button type="button" variant="secondary" onClick={handlePreview}>Preview</Button>
                             <SubmitButton />
                         </div>
                     </CardContent>
