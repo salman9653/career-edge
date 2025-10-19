@@ -568,6 +568,7 @@ export default function AddCompanyQuestionPage() {
                                         <SelectContent>
                                             <SelectItem value="mcq">MCQ (Multiple Choice)</SelectItem>
                                             <SelectItem value="subjective">Subjective</SelectItem>
+                                            <SelectItem value="code">Coding</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>

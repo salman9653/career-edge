@@ -31,8 +31,9 @@ The questions should be of **{{difficulty}}** difficulty and focus on these key 
 
 The questions must be of type: **{{questionType}}**.
 
-- For "mcq" type, provide 4 options and specify the correct answer. The 'answerSummary' field should be omitted.
-- For "subjective" type, provide a brief summary of the expected answer. The 'options' and 'correctAnswer' fields should be omitted.
+- For "mcq" type, provide 4 options and specify the correct answer. The 'answerSummary' and all coding-related fields (functionName, boilerplate, etc.) should be omitted.
+- For "subjective" type, provide a brief summary of the expected answer. The 'options', 'correctAnswer', and all coding-related fields should be omitted.
+- For "code" type, you must provide a 'functionName' and 'boilerplate' for javascript. You must also provide 'examples' (1-2), 'testCases' (at least 3, with some marked as sample), and 'constraints'. The 'options', 'correctAnswer', and 'answerSummary' fields should be omitted.
 
 Assign relevant categories to each question. Ensure each question object has a 'type' field set to '{{questionType}}'.
 `,
