@@ -11,11 +11,16 @@ import { MobileSearch } from '@/components/mobile-search';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function TemplatesPage() {
   const { session, loading: sessionLoading } = useSession();
   const { assessments, loading: assessmentsLoading } = useContext(AssessmentContext);
   const [isCreateDialogOpen, setCreateDialogOpen] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const activeTab = searchParams.get('tab') || 'assessments';
 
   if (sessionLoading) {
     return (
@@ -32,13 +37,17 @@ export default function TemplatesPage() {
       </div>
     );
   }
+  
+  const handleTabChange = (value: string) => {
+    router.push(`/dashboard/company/templates?tab=${value}`);
+  }
 
   const renderContent = () => {
     if (session.role === 'company' || session.role === 'manager') {
       return (
           <>
             <CreateAssessmentDialog open={isCreateDialogOpen} onOpenChange={setCreateDialogOpen} />
-            <Tabs defaultValue="assessments" className="flex flex-col h-full">
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="flex flex-col h-full">
               <TabsList className="mb-4 self-start">
                   <TabsTrigger value="assessments">Assessments</TabsTrigger>
                   <TabsTrigger value="ai-interviews">AI Interviews</TabsTrigger>
