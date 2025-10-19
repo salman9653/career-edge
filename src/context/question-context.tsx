@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
@@ -43,6 +42,13 @@ const mapDocToQuestion = (doc: DocumentData): Question => {
         correctAnswer: data.correctAnswer,
         acceptableAnswer: data.acceptableAnswer,
         isStrict: data.isStrict,
+        // Add coding question fields
+        functionName: data.functionName,
+        boilerplate: data.boilerplate,
+        examples: data.examples,
+        constraints: data.constraints,
+        testCases: data.testCases,
+        hints: data.hints,
     };
 };
 

@@ -43,10 +43,13 @@ interface QuestionDetailSheetProps {
 }
 
 export function QuestionDetailSheet({ open, onOpenChange, question: initialQuestion, context }: QuestionDetailSheetProps) {
+
+  console.log(initialQuestion)
   const [question, setQuestion] = useState(initialQuestion);
   const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
   const { session } = useSession();
+
 
   useEffect(() => {
     setQuestion(initialQuestion);
