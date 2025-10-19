@@ -237,7 +237,7 @@ export async function addQuestionAction(prevState: any, formData: FormData) {
 export async function generateQuestionsAction(prevState: any, formData: FormData) {
   const jobTitle = formData.get('ai-job-title') as string;
   const keySkills = formData.get('ai-skills') as string;
-  const questionType = formData.get('ai-question-type') as 'mcq' | 'subjective';
+  const questionType = formData.get('ai-question-type') as 'mcq' | 'subjective' | 'code';
   const numQuestions = parseInt(formData.get('ai-num-questions') as string, 10);
   const difficulty = formData.get('ai-difficulty') as 'Easy' | 'Medium' | 'Hard';
   const addedBy = formData.get('addedBy') as string;
@@ -329,28 +329,19 @@ export async function deleteQuestionAction(questionId: string) {
 export async function updateQuestionAction(prevState: any, formData: FormData) {
   const questionId = formData.get('questionId') as string;
   const question = formData.get('question') as string;
-  const type = formData.get('type') as string;
+  const type = formData.get('type') as 'mcq' | 'subjective' | 'code';
   const difficultyString = formData.get('difficulty') as string;
   const categoryString = formData.get('category') as string;
-  const libraryType = formData.get('libraryType') as string;
-
-  // MCQ and Subjective specific fields
-  const answerSummary = formData.get('answerSummary') as string;
-  const options = formData.getAll('options') as string[];
-  const correctAnswer = formData.get('correctAnswer') as string;
+  const libraryType = formData.get('libraryType') as 'library' | 'custom';
 
   if (!questionId || !question || !type || !difficultyString || !categoryString) {
     return { error: 'Please fill out all required fields.' };
   }
-
+  
   const category = categoryString.split(',').map(item => item.trim()).filter(item => item);
-  const difficultyMap: { [key: string]: number } = {
-    'easy': 1,
-    'medium': 2,
-    'hard': 3,
-  };
+  const difficultyMap: { [key: string]: number } = { 'easy': 1, 'medium': 2, 'hard': 3 };
   const difficulty = difficultyMap[difficultyString] || 1;
-
+  
   const questionDoc: any = {
     question,
     type,
@@ -359,6 +350,7 @@ export async function updateQuestionAction(prevState: any, formData: FormData) {
   };
 
   if (type === 'subjective') {
+    const answerSummary = formData.get('answerSummary') as string;
     if (!answerSummary || answerSummary.trim().length < 10) {
       return { error: 'Answer summary must be at least 10 characters long.' };
     }
@@ -366,6 +358,8 @@ export async function updateQuestionAction(prevState: any, formData: FormData) {
   }
 
   if (type === 'mcq') {
+    const options = formData.getAll('options') as string[];
+    const correctAnswer = formData.get('correctAnswer') as string;
     const validOptions = options.filter(opt => opt.trim() !== '');
     if (validOptions.length < 2) {
       return { error: 'MCQs must have at least 2 valid options.' };
@@ -375,6 +369,64 @@ export async function updateQuestionAction(prevState: any, formData: FormData) {
     }
     questionDoc.options = validOptions;
     questionDoc.correctAnswer = correctAnswer;
+  }
+
+  if (type === 'code') {
+    const constraints = formData.getAll('constraints') as string[];
+    const hints = formData.getAll('hints') as string[];
+    const functionNames: { [key: string]: string } = {};
+    const boilerplates: { [key: string]: string } = {};
+    
+    let langIndex = 0;
+    while(formData.has(`language_${langIndex}`)) {
+        const lang = formData.get(`language_${langIndex}`) as string;
+        const funcName = formData.get(`functionName_${langIndex}`) as string;
+        const boilerplateText = formData.get(`boilerplate_${langIndex}`) as string;
+        if(lang && funcName && boilerplateText) {
+            functionNames[lang] = funcName;
+            boilerplates[lang] = boilerplateText;
+        }
+        langIndex++;
+    }
+
+    if (Object.keys(functionNames).length === 0) {
+        return { error: 'At least one language with function name and boilerplate is required for coding questions.' };
+    }
+    questionDoc.functionName = functionNames;
+    questionDoc.boilerplate = boilerplates;
+    questionDoc.constraints = constraints.filter(c => c.trim() !== '');
+    questionDoc.hints = hints.filter(h => h.trim() !== '');
+
+    const examples: { input: string; output: string }[] = [];
+    let i = 0;
+    while(formData.has(`example_input_${i}`)) {
+        examples.push({
+            input: formData.get(`example_input_${i}`) as string,
+            output: formData.get(`example_output_${i}`) as string,
+        });
+        i++;
+    }
+
+    const testCases: { input: string; output: string; sample: boolean }[] = [];
+    let j = 0;
+    while(formData.has(`testcase_input_${j}`)) {
+        testCases.push({
+            input: formData.get(`testcase_input_${j}`) as string,
+            output: formData.get(`testcase_output_${j}`) as string,
+            sample: formData.get(`testcase_sample_${j}`) === 'on',
+        });
+        j++;
+    }
+    
+    if (examples.length === 0 || examples.some(ex => !ex.input || !ex.output)) {
+        return { error: 'At least one complete example is required for coding questions.' };
+    }
+     if (testCases.length === 0 || testCases.some(tc => !tc.input || !tc.output)) {
+        return { error: 'At least one complete test case is required for coding questions.' };
+    }
+
+    questionDoc.examples = examples;
+    questionDoc.testCases = testCases;
   }
 
   try {
@@ -389,6 +441,7 @@ export async function updateQuestionAction(prevState: any, formData: FormData) {
     return { error: e.message };
   }
 }
+
 
 export async function addSubscriptionPlanAction(prevState: any, formData: FormData) {
   const name = formData.get('name') as string;
