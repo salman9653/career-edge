@@ -22,7 +22,6 @@ import { RichTextEditor } from '@/components/ui/rich-text-editor';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { languageOptions } from '@/lib/languageOptions.js';
-import 'highlight.js/styles/github-dark.css';
 import { CodeEditor } from '@/components/ui/code-editor';
 import { QuestionPreviewDialog } from '@/components/questions/question-preview-dialog';
 import type { Question } from '@/lib/types';
