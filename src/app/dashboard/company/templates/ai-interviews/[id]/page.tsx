@@ -294,7 +294,7 @@ export default function AiInterviewDetailPage() {
                                     <div className="flex items-center gap-4 text-sm text-muted-foreground pt-1">
                                         <Badge variant="secondary">{interview.difficulty}</Badge>
                                         <Badge variant="outline">{interview.tone}</Badge>
-                                        <span>Duration: {interview.duration} mins</span>
+                                        <span>Duration: ~{interview.duration} mins</span>
                                         <span>Questions: {interview.questionCount}</span>
                                     </div>
                                 </div>

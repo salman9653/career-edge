@@ -110,7 +110,7 @@ export function GenerateAiInterviewDialog({ open, onOpenChange }: GenerateAiInte
                     </Select>
                 </div>
                 <div className="grid gap-2">
-                    <Label htmlFor="duration">Duration (mins)</Label>
+                    <Label htmlFor="duration">Approx. Duration (mins)</Label>
                     <Input id="duration" name="duration" type="number" placeholder="e.g., 20" required />
                 </div>
             </div>
