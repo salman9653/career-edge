@@ -36,7 +36,7 @@ export function QuestionPreviewDialog({ open, onOpenChange, question }: Question
             <div className="space-y-6 pr-6">
                 <div className="prose dark:prose-invert max-w-full">
                     <h3>Question</h3>
-                    <p>{question.question}</p>
+                    <div dangerouslySetInnerHTML={{ __html: question.question }} />
                 </div>
 
                 {question.type === 'mcq' && (
