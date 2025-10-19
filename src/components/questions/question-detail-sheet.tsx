@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/sheet';
 import type { Question } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { CheckCircle2, Circle, Edit, Trash2, Pen, X, Check, Shield, Loader2, AlertTriangle } from 'lucide-react';
+import { CheckCircle2, Circle, Edit, Trash2, Pen, X, Check, Shield, Loader2, AlertTriangle, Code } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -32,6 +32,8 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import Link from 'next/link';
 import { useSession } from '@/hooks/use-session';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs';
+import { ScrollArea } from '../ui/scroll-area';
 
 interface QuestionDetailSheetProps {
   open: boolean;
@@ -115,7 +117,7 @@ export function QuestionDetailSheet({ open, onOpenChange, question: initialQuest
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent showClose={false} className="sm:max-w-xl w-full flex flex-col p-0">
+      <SheetContent showClose={false} className="sm:max-w-2xl w-full flex flex-col p-0">
         <TooltipProvider>
         <SheetHeader className="p-6 pb-4 border-b">
           <div className="flex items-start justify-between">
@@ -181,8 +183,8 @@ export function QuestionDetailSheet({ open, onOpenChange, question: initialQuest
             </div>
           </div>
         </SheetHeader>
-        <div className="flex-1 overflow-auto custom-scrollbar p-6">
-          <div className="space-y-6">
+        <ScrollArea className="flex-1">
+        <div className="p-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
                   <div className="flex flex-col gap-1">
                       <span className="text-muted-foreground">Type</span>
@@ -265,8 +267,77 @@ export function QuestionDetailSheet({ open, onOpenChange, question: initialQuest
                       <p className="text-muted-foreground">{question.answerSummary}</p>
                   </div>
               )}
+              
+              {question.type === 'code' && (
+                <div className="space-y-6">
+                    {question.functionName && question.boilerplate && (
+                    <div className="space-y-2">
+                        <h4 className="font-semibold">Languages & Boilerplate</h4>
+                        <Tabs defaultValue={Object.keys(question.functionName)[0]} className="w-full">
+                            <TabsList>
+                                {Object.keys(question.functionName).map(lang => (
+                                    <TabsTrigger key={lang} value={lang}>{lang}</TabsTrigger>
+                                ))}
+                            </TabsList>
+                            {Object.entries(question.functionName).map(([lang, name]) => (
+                                <TabsContent key={lang} value={lang}>
+                                    <div className="p-4 bg-muted rounded-md space-y-2">
+                                        <p className="text-sm"><span className="font-semibold">Function Name:</span> <code className="bg-background p-1 rounded-sm">{name}</code></p>
+                                        <h5 className="font-semibold text-sm pt-2">Boilerplate:</h5>
+                                        <pre className="bg-background p-2 rounded-md overflow-x-auto text-xs"><code>{question.boilerplate?.[lang]}</code></pre>
+                                    </div>
+                                </TabsContent>
+                            ))}
+                        </Tabs>
+                    </div>
+                    )}
+                    {question.examples && question.examples.length > 0 && (
+                        <div className="space-y-2">
+                            <h4 className="font-semibold">Examples</h4>
+                            {question.examples.map((ex, index) => (
+                                <div key={index} className="p-4 bg-muted rounded-md">
+                                    <h5 className="font-semibold text-sm mb-2">Example {index + 1}</h5>
+                                    <div className="space-y-2 text-xs">
+                                        <div><span className="font-semibold">Input:</span> <code className="bg-background p-1 rounded-sm">{ex.input}</code></div>
+                                        <div><span className="font-semibold">Output:</span> <code className="bg-background p-1 rounded-sm">{ex.output}</code></div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                     {question.constraints && question.constraints.length > 0 && (
+                        <div className="space-y-2">
+                            <h4 className="font-semibold">Constraints</h4>
+                            <ul className="list-disc list-inside text-muted-foreground space-y-1 text-sm">
+                                {question.constraints.map((c, i) => <li key={i}>{c}</li>)}
+                            </ul>
+                        </div>
+                    )}
+                     {question.testCases && question.testCases.length > 0 && (
+                        <div className="space-y-2">
+                            <h4 className="font-semibold">Test Cases</h4>
+                            <ul className="space-y-2 text-sm">
+                                {question.testCases.map((tc, i) => (
+                                    <li key={i} className="flex items-center gap-2">
+                                       <span className="font-semibold">{tc.sample ? 'Sample:' : 'Hidden:'}</span>
+                                       <code className="bg-muted p-1 rounded-sm text-xs">Input: {tc.input}, Output: {tc.output}</code>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                    {question.hints && question.hints.length > 0 && (
+                         <div className="space-y-2">
+                            <h4 className="font-semibold">Hints</h4>
+                            <ul className="list-disc list-inside text-muted-foreground space-y-1 text-sm">
+                                {question.hints.map((h, i) => <li key={i}>{h}</li>)}
+                            </ul>
+                        </div>
+                    )}
+                </div>
+              )}
           </div>
-        </div>
+        </ScrollArea>
         </TooltipProvider>
       </SheetContent>
     </Sheet>
