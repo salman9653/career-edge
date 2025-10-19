@@ -298,7 +298,7 @@ export function AiInterviewsTable({ onCreate }: AiInterviewsTableProps) {
                                             </span>
                                         </TableCell>
                                         <TableCell>{formatDate(interview.createdAt)}</TableCell>
-                                        <TableCell>{interview.duration} min</TableCell>
+                                        <TableCell>~{interview.duration} min</TableCell>
                                         <TableCell>{interview.questionCount}</TableCell>
                                         <TableCell><Badge variant="secondary">{interview.difficulty}</Badge></TableCell>
                                         <TableCell><Badge variant="outline">{interview.tone}</Badge></TableCell>
