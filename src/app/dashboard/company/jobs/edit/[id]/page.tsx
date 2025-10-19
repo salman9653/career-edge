@@ -168,7 +168,7 @@ export default function EditJobPage() {
         const selectedAssessment = assessments.find(a => a.id === newRoundAssessmentId);
         roundData.assessmentId = newRoundAssessmentId;
         roundData.assessmentName = selectedAssessment?.name;
-        if (newRoundType === 'assessment') {
+        if (newRoundType === 'assessment' || newRoundType === 'coding assessment') {
             roundData.selectionCriteria = Number(newRoundSelectionCriteria);
         }
     } else if (newRoundType === 'ai interview') {
@@ -481,7 +481,7 @@ export default function EditJobPage() {
                                         <SelectItem value="screening" disabled={hasScreeningRound && (editingRoundId === null || rounds.find(r => r.id === editingRoundId)?.type !== 'screening')}>Screening</SelectItem>
                                         <SelectItem value="telephonic" disabled>Telephonic</SelectItem>
                                         <SelectItem value="assessment">Assessment</SelectItem>
-                                        <SelectItem value="coding assessment" disabled>Coding Assessment</SelectItem>
+                                        <SelectItem value="coding assessment">Coding Assessment</SelectItem>
                                         <SelectItem value="ai interview">AI Interview</SelectItem>
                                         <SelectItem value="live interview" disabled>Live Interview</SelectItem>
                                     </SelectContent>
@@ -489,7 +489,7 @@ export default function EditJobPage() {
                                 </div>
                                 </div>
                                 
-                                {newRoundType === 'assessment' && (
+                                {(newRoundType === 'assessment' || newRoundType === 'coding assessment') && (
                                 <div className="space-y-2">
                                     <Label htmlFor="new-round-assessment">Assessment Name</Label>
                                     <Select value={newRoundAssessmentId} onValueChange={setNewRoundAssessmentId}>
@@ -539,7 +539,7 @@ export default function EditJobPage() {
                                     </div>
                                 )}
 
-                                {newRoundType === 'assessment' && (
+                                {(newRoundType === 'assessment' || newRoundType === 'coding assessment') && (
                                 <div className="space-y-2">
                                     <Label htmlFor="new-round-criteria">Selection Criteria (%)</Label>
                                     <Input

@@ -16,7 +16,7 @@ import { db } from '@/lib/firebase/config';
 import { AssessmentContext } from '@/context/assessment-context';
 import type { Assessment, Question, Round } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { SelectScreeningQuestions } from '../_components/select-screening-questions';
+import { SelectScreeningQuestions } from '../../jobs/_components/select-screening-questions';
 import { Reorder } from 'framer-motion';
 import { createJobAction } from '@/app/actions';
 import { Switch } from '@/components/ui/switch';
@@ -132,7 +132,7 @@ export default function NewJobPage() {
         const selectedAssessment = assessments.find(a => a.id === newRoundAssessmentId);
         roundData.assessmentId = newRoundAssessmentId;
         roundData.assessmentName = selectedAssessment?.name;
-        if (newRoundType === 'assessment') {
+        if (newRoundType === 'assessment' || newRoundType === 'coding assessment') {
             roundData.selectionCriteria = Number(newRoundSelectionCriteria);
         }
     } else if (newRoundType === 'ai interview') {
@@ -431,7 +431,7 @@ export default function NewJobPage() {
                                         <SelectItem value="screening" disabled={hasScreeningRound && (editingRoundId === null || rounds.find(r => r.id === editingRoundId)?.type !== 'screening')}>Screening</SelectItem>
                                         <SelectItem value="telephonic" disabled>Telephonic</SelectItem>
                                         <SelectItem value="assessment">Assessment</SelectItem>
-                                        <SelectItem value="coding assessment" disabled>Coding Assessment</SelectItem>
+                                        <SelectItem value="coding assessment">Coding Assessment</SelectItem>
                                         <SelectItem value="ai interview">AI Interview</SelectItem>
                                         <SelectItem value="live interview" disabled>Live Interview</SelectItem>
                                     </SelectContent>
@@ -439,7 +439,7 @@ export default function NewJobPage() {
                                 </div>
                                 </div>
                                 
-                                {newRoundType === 'assessment' && (
+                                {(newRoundType === 'assessment' || newRoundType === 'coding assessment') && (
                                 <div className="space-y-2">
                                     <Label htmlFor="new-round-assessment">Assessment Name</Label>
                                     <Select value={newRoundAssessmentId} onValueChange={setNewRoundAssessmentId}>
@@ -489,7 +489,7 @@ export default function NewJobPage() {
                                     </div>
                                 )}
 
-                                {newRoundType === 'assessment' && (
+                                {(newRoundType === 'assessment' || newRoundType === 'coding assessment') && (
                                 <div className="space-y-2">
                                     <Label htmlFor="new-round-criteria">Selection Criteria (%)</Label>
                                     <Input
