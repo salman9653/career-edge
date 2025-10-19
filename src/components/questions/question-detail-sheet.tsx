@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -240,7 +239,7 @@ export function QuestionDetailSheet({ open, onOpenChange, question: initialQuest
               </div>
               <div className="space-y-2">
                   <h4 className="font-semibold">Question Statement</h4>
-                  <p className="text-muted-foreground">{question.question}</p>
+                  <div className="text-muted-foreground prose dark:prose-invert max-w-full" dangerouslySetInnerHTML={{ __html: question.question }} />
               </div>
 
               {question.type === 'mcq' && question.options && (
