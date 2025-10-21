@@ -180,7 +180,11 @@ export default function EditJobPage() {
     if (editingRoundId !== null) {
         setRounds(rounds.map(r => r.id === editingRoundId ? { ...r, ...roundData, id: editingRoundId } : r));
     } else {
-        setRounds([...rounds, { ...roundData, id: Date.now() }]);
+        if (newRoundType === 'screening') {
+            setRounds([{ ...roundData, id: Date.now() }, ...rounds]);
+        } else {
+            setRounds([...rounds, { ...roundData, id: Date.now() }]);
+        }
     }
     
     resetRoundForm();
@@ -411,50 +415,51 @@ export default function EditJobPage() {
                             <h4 className="font-semibold mb-4">Configured Rounds</h4>
                             <div className="flex-1 relative">
                                 <ScrollArea className="absolute inset-0 pr-4">
-                                     <Reorder.Group axis="y" values={rounds} onReorder={setRounds} className="space-y-2">
-                                        {rounds.map((round) => (
-                                        <Reorder.Item key={round.id} value={round}>
-                                        <div className="flex items-center gap-2 p-3 rounded-md border bg-secondary">
-                                            <button className="p-1 text-muted-foreground cursor-grab active:cursor-grabbing">
-                                                <GripVertical className="h-5 w-5" />
-                                            </button>
-                                            <div className="flex-1 text-sm">
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <p className="font-medium">{round.name} <span className="text-muted-foreground capitalize">({round.type})</span></p>
-                                                    {round.assessmentName && <p className="text-xs text-muted-foreground">Assessment: {round.assessmentName}</p>}
-                                                    {round.aiInterviewName && <p className="text-xs text-muted-foreground">AI Interview: {round.aiInterviewName}</p>}
-                                                    {round.selectionCriteria && <p className="text-xs text-muted-foreground">Passing Criteria: {round.selectionCriteria}%</p>}
-                                                    {round.type === 'screening' && round.questions && (
-                                                        <p className="text-xs text-muted-foreground mt-1">
-                                                            {round.questions.length.toString().padStart(2, '0')} screening questions selected
-                                                        </p>
-                                                    )}
+                                     <div className="space-y-2">
+                                        {rounds.find(r => r.type === 'screening') && (
+                                            <div className="flex items-center gap-2 p-3 rounded-md border bg-secondary/50">
+                                                <div className="p-1 text-muted-foreground cursor-not-allowed opacity-50"><GripVertical className="h-5 w-5" /></div>
+                                                <div className="flex-1 text-sm">
+                                                    <p className="font-medium">{rounds.find(r => r.type === 'screening')?.name} <span className="text-muted-foreground capitalize">(screening)</span></p>
+                                                    {rounds.find(r => r.type === 'screening')?.questions && <p className="text-xs text-muted-foreground mt-1">{rounds.find(r => r.type === 'screening')?.questions?.length.toString().padStart(2, '0')} screening questions selected</p>}
                                                 </div>
-                                                {round.type !== 'screening' && (
-                                                  <Badge variant={round.autoProceed ? 'default' : 'outline'}>
-                                                      {round.autoProceed ? 'Auto' : 'Manual'}
-                                                  </Badge>
+                                                <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditRound(rounds.find(r => r.type === 'screening')!)}><Edit className="h-4 w-4" /></Button>
+                                                <Button type="button" variant="ghost" size="icon" onClick={() => handleRemoveRound(rounds.find(r => r.type === 'screening')!.id)} className="h-8 w-8"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                            </div>
+                                        )}
+                                        <Reorder.Group axis="y" values={rounds.filter(r => r.type !== 'screening')} onReorder={(newOrder) => {
+                                            const screeningRound = rounds.find(r => r.type === 'screening');
+                                            setRounds(screeningRound ? [screeningRound, ...newOrder] : newOrder);
+                                        }} className="space-y-2">
+                                        {rounds.filter(r => r.type !== 'screening').map((round) => (
+                                        <Reorder.Item key={round.id} value={round}>
+                                            <div className="flex items-center gap-2 p-3 rounded-md border bg-secondary">
+                                                <button className="p-1 text-muted-foreground cursor-grab active:cursor-grabbing"><GripVertical className="h-5 w-5" /></button>
+                                                <div className="flex-1 text-sm">
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <p className="font-medium">{round.name} <span className="text-muted-foreground capitalize">({round.type})</span></p>
+                                                        {round.assessmentName && <p className="text-xs text-muted-foreground">Assessment: {round.assessmentName}</p>}
+                                                        {round.aiInterviewName && <p className="text-xs text-muted-foreground">AI Interview: {round.aiInterviewName}</p>}
+                                                        {round.selectionCriteria && <p className="text-xs text-muted-foreground">Passing Criteria: {round.selectionCriteria}%</p>}
+                                                    </div>
+                                                    <Badge variant={round.autoProceed ? 'default' : 'outline'}>{round.autoProceed ? 'Auto' : 'Manual'}</Badge>
+                                                </div>
+                                                </div>
+                                                {editingRoundId === round.id ? (
+                                                    <span className="text-sm font-medium text-muted-foreground animate-pulse">editing...</span>
+                                                ) : (
+                                                    <>
+                                                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditRound(round)}><Edit className="h-4 w-4" /></Button>
+                                                    <Button type="button" variant="ghost" size="icon" onClick={() => handleRemoveRound(round.id)} className="h-8 w-8"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                                    </>
                                                 )}
                                             </div>
-                                            </div>
-                                            {editingRoundId === round.id ? (
-                                                <span className="text-sm font-medium text-muted-foreground animate-pulse">editing...</span>
-                                            ) : (
-                                                <>
-                                                <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditRound(round)}>
-                                                    <Edit className="h-4 w-4" />
-                                                </Button>
-                                                <Button type="button" variant="ghost" size="icon" onClick={() => handleRemoveRound(round.id)} className="h-8 w-8">
-                                                    <Trash2 className="h-4 w-4 text-destructive" />
-                                                </Button>
-                                                </>
-                                            )}
-                                        </div>
                                         </Reorder.Item>
                                         ))}
+                                        </Reorder.Group>
                                         {rounds.length === 0 && <p className="text-sm text-muted-foreground text-center py-4 border-2 border-dashed rounded-lg">No rounds added yet.</p>}
-                                    </Reorder.Group>
+                                    </div>
                                 </ScrollArea>
                             </div>
                         </div>
