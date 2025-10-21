@@ -176,9 +176,9 @@ export default function EditQuestionPage() {
   const removeHint = (index: number) => hints.length > 1 && setHints(hints.filter((_, i) => i !== index));
 
   const handleAddLanguage = () => setLanguageSnippets([...languageSnippets, { language: 'javascript', functionName: '', boilerplate: '' }]);
-  const handleSnippetChange = (index: number, field: 'language' | 'functionName' | 'boilerplate', value: string) => {
+  const handleSnippetChange = (index: number, field: 'language' | 'functionName' | 'boilerplate', value: string | undefined) => {
     const newSnippets = [...languageSnippets];
-    newSnippets[index][field as keyof LanguageSnippet] = value;
+    newSnippets[index][field as keyof LanguageSnippet] = value || '';
     setLanguageSnippets(newSnippets);
   };
   const removeLanguage = (index: number) => setLanguageSnippets(languageSnippets.filter((_, i) => i !== index));

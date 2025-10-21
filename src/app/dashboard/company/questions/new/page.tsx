@@ -189,9 +189,9 @@ export default function AddCompanyQuestionPage() {
     setLanguageSnippets([...languageSnippets, { language: 'javascript', functionName: '', boilerplate: '' }]);
   };
 
-  const handleSnippetChange = (index: number, field: 'language' | 'functionName' | 'boilerplate', value: string) => {
+  const handleSnippetChange = (index: number, field: 'language' | 'functionName' | 'boilerplate', value: string | undefined) => {
     const newSnippets = [...languageSnippets];
-    newSnippets[index][field as keyof LanguageSnippet] = value;
+    newSnippets[index][field as keyof LanguageSnippet] = value || '';
     setLanguageSnippets(newSnippets);
   };
 
