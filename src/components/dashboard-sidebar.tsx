@@ -87,7 +87,20 @@ const NotificationPanel = () => {
         }
         return name.substring(0, 2).toUpperCase();
     }
-
+    
+    const unreadNotifications = notifications.filter(n => !n.isRead);
+    const readNotifications = notifications.filter(n => n.isRead);
+    
+    let notificationsToShow: Notification[] = unreadNotifications;
+    const limit = 7;
+    
+    if (unreadNotifications.length < limit) {
+        const remainingCount = limit - unreadNotifications.length;
+        notificationsToShow = [
+            ...unreadNotifications,
+            ...readNotifications.slice(0, remainingCount)
+        ];
+    }
 
     return (
         <div className="flex flex-col h-[400px]">
@@ -104,7 +117,7 @@ const NotificationPanel = () => {
             <ScrollArea className="flex-1">
                 <div className="space-y-3 p-4">
                     {notifications.length > 0 ? (
-                        notifications.slice(0, 7).map((n) => (
+                        notificationsToShow.map((n) => (
                             <div
                                 key={n.id}
                                 className={cn(
