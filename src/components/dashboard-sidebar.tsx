@@ -3,7 +3,7 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { Home, Package, User, Users, Users2, LineChart, Search, Settings, LogOut, Moon, Sun, Briefcase, Library, FileCheck, ClipboardList, BookUser, Book, BookCopy, CreditCard, TicketPercent, Palette, Laptop, Check, ChevronRight, HelpCircle, MessageSquare, Sparkles, PanelLeft, AppWindow, Bell } from "lucide-react"
+import { Home, Package, User, Users, Users2, LineChart, Search, Settings, LogOut, Moon, Sun, Briefcase, Library, FileCheck, ClipboardList, BookUser, Book, BookCopy, CreditCard, TicketPercent, Palette, Laptop, Check, ChevronRight, HelpCircle, MessageSquare, Sparkles, PanelLeft, AppWindow, Bell, MoreVertical } from "lucide-react"
 import { useTheme as useNextTheme } from "next-themes"
 import { useState, useContext, useTransition } from "react"
 import { useTheme } from "@/context/dashboard-theme-context"
@@ -104,12 +104,13 @@ const NotificationPanel = () => {
             <ScrollArea className="flex-1">
                 <div className="space-y-3 p-4">
                     {notifications.length > 0 ? (
-                        notifications.map((n) => (
+                        notifications.slice(0, 7).map((n) => (
                             <div
                                 key={n.id}
                                 className={cn(
                                     "p-3 rounded-lg cursor-pointer transition-colors hover:bg-accent",
-                                    !n.isRead && "bg-blue-500/10"
+                                    !n.isRead && "bg-blue-500/10",
+                                    n.isRead && "opacity-70 hover:opacity-100"
                                 )}
                                 onClick={() => handleNotificationClick(n)}
                             >
@@ -123,7 +124,7 @@ const NotificationPanel = () => {
                                             {formatDistanceToNow(n.createdAt.toDate(), { addSuffix: true })}
                                         </p>
                                     </div>
-                                    {!n.isRead && (
+                                     {!n.isRead && (
                                         <div className="h-2 w-2 rounded-full bg-dash-primary mt-2" />
                                     )}
                                 </div>
@@ -351,7 +352,6 @@ export function DashboardSidebar({ role, user }: DashboardSidebarProps) {
             mobileNavItems = [];
     }
 
-    const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isSheetOpen, setIsSheetOpen] = useState(false);
 
     return (
@@ -386,7 +386,7 @@ export function DashboardSidebar({ role, user }: DashboardSidebarProps) {
                        <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <button className="flex flex-col items-center justify-center text-muted-foreground hover:text-dash-primary w-full h-full">
-                                    <User className="h-5 w-5" />
+                                    <MoreVertical className="h-5 w-5" />
                                     <span className="text-xs mt-1">More</span>
                                 </button>
                             </DropdownMenuTrigger>
