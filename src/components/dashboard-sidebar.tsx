@@ -6,8 +6,9 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { Home, Package, User, Users, Users2, LineChart, Search, Settings, LogOut, Moon, Sun, Briefcase, Library, FileCheck, ClipboardList, BookUser, Book, BookCopy, CreditCard, TicketPercent, Palette, Laptop, Check, ChevronRight, HelpCircle, MessageSquare, Sparkles, PanelLeft, AppWindow, Bell } from "lucide-react"
 import { useTheme as useNextTheme } from "next-themes"
-import { useState } from "react"
+import { useState, useContext } from "react"
 import { useTheme } from "@/context/dashboard-theme-context"
+import { formatDistanceToNow } from 'date-fns'
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -33,6 +34,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
 import { AiChatPopup } from "./ai-chat-popup"
 import { Sheet, SheetTrigger, SheetContent } from "./ui/sheet"
 import * as SheetPrimitive from "@radix-ui/react-dialog"
+import { useNotifications } from "@/context/notification-context"
+import type { Notification } from "@/lib/types"
+import { ScrollArea } from "./ui/scroll-area"
+import { Badge } from "./ui/badge"
 
 const candidateNavItems: NavItem[] = [
     { href: "/dashboard", label: "Dashboard", icon: Home },
@@ -65,9 +70,65 @@ interface DashboardSidebarProps {
   user: UserSession | null;
 }
 
+const NotificationPanel = () => {
+    const { notifications, unreadCount, markAllAsRead } = useNotifications();
+    const router = useRouter();
+
+    const handleNotificationClick = (notification: Notification) => {
+        // Here you would also mark the single notification as read
+        router.push(notification.link);
+    };
+
+    return (
+        <div className="p-4">
+            <div className="flex justify-between items-center mb-4">
+                <p className="font-semibold">Notifications</p>
+                {unreadCount > 0 && (
+                    <Button variant="link" size="sm" className="p-0 h-auto" onClick={markAllAsRead}>
+                        Mark all as read
+                    </Button>
+                )}
+            </div>
+            <ScrollArea className="h-[400px]">
+                <div className="space-y-3">
+                    {notifications.length > 0 ? (
+                        notifications.map((n) => (
+                            <div
+                                key={n.id}
+                                className={cn(
+                                    "p-3 rounded-lg cursor-pointer transition-colors hover:bg-accent",
+                                    !n.isRead && "bg-blue-500/10"
+                                )}
+                                onClick={() => handleNotificationClick(n)}
+                            >
+                                <div className="flex items-start gap-3">
+                                    <Avatar className="h-8 w-8 mt-1">
+                                        <AvatarFallback>{n.senderName.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1">
+                                        <p className="text-sm">{n.message}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {formatDistanceToNow(n.createdAt.toDate(), { addSuffix: true })}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="text-center text-sm text-muted-foreground py-12">
+                            No new notifications
+                        </div>
+                    )}
+                </div>
+            </ScrollArea>
+        </div>
+    );
+};
+
 const SidebarContent = ({ navItems, user }: { navItems: NavItem[], user: UserSession | null }) => {
     const pathname = usePathname();
     const router = useRouter();
+    const { unreadCount } = useNotifications();
 
     const { setTheme: setNextTheme } = useNextTheme();
 
@@ -81,7 +142,7 @@ const SidebarContent = ({ navItems, user }: { navItems: NavItem[], user: UserSes
         if (!name) return '';
         const names = name.split(' ');
         if (names.length > 1) {
-            return `${'names[0][0]'}${names[names.length - 1][0]}`.toUpperCase();
+            return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
         }
         return name.substring(0, 2).toUpperCase();
     }
@@ -131,17 +192,15 @@ const SidebarContent = ({ navItems, user }: { navItems: NavItem[], user: UserSes
                 <div className="hidden md:flex items-center justify-center gap-2">
                     <Popover>
                         <PopoverTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-11 w-11 rounded-lg bg-muted/50">
+                             <Button variant="ghost" size="icon" className="h-11 w-11 rounded-lg bg-muted/50 relative">
                                 <Bell className="h-5 w-5"/>
+                                {unreadCount > 0 && (
+                                    <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 justify-center rounded-full p-0">{unreadCount}</Badge>
+                                )}
                             </Button>
                         </PopoverTrigger>
                          <PopoverContent className="w-[380px] p-0 mr-4">
-                            <div className="p-4">
-                                <p className="font-semibold">Notifications</p>
-                                <div className="text-center text-sm text-muted-foreground py-12">
-                                    No new notifications
-                                </div>
-                            </div>
+                            <NotificationPanel />
                          </PopoverContent>
                     </Popover>
                     <Button asChild variant="ghost" size="icon" className="h-11 w-11 rounded-lg bg-muted/50">

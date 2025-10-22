@@ -206,3 +206,15 @@ export interface Round {
     questionIds?: string[];
     autoProceed?: boolean;
 }
+
+export interface Notification {
+  id: string;
+  recipientId: string;
+  senderId: string;
+  senderName: string;
+  type: 'NEW_APPLICATION' | 'STATUS_UPDATE';
+  message: string;
+  link: string;
+  isRead: boolean;
+  createdAt: any;
+}
