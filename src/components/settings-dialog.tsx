@@ -937,15 +937,12 @@ export function SettingsDialog({ open, onOpenChange, initialTab = 'Account' }: S
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-4xl h-[600px] p-0 gap-0">
               <DashboardLayoutWrapper>
-                <DialogHeader className="sr-only">
-                    <DialogTitle>Settings</DialogTitle>
-                    <DialogDescription>
-                        Manage your account settings, appearance, and notification preferences.
-                    </DialogDescription>
-                </DialogHeader>
                 <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] h-full min-h-0 rounded-lg overflow-hidden">
                     <div className="border-r p-6 flex flex-col gap-6 bg-muted/50">
-                        <h2 className="font-headline text-2xl">Settings</h2>
+                       <DialogHeader className="text-left">
+                            <DialogTitle className="font-headline text-2xl">Settings</DialogTitle>
+                            <DialogDescription>Manage your account and app settings.</DialogDescription>
+                        </DialogHeader>
                         <nav className="flex flex-col gap-1">
                             {settingsNav.map((item) => (
                                 <Button
