@@ -133,8 +133,7 @@ const NotificationPanel = () => {
                                     <Avatar className="h-8 w-8 mt-1">
                                         <AvatarFallback>{getInitials(n.senderName)}</AvatarFallback>
                                     </Avatar>
-                                    <div className="flex-1">
-                                        <p className="text-sm">
+                                    <div className="flex-1 text-sm">
                                             {n.applicantCount && n.applicantCount > 1 ? (
                                                 <TooltipProvider>
                                                     <Tooltip>
@@ -154,8 +153,7 @@ const NotificationPanel = () => {
                                                 <span className="font-bold">{n.senderName}</span>
                                             )}
                                             {n.message.replace(n.senderName, '').replace(`${n.applicantCount} new candidates`, '')}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground">
+                                        <p className="text-xs text-muted-foreground mt-1">
                                             {formatDistanceToNow(n.createdAt.toDate(), { addSuffix: true })}
                                         </p>
                                     </div>
