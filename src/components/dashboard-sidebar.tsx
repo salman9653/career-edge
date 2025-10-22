@@ -1,4 +1,5 @@
 
+
 'use client'
 
 import Link from "next/link"
@@ -36,6 +37,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNotifications } from "@/context/notification-context"
 import { ScrollArea } from "./ui/scroll-area"
 import { Badge } from "./ui/badge"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip"
 
 const candidateNavItems: NavItem[] = [
     { href: "/dashboard", label: "Dashboard", icon: Home },
@@ -132,7 +134,27 @@ const NotificationPanel = () => {
                                         <AvatarFallback>{getInitials(n.senderName)}</AvatarFallback>
                                     </Avatar>
                                     <div className="flex-1">
-                                        <p className="text-sm">{n.message}</p>
+                                        <p className="text-sm">
+                                            {n.applicantCount && n.applicantCount > 1 ? (
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <span className="font-bold cursor-pointer hover:underline">
+                                                                {n.applicantCount} new candidates
+                                                            </span>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <ul className="list-disc list-inside">
+                                                                {n.newApplicantNames?.map((name, i) => <li key={i}>{name}</li>)}
+                                                            </ul>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            ) : (
+                                                <span className="font-bold">{n.senderName}</span>
+                                            )}
+                                            {n.message.replace(n.senderName, '').replace(`${n.applicantCount} new candidates`, '')}
+                                        </p>
                                         <p className="text-xs text-muted-foreground">
                                             {formatDistanceToNow(n.createdAt.toDate(), { addSuffix: true })}
                                         </p>

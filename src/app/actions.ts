@@ -3,7 +3,7 @@
 "use server";
 
 import { analyzeResumeForJobMatching } from "@/ai/flows/resume-analysis-for-job-matching";
-import { addDoc, collection, deleteDoc, doc, serverTimestamp, updateDoc, setDoc, getDoc, FieldValue, deleteField, arrayRemove, writeBatch, increment, arrayUnion } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, serverTimestamp, updateDoc, setDoc, getDoc, FieldValue, deleteField, arrayRemove, writeBatch, increment, arrayUnion, query, where, getDocs } from "firebase/firestore";
 import { db, auth, storage } from "@/lib/firebase/config";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { redirect } from "next/navigation";
@@ -1270,4 +1270,3 @@ export async function generateTextAction(prevState: any, formData: FormData): Pr
     return { error: e.message };
   }
 }
-

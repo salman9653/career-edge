@@ -68,10 +68,10 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
                 // Create summary notifications for groups
                 for (const jobId in jobApplicationGroups) {
                     const group = jobApplicationGroups[jobId];
+                    const latestNotification = group[0]; // They are sorted by date
+                    const applicantNames = group.map(n => n.senderName).filter(Boolean);
+                    
                     if (group.length > 1) {
-                        const latestNotification = group[0]; // They are sorted by date
-                        const applicantNames = group.map(n => n.senderName).filter(Boolean);
-                        
                         groupedNotifications.unshift({
                             ...latestNotification,
                             id: `group-${jobId}-${Date.now()}`, // Create a stable but unique ID for the session
