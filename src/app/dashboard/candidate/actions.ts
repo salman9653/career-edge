@@ -1,7 +1,7 @@
 
 'use server';
 
-import { doc, setDoc, serverTimestamp, updateDoc, arrayUnion, arrayRemove, getDoc } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, updateDoc, arrayUnion, arrayRemove, getDoc, collection, addDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { revalidatePath } from 'next/cache';
 import { UserSession } from '@/hooks/use-session';
@@ -96,6 +96,19 @@ export async function applyForJobAction(input: ApplyForJobInput) {
     };
     
     await setDoc(applicantRef, applicationData);
+
+    // Create a notification for the company
+    const notificationData = {
+        recipientId: jobData.companyId,
+        senderId: candidateId,
+        senderName: candidateName,
+        type: 'NEW_APPLICATION',
+        message: `${candidateName} has applied for the position of ${jobData.title}.`,
+        link: `/dashboard/company/ats/${jobId}`,
+        isRead: false,
+        createdAt: serverTimestamp(),
+    };
+    await addDoc(collection(db, 'notifications'), notificationData);
 
     revalidatePath(`/dashboard/candidate/jobs/${jobId}`);
     revalidatePath(`/dashboard/candidate/applications`);
