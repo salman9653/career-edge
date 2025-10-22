@@ -14,6 +14,7 @@ import { AssessmentProvider } from '@/context/assessment-context';
 import { QuestionProvider } from '@/context/question-context';
 import { Loader2 } from 'lucide-react';
 import { NotificationProvider } from '@/context/notification-context';
+import { AiInterviewProvider } from '@/context/ai-interview-context';
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     const router = useRouter();
@@ -46,11 +47,13 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                         <JobProvider>
                              <AssessmentProvider>
                                 <QuestionProvider>
-                                  <NotificationProvider>
-                                    <SettingsDialog open={isSettingsOpen} onOpenChange={handleSettingsOpenChange} initialTab={searchParams.get('tab') || 'Account'} />
-                                    {children}
-                                    <Toaster />
-                                  </NotificationProvider>
+                                  <AiInterviewProvider>
+                                    <NotificationProvider>
+                                      <SettingsDialog open={isSettingsOpen} onOpenChange={handleSettingsOpenChange} initialTab={searchParams.get('tab') || 'Account'} />
+                                      {children}
+                                      <Toaster />
+                                    </NotificationProvider>
+                                  </AiInterviewProvider>
                                 </QuestionProvider>
                             </AssessmentProvider>
                         </JobProvider>
