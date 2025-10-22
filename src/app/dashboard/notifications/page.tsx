@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useSession } from '@/hooks/use-session';
@@ -12,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { Bell, Loader2 } from 'lucide-react';
 import type { Notification } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function NotificationsPage() {
   const { session, loading: sessionLoading } = useSession();
@@ -67,7 +69,8 @@ export default function NotificationsPage() {
                                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                             </div>
                         ) : notifications.length > 0 ? (
-                            notifications.map((n) => (
+                            <TooltipProvider>
+                            {notifications.map((n) => (
                                 <div
                                     key={n.id}
                                     className={cn(
@@ -81,8 +84,29 @@ export default function NotificationsPage() {
                                             <AvatarFallback>{getInitials(n.senderName)}</AvatarFallback>
                                         </Avatar>
                                         <div className="flex-1">
-                                            <p className="text-sm">{n.message}</p>
-                                            <p className="text-xs text-muted-foreground">
+                                            <div className="text-sm">
+                                                {n.applicantCount && n.applicantCount > 1 ? (
+                                                     <p>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <span className="font-bold cursor-pointer hover:underline">
+                                                                    {n.applicantCount} new candidates
+                                                                </span>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <ul className="list-disc list-inside">
+                                                                    {n.newApplicantNames?.map((name, i) => <li key={i}>{name}</li>)}
+                                                                </ul>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                        {` have applied for `}
+                                                        <span className="font-bold">{n.jobTitle}</span>.
+                                                    </p>
+                                                ) : (
+                                                    <p>{n.message}</p>
+                                                )}
+                                            </div>
+                                            <p className="text-xs text-muted-foreground mt-1">
                                                 {formatDistanceToNow(n.createdAt.toDate(), { addSuffix: true })}
                                             </p>
                                         </div>
@@ -91,7 +115,8 @@ export default function NotificationsPage() {
                                         )}
                                     </div>
                                 </div>
-                            ))
+                            ))}
+                            </TooltipProvider>
                         ) : (
                             <div className="text-center text-sm text-muted-foreground py-12">
                                 <Bell className="mx-auto h-8 w-8 mb-2" />
