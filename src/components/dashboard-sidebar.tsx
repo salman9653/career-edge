@@ -4,7 +4,7 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { Home, Package, User, Users, Users2, LineChart, Search, Settings, LogOut, Moon, Sun, Briefcase, Library, FileCheck, ClipboardList, BookUser, Book, BookCopy, CreditCard, TicketPercent, Palette, Laptop, Check, ChevronRight, HelpCircle, MessageSquare, Sparkles, PanelLeft, AppWindow } from "lucide-react"
+import { Home, Package, User, Users, Users2, LineChart, Search, Settings, LogOut, Moon, Sun, Briefcase, Library, FileCheck, ClipboardList, BookUser, Book, BookCopy, CreditCard, TicketPercent, Palette, Laptop, Check, ChevronRight, HelpCircle, MessageSquare, Sparkles, PanelLeft, AppWindow, Bell } from "lucide-react"
 import { useTheme as useNextTheme } from "next-themes"
 import { useState } from "react"
 import { useTheme } from "@/context/dashboard-theme-context"
@@ -127,7 +127,8 @@ const SidebarContent = ({ navItems, user }: { navItems: NavItem[], user: UserSes
                 </nav>
             </div>
             <div className="mt-auto p-4 space-y-2">
-                <div className="flex items-center gap-0 rounded-md border p-1">
+                {/* Mobile and smaller screens */}
+                <div className="flex items-center gap-0 rounded-md border p-1 md:hidden">
                     <Button
                         asChild
                         variant="ghost"
@@ -141,23 +142,6 @@ const SidebarContent = ({ navItems, user }: { navItems: NavItem[], user: UserSes
                             Inbox
                         </Link>
                     </Button>
-                    <div className="hidden md:block">
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    className={cn(
-                                        "flex items-center justify-center rounded-r-md p-3 text-muted-foreground transition-all hover:text-dash-primary hover:bg-accent border-l"
-                                    )}
-                                >
-                                    <Sparkles className="h-6 w-6" />
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent side="right" align="start" className="w-[400px] p-0 rounded-lg overflow-hidden">
-                                <AiChatPopup />
-                            </PopoverContent>
-                        </Popover>
-                    </div>
                      <div className="block md:hidden">
                         <Button
                             asChild
@@ -172,6 +156,41 @@ const SidebarContent = ({ navItems, user }: { navItems: NavItem[], user: UserSes
                         </Button>
                     </div>
                 </div>
+
+                {/* Desktop and larger screens */}
+                <div className="hidden md:flex items-center justify-center gap-2">
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-11 w-11 rounded-lg bg-muted/50">
+                                <Bell className="h-5 w-5"/>
+                            </Button>
+                        </PopoverTrigger>
+                         <PopoverContent className="w-[380px] p-0 mr-4">
+                            <div className="p-4">
+                                <p className="font-semibold">Notifications</p>
+                                <div className="text-center text-sm text-muted-foreground py-12">
+                                    No new notifications
+                                </div>
+                            </div>
+                         </PopoverContent>
+                    </Popover>
+                    <Button asChild variant="ghost" size="icon" className="h-11 w-11 rounded-lg bg-muted/50">
+                        <Link href="/dashboard/chat">
+                           <MessageSquare className="h-5 w-5"/>
+                        </Link>
+                    </Button>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-11 w-11 rounded-lg bg-muted/50">
+                                <Sparkles className="h-5 w-5"/>
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent side="right" align="start" className="w-[400px] p-0 rounded-lg overflow-hidden">
+                            <AiChatPopup />
+                        </PopoverContent>
+                    </Popover>
+                </div>
+                
                 {user && (
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
