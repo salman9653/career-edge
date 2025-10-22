@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useState, useEffect, ReactNode, useContext } from 'react';
-import { collection, query, where, onSnapshot, Unsubscribe, orderBy, writeBatch, doc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, Unsubscribe, orderBy, writeBatch, doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import type { Notification } from '@/lib/types';
 import { useSession } from '@/hooks/use-session';
@@ -13,6 +13,7 @@ interface NotificationContextType {
     loading: boolean;
     error: Error | null;
     markAllAsRead: () => void;
+    markAsRead: (notificationId: string) => void;
 }
 
 export const NotificationContext = createContext<NotificationContextType>({
@@ -21,6 +22,7 @@ export const NotificationContext = createContext<NotificationContextType>({
     loading: true,
     error: null,
     markAllAsRead: () => {},
+    markAsRead: () => {},
 });
 
 export const useNotifications = () => useContext(NotificationContext);
@@ -75,8 +77,16 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
         await batch.commit();
     };
 
+    const markAsRead = async (notificationId: string) => {
+        const notification = notifications.find(n => n.id === notificationId);
+        if(notification && !notification.isRead) {
+            const docRef = doc(db, 'notifications', notificationId);
+            await updateDoc(docRef, { isRead: true });
+        }
+    }
+
     return (
-        <NotificationContext.Provider value={{ notifications, unreadCount, loading, error, markAllAsRead }}>
+        <NotificationContext.Provider value={{ notifications, unreadCount, loading, error, markAllAsRead, markAsRead }}>
             {children}
         </NotificationContext.Provider>
     );

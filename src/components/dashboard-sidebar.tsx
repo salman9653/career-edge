@@ -1,12 +1,11 @@
 
-
 'use client'
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { Home, Package, User, Users, Users2, LineChart, Search, Settings, LogOut, Moon, Sun, Briefcase, Library, FileCheck, ClipboardList, BookUser, Book, BookCopy, CreditCard, TicketPercent, Palette, Laptop, Check, ChevronRight, HelpCircle, MessageSquare, Sparkles, PanelLeft, AppWindow, Bell } from "lucide-react"
 import { useTheme as useNextTheme } from "next-themes"
-import { useState, useContext } from "react"
+import { useState, useContext, useTransition } from "react"
 import { useTheme } from "@/context/dashboard-theme-context"
 import { formatDistanceToNow } from 'date-fns'
 
@@ -33,7 +32,7 @@ import { DashboardLayoutWrapper } from "@/app/dashboard/layout-wrapper"
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
 import { AiChatPopup } from "./ai-chat-popup"
 import { Sheet, SheetTrigger, SheetContent } from "./ui/sheet"
-import * as SheetPrimitive from "@radix-ui/react-dialog"
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNotifications } from "@/context/notification-context"
 import type { Notification } from "@/lib/types"
 import { ScrollArea } from "./ui/scroll-area"
@@ -71,11 +70,13 @@ interface DashboardSidebarProps {
 }
 
 const NotificationPanel = () => {
-    const { notifications, unreadCount, markAllAsRead } = useNotifications();
+    const { notifications, unreadCount, markAllAsRead, markAsRead } = useNotifications();
     const router = useRouter();
 
-    const handleNotificationClick = (notification: Notification) => {
-        // Here you would also mark the single notification as read
+    const handleNotificationClick = async (notification: Notification) => {
+        if (!notification.isRead) {
+            await markAsRead(notification.id);
+        }
         router.push(notification.link);
     };
 
@@ -305,42 +306,77 @@ const SidebarContent = ({ navItems, user }: { navItems: NavItem[], user: UserSes
 
 export function DashboardSidebar({ role, user }: DashboardSidebarProps) {
     let navItems: NavItem[];
+    let mobileNavItems: NavItem[];
+
     switch (role) {
         case 'admin':
             navItems = adminNavItems;
+            mobileNavItems = adminNavItems;
             break;
         case 'company':
         case 'manager':
             navItems = companyNavItems;
+            mobileNavItems = companyNavItems;
             break;
         case 'candidate':
             navItems = candidateNavItems;
+            mobileNavItems = [
+                ...candidateNavItems.slice(0, 4), 
+            ];
             break;
         default:
             navItems = [];
+            mobileNavItems = [];
     }
+
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [isSheetOpen, setIsSheetOpen] = useState(false);
 
     return (
         <>
             <div className="hidden bg-sidebar md:block rounded-r-lg shadow-lg">
                 <SidebarContent navItems={navItems} user={user} />
             </div>
-            <Sheet>
-                <SheetTrigger asChild>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="fixed top-3 left-4 z-40 md:hidden bg-background/50 backdrop-blur-sm"
-                    >
-                        <PanelLeft className="h-5 w-5" />
-                        <span className="sr-only">Toggle Menu</span>
-                    </Button>
-                </SheetTrigger>
-                <SheetContent side="left" className="p-0 w-[90%] sm:max-w-sm bg-sidebar">
-                    <SheetPrimitive.Title className="sr-only">Navigation Menu</SheetPrimitive.Title>
-                    <SidebarContent navItems={navItems} user={user} />
-                </SheetContent>
-            </Sheet>
+            
+            <div className="md:hidden">
+                <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                    <SheetTrigger asChild>
+                         <Button variant="ghost" size="icon" className="fixed top-4 left-4 z-50 bg-background/50 backdrop-blur-sm">
+                            <PanelLeft className="h-5 w-5" />
+                            <span className="sr-only">Toggle Menu</span>
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="p-0 w-[90%] sm:max-w-sm bg-sidebar">
+                        <SidebarContent navItems={navItems} user={user} />
+                    </SheetContent>
+                </Sheet>
+            </div>
+             {/* Bottom Navigation for mobile */}
+            <div className="fixed bottom-0 left-0 right-0 md:hidden bg-sidebar border-t z-40">
+                <div className="flex justify-around items-center h-16">
+                    {mobileNavItems.map(item => (
+                        <Link key={item.href} href={item.href} className="flex flex-col items-center justify-center text-muted-foreground hover:text-dash-primary w-full h-full">
+                           <item.icon className="h-5 w-5" />
+                           <span className="text-xs mt-1">{item.label}</span>
+                        </Link>
+                    ))}
+                    {role === 'candidate' && (
+                       <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button className="flex flex-col items-center justify-center text-muted-foreground hover:text-dash-primary w-full h-full">
+                                    <User className="h-5 w-5" />
+                                    <span className="text-xs mt-1">Profile</span>
+                                </button>
+                            </DropdownMenuTrigger>
+                             <DropdownMenuPortal>
+                                <DropdownMenuContent className="w-64 mb-2 rounded-lg" side="top" align="end" forceMount>
+                                    <SidebarContent navItems={[]} user={user} />
+                                </DropdownMenuContent>
+                            </DropdownMenuPortal>
+                        </DropdownMenu>
+                    )}
+                </div>
+            </div>
         </>
     )
 }
