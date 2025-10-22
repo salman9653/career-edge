@@ -1,7 +1,7 @@
 
 'use server';
 
-import { doc, setDoc, serverTimestamp, updateDoc, arrayUnion, arrayRemove, getDoc, collection, addDoc } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, updateDoc, arrayUnion, arrayRemove, getDoc, collection, addDoc, query, where, getDocs, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { revalidatePath } from 'next/cache';
 import { UserSession } from '@/hooks/use-session';
@@ -98,17 +98,52 @@ export async function applyForJobAction(input: ApplyForJobInput) {
     await setDoc(applicantRef, applicationData);
 
     // Create a notification for the company
-    const notificationData = {
-        recipientId: jobData.companyId,
-        senderId: candidateId,
-        senderName: candidateName,
-        type: 'NEW_APPLICATION',
-        message: `${candidateName} has applied for the position of ${jobData.title}.`,
-        link: `/dashboard/company/ats/${jobId}`,
-        isRead: false,
-        createdAt: serverTimestamp(),
-    };
-    await addDoc(collection(db, 'notifications'), notificationData);
+    const notificationsCol = collection(db, 'notifications');
+
+    // Check for existing unread notification for this job
+    const q = query(
+        notificationsCol,
+        where('recipientId', '==', jobData.companyId),
+        where('jobId', '==', jobId),
+        where('isRead', '==', false),
+        where('type', '==', 'NEW_APPLICATION')
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+        // Update existing notification
+        const notificationDoc = querySnapshot.docs[0];
+        const notificationRef = notificationDoc.ref;
+        const notificationData = notificationDoc.data();
+        
+        await updateDoc(notificationRef, {
+            message: `${(notificationData.applicantCount || 1) + 1} new candidates have applied for ${jobData.title}.`,
+            applicantCount: (notificationData.applicantCount || 1) + 1,
+            // @ts-ignore
+            newApplicantNames: arrayUnion(candidateName),
+            createdAt: serverTimestamp(), // Update timestamp to bring it to the top
+        });
+
+    } else {
+        // Create new notification
+        const notificationData = {
+            recipientId: jobData.companyId,
+            senderId: candidateId,
+            senderName: candidateName,
+            type: 'NEW_APPLICATION',
+            message: `${candidateName} has applied for the position of ${jobData.title}.`,
+            link: `/dashboard/company/ats/${jobId}`,
+            jobId: jobId,
+            jobTitle: jobData.title,
+            isRead: false,
+            createdAt: serverTimestamp(),
+            applicantCount: 1,
+            newApplicantNames: [candidateName],
+        };
+        await addDoc(notificationsCol, notificationData);
+    }
+
 
     revalidatePath(`/dashboard/candidate/jobs/${jobId}`);
     revalidatePath(`/dashboard/candidate/applications`);

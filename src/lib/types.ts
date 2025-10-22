@@ -217,4 +217,9 @@ export interface Notification {
   link: string;
   isRead: boolean;
   createdAt: any;
+  jobId?: string;
+  jobTitle?: string;
+  applicantCount?: number;
+  newApplicantNames?: string[];
+  originalIds?: string[];
 }
