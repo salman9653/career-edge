@@ -12,7 +12,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Logo } from "./logo"
-import type { NavItem } from "@/lib/types"
+import type { NavItem, Notification } from "@/lib/types"
 import { Input } from "./ui/input"
 import {
     DropdownMenu,
@@ -34,7 +34,6 @@ import { AiChatPopup } from "./ai-chat-popup"
 import { Sheet, SheetTrigger, SheetContent } from "./ui/sheet"
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNotifications } from "@/context/notification-context"
-import type { Notification } from "@/lib/types"
 import { ScrollArea } from "./ui/scroll-area"
 import { Badge } from "./ui/badge"
 
@@ -79,19 +78,31 @@ const NotificationPanel = () => {
         }
         router.push(notification.link);
     };
+    
+    const getInitials = (name: string) => {
+        if (!name) return '';
+        const names = name.split(' ');
+        if (names.length > 1) {
+            return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+        }
+        return name.substring(0, 2).toUpperCase();
+    }
+
 
     return (
-        <div className="p-4">
-            <div className="flex justify-between items-center mb-4">
-                <p className="font-semibold">Notifications</p>
-                {unreadCount > 0 && (
-                    <Button variant="link" size="sm" className="p-0 h-auto" onClick={markAllAsRead}>
-                        Mark all as read
-                    </Button>
-                )}
+        <div className="flex flex-col h-[400px]">
+            <div className="p-4 border-b">
+                <div className="flex justify-between items-center">
+                    <p className="font-semibold">Notifications</p>
+                    {unreadCount > 0 && (
+                        <Button variant="link" size="sm" className="p-0 h-auto" onClick={markAllAsRead}>
+                            Mark all as read
+                        </Button>
+                    )}
+                </div>
             </div>
-            <ScrollArea className="h-[400px]">
-                <div className="space-y-3">
+            <ScrollArea className="flex-1">
+                <div className="space-y-3 p-4">
                     {notifications.length > 0 ? (
                         notifications.map((n) => (
                             <div
@@ -104,7 +115,7 @@ const NotificationPanel = () => {
                             >
                                 <div className="flex items-start gap-3">
                                     <Avatar className="h-8 w-8 mt-1">
-                                        <AvatarFallback>{n.senderName.charAt(0)}</AvatarFallback>
+                                        <AvatarFallback>{getInitials(n.senderName)}</AvatarFallback>
                                     </Avatar>
                                     <div className="flex-1">
                                         <p className="text-sm">{n.message}</p>
@@ -112,16 +123,27 @@ const NotificationPanel = () => {
                                             {formatDistanceToNow(n.createdAt.toDate(), { addSuffix: true })}
                                         </p>
                                     </div>
+                                    {!n.isRead && (
+                                        <div className="h-2 w-2 rounded-full bg-dash-primary mt-2" />
+                                    )}
                                 </div>
                             </div>
                         ))
                     ) : (
                         <div className="text-center text-sm text-muted-foreground py-12">
+                             <Bell className="mx-auto h-8 w-8 mb-2" />
                             No new notifications
                         </div>
                     )}
                 </div>
             </ScrollArea>
+             <div className="p-2 border-t text-center">
+                <Button variant="link" size="sm" asChild>
+                    <Link href="/dashboard/notifications">
+                        Show all notifications
+                    </Link>
+                </Button>
+            </div>
         </div>
     );
 };
@@ -365,7 +387,7 @@ export function DashboardSidebar({ role, user }: DashboardSidebarProps) {
                             <DropdownMenuTrigger asChild>
                                 <button className="flex flex-col items-center justify-center text-muted-foreground hover:text-dash-primary w-full h-full">
                                     <User className="h-5 w-5" />
-                                    <span className="text-xs mt-1">Profile</span>
+                                    <span className="text-xs mt-1">More</span>
                                 </button>
                             </DropdownMenuTrigger>
                              <DropdownMenuPortal>
