@@ -81,7 +81,7 @@ const SidebarContent = ({ navItems, user }: { navItems: NavItem[], user: UserSes
         if (!name) return '';
         const names = name.split(' ');
         if (names.length > 1) {
-            return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+            return `${'names[0][0]'}${names[names.length - 1][0]}`.toUpperCase();
         }
         return name.substring(0, 2).toUpperCase();
     }
@@ -127,36 +127,6 @@ const SidebarContent = ({ navItems, user }: { navItems: NavItem[], user: UserSes
                 </nav>
             </div>
             <div className="mt-auto p-4 space-y-2">
-                {/* Mobile and smaller screens */}
-                <div className="flex items-center gap-0 rounded-md border p-1 md:hidden">
-                    <Button
-                        asChild
-                        variant="ghost"
-                        className={cn(
-                            "flex flex-1 items-center justify-start gap-2 rounded-l-md px-3 py-2.5 text-muted-foreground transition-all hover:text-dash-primary hover:bg-accent",
-                            pathname === '/dashboard/chat' && 'bg-accent text-dash-primary'
-                        )}
-                    >
-                        <Link href="/dashboard/chat">
-                            <MessageSquare className="h-5 w-5" />
-                            Inbox
-                        </Link>
-                    </Button>
-                     <div className="block md:hidden">
-                        <Button
-                            asChild
-                            variant="ghost"
-                            className={cn(
-                                "flex items-center justify-center rounded-r-md p-3 text-muted-foreground transition-all hover:text-dash-primary hover:bg-accent border-l"
-                            )}
-                        >
-                            <Link href="/dashboard/chat?conversation=career-ai">
-                                <Sparkles className="h-6 w-6" />
-                            </Link>
-                        </Button>
-                    </div>
-                </div>
-
                 {/* Desktop and larger screens */}
                 <div className="hidden md:flex items-center justify-center gap-2">
                     <Popover>
