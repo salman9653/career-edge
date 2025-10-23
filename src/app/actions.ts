@@ -81,7 +81,6 @@ export async function analyzeAndSaveResumeAction(
       userId,
       jobId,
       jobTitle,
-      companyName,
       analyzedAt: serverTimestamp(),
       ...analysisResult
     });
