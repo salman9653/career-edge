@@ -1,17 +1,17 @@
+
 'use client';
 import { useState, useEffect } from 'react';
 import { useSession } from '@/hooks/use-session';
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { Skeleton } from '@/components/ui/skeleton';
-import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import type { CompanySize, Socials } from '@/lib/types';
 import { MobileSearch } from '@/components/mobile-search';
 import { ProfileDisplayCard } from './_components/profile-display-card';
 import { UpdateProfileCard } from './_components/update-profile-card';
 
-interface UserProfile {
+export interface UserProfile {
     uid: string;
     email: string;
     name: string;
@@ -195,32 +195,20 @@ export default function ProfilePage() {
             <MobileSearch />
         </header>
         <main className="flex flex-1 flex-col gap-4 overflow-auto p-4 md:gap-6 md:p-6 custom-scrollbar">
-            <div className="mx-auto grid w-full max-w-6xl items-start gap-6 md:grid-cols-[180px_1fr] lg:grid-cols-[250px_1fr]">
-                <nav className="grid gap-4 text-sm text-muted-foreground sticky top-20">
-                    <a href="#profile-summary" className="font-semibold text-primary">Profile Summary</a>
-                    <a href="#resume">Resume</a>
-                    <a href="#key-skills">Key Skills</a>
-                    <a href="#employment">Employment</a>
-                    <a href="#education">Education</a>
-                    <a href="#projects">Projects</a>
-                    <a href="#online-profiles">Online Profiles</a>
-                    <a href="#personal-details">Personal Details</a>
-                </nav>
-                 <div className="grid gap-6">
-                     {isEditing ? (
-                        <UpdateProfileCard
-                            profile={userProfile}
-                            onSave={handleSave}
-                            onCancel={() => setIsEditing(false)}
-                            onAvatarChange={handleAvatarUpdate}
-                        />
-                     ) : (
-                        <ProfileDisplayCard
-                            profile={userProfile}
-                            onEdit={() => setIsEditing(true)}
-                        />
-                     )}
-                </div>
+            <div className="mx-auto w-full max-w-6xl">
+                 {isEditing ? (
+                    <UpdateProfileCard
+                        profile={userProfile}
+                        onSave={handleSave}
+                        onCancel={() => setIsEditing(false)}
+                        onAvatarChange={handleAvatarUpdate}
+                    />
+                 ) : (
+                    <ProfileDisplayCard
+                        profile={userProfile}
+                        onEdit={() => setIsEditing(true)}
+                    />
+                 )}
             </div>
         </main>
       </div>
