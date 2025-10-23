@@ -21,7 +21,8 @@ import type { RegenerateQuestionInput, RefineToneInput, AddFollowUpsInput, Regen
 import { generateAiQuestions } from "@/ai/flows/generate-ai-questions-flow";
 import type { GenerateAiQuestionsInput, GenerateAiQuestionsOutput } from "@/ai/flows/generate-ai-questions-flow-types";
 import { enhanceText, generateTextFromPrompt } from '@/ai/flows/text-generation-flows';
-
+import { generateAtsResume } from '@/ai/flows/generate-ats-resume-flow';
+import type { GenerateAtsResumeInput, GeneratedResume } from '@/ai/flows/generate-ats-resume-flow-types';
 
 async function fileToDataURI(file: File) {
     const arrayBuffer = await file.arrayBuffer();
@@ -1284,4 +1285,48 @@ export async function generateTextAction(prevState: any, formData: FormData): Pr
   } catch (e: any) {
     return { error: e.message };
   }
+}
+
+export async function generateAtsResumeAction(prevState: any, formData: FormData) {
+    const userId = formData.get('userId') as string;
+    const existingResumeFile = formData.get('existingResume') as File | null;
+    const jobDescription = formData.get('jobDescription') as string;
+    const userDetails = JSON.parse(formData.get('userDetails') as string);
+    const resumeName = formData.get('resumeName') as string;
+
+    if (!userId || !jobDescription || !userDetails || !resumeName) {
+        return { error: 'Missing required fields.' };
+    }
+    
+    let resumeDataUri: string | undefined = undefined;
+    if (existingResumeFile && existingResumeFile.size > 0) {
+        resumeDataUri = await fileToDataURI(existingResumeFile);
+    }
+    
+    const input: GenerateAtsResumeInput = {
+        jobDescription,
+        userDetails,
+        existingResumeDataUri: resumeDataUri,
+    };
+    
+    try {
+        const result = await generateAtsResume(input);
+        
+        const resumeDoc: GeneratedResume = {
+            userId,
+            name: resumeName,
+            markdownContent: result.markdownContent,
+            jobDescription,
+            createdAt: serverTimestamp(),
+            // pdfDataUri will be added later
+        };
+
+        const docRef = await addDoc(collection(db, `users/${userId}/generated-resumes`), resumeDoc);
+
+        return { success: true, resumeId: docRef.id };
+
+    } catch(e: any) {
+        console.error('Error generating ATS resume:', e);
+        return { error: e.message || "An unexpected error occurred during AI generation." };
+    }
 }

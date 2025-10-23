@@ -4,7 +4,7 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { Home, Package, User, Users, Users2, LineChart, Search, Settings, LogOut, Moon, Sun, Briefcase, Library, FileCheck, ClipboardList, BookUser, Book, BookCopy, CreditCard, TicketPercent, Palette, Laptop, Check, ChevronRight, HelpCircle, MessageSquare, Sparkles, PanelLeft, AppWindow, Bell } from "lucide-react"
+import { Home, Package, User, Users, Users2, LineChart, Search, Settings, LogOut, Moon, Sun, Briefcase, Library, FileCheck, ClipboardList, BookUser, Book, BookCopy, CreditCard, TicketPercent, Palette, Laptop, Check, ChevronRight, HelpCircle, MessageSquare, Sparkles, PanelLeft, AppWindow, Bell, FileText as ResumeIcon } from "lucide-react"
 import { useTheme as useNextTheme } from "next-themes"
 import { useState, useContext, useTransition } from "react"
 import { useTheme } from "@/context/dashboard-theme-context"
@@ -43,6 +43,7 @@ const candidateNavItems: NavItem[] = [
     { href: "/dashboard", label: "Dashboard", icon: Home },
     { href: "/dashboard/candidate/jobs", label: "Jobs", icon: Briefcase },
     { href: "/dashboard/candidate/applications", label: "My Applications", icon: Package },
+    { href: "/dashboard/candidate/resume-builder", label: "Resume Builder", icon: ResumeIcon },
     { href: "/dashboard/candidate/practice", label: "Practice", icon: Book },
 ];
 

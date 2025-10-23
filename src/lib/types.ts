@@ -1,3 +1,4 @@
+
 import type { LucideIcon } from 'lucide-react';
 
 export interface NavItem {
@@ -228,4 +229,14 @@ export interface ResumeAnalysisResult {
   pros: string[];
   cons: string[];
   improvements: string[];
+}
+
+export interface GeneratedResume {
+  id: string;
+  userId: string;
+  name: string;
+  markdownContent: string;
+  pdfDataUri?: string;
+  jobDescription: string;
+  createdAt: any;
 }
