@@ -717,33 +717,14 @@ export async function updateDisplayPictureAction(formData: FormData) {
 
     try {
         const userDocRef = doc(db, 'users', userId);
-        const userDoc = await getDoc(userDocRef);
-        const userData = userDoc.data();
-
-        // If a picture already exists, delete it first.
-        if (userData?.displayImageUrl) {
-            try {
-                const oldImageRef = ref(storage, userData.displayImageUrl);
-                await deleteObject(oldImageRef);
-            } catch (deleteError: any) {
-                 if (deleteError.code !== 'storage/object-not-found') {
-                    console.warn("Could not delete old avatar:", deleteError);
-                }
-            }
-        }
-
-        const filePath = `display-pics/${userId}/${Date.now()}-${avatarFile.name}`;
-        const storageRef = ref(storage, filePath);
-        
-        await uploadBytes(storageRef, avatarFile);
-        const downloadURL = await getDownloadURL(storageRef);
+        const dataUrl = await fileToDataURI(avatarFile);
 
         await updateDoc(userDocRef, {
-            displayImageUrl: downloadURL
+            displayImageUrl: dataUrl
         });
         
         revalidatePath('/dashboard/profile');
-        return { success: true, url: downloadURL };
+        return { success: true, url: dataUrl };
     } catch (error: any) {
         return { error: error.message };
     }
@@ -755,29 +736,13 @@ export async function removeDisplayPictureAction(userId: string) {
     }
     try {
         const userDocRef = doc(db, 'users', userId);
-        const userDoc = await getDoc(userDocRef);
-        const userData = userDoc.data();
-
-        if (userData?.displayImageUrl) {
-            const imageRef = ref(storage, userData.displayImageUrl);
-            await deleteObject(imageRef);
-            await updateDoc(userDocRef, {
-                displayImageUrl: deleteField()
-            });
-            revalidatePath('/dashboard/profile');
-            return { success: true };
-        }
-        return { success: true, message: 'No avatar to remove.' };
+        await updateDoc(userDocRef, {
+            displayImageUrl: deleteField()
+        });
+        revalidatePath('/dashboard/profile');
+        return { success: true };
 
     } catch (error: any) {
-         if (error.code === 'storage/object-not-found') {
-            const userDocRef = doc(db, 'users', userId);
-            await updateDoc(userDocRef, {
-                displayImageUrl: deleteField()
-            });
-            revalidatePath('/dashboard/profile');
-            return { success: true, message: 'Image not in storage, but DB link removed.' };
-        }
         return { error: error.message };
     }
 }
@@ -1318,5 +1283,3 @@ export async function generateAtsResumeAction(prevState: any, formData: FormData
         return { error: e.message || "An unexpected error occurred during AI generation." };
     }
 }
-
-    

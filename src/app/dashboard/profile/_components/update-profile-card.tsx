@@ -2,7 +2,7 @@
 'use client';
 import { useActionState, useEffect, useRef, useState, useTransition } from 'react';
 import { useFormStatus } from 'react-dom';
-import { updateUserProfileAction } from '@/app/actions';
+import { updateUserProfileAction, updateDisplayPictureAction, removeDisplayPictureAction } from '@/app/actions';
 import { useSession } from '@/hooks/use-session';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,7 +24,6 @@ import { CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { updateDisplayPictureAction } from '@/app/actions';
 
 
 const initialState = {
@@ -119,6 +118,20 @@ export function UpdateProfileCard({
       });
     }
   };
+
+  const handleRemoveAvatar = async () => {
+    if (!session?.uid) return;
+    startAvatarTransition(async () => {
+        const result = await removeDisplayPictureAction(session.uid);
+         if (result.success) {
+            onAvatarChange(null);
+            updateSession({ displayImageUrl: null });
+            toast({ title: 'Avatar removed!' });
+        } else {
+            toast({ title: 'Failed to remove avatar', description: result.error, variant: 'destructive' });
+        }
+    });
+  }
 
   const handleResumeFileSelect = (file: File | null) => {
     if (file && (file.type.includes('pdf') || file.type.includes('document'))) {
@@ -230,6 +243,11 @@ export function UpdateProfileCard({
                                         <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isAvatarPending}>
                                             <Edit className="mr-2 h-4 w-4" /> {profile.displayImageUrl ? 'Change' : 'Add'} Picture
                                         </Button>
+                                         {profile.displayImageUrl && (
+                                            <Button type="button" variant="destructive" size="sm" onClick={handleRemoveAvatar} disabled={isAvatarPending}>
+                                                <Trash2 className="mr-2 h-4 w-4" /> Remove
+                                            </Button>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
