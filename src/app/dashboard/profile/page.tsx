@@ -125,11 +125,13 @@ export default function ProfilePage() {
     if (userProfile) {
         const newProfile = { ...userProfile, ...updatedProfile };
         setUserProfile(newProfile);
-        updateSession({ 
-            displayName: updatedProfile.name,
-            phone: updatedProfile.phone,
-            ...updatedProfile
-        });
+        const sessionUpdate: Partial<UserProfile> = { ...updatedProfile };
+        
+        if (updatedProfile.name) {
+            sessionUpdate.displayName = updatedProfile.name;
+        }
+
+        updateSession(sessionUpdate);
     }
     setIsEditing(false);
   }
@@ -215,3 +217,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    

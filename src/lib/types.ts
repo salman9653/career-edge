@@ -1,4 +1,5 @@
 
+
 import type { LucideIcon } from 'lucide-react';
 
 export interface NavItem {
@@ -240,3 +241,51 @@ export interface GeneratedResume {
   jobDescription: string;
   createdAt: any;
 }
+
+// Added from new request
+export interface UserProfile {
+    uid: string;
+    email: string;
+    name: string;
+    role: 'candidate' | 'company' | 'admin' | 'manager';
+    phone: string;
+    displayImageUrl: string | null;
+    emailVerified: boolean;
+    // Company specific
+    companySize?: CompanySize;
+    website?: string;
+    socials?: Socials;
+    helplinePhone?: string;
+    helplineEmail?: string;
+    company_uid?: string;
+    designation?: string;
+    permissions_role?: string;
+    aboutCompany?: string;
+    companyType?: string;
+    foundedYear?: string;
+    tags?: string[];
+    benefits?: string[];
+    // Candidate specific
+    jobTitle?: string;
+    currentCompany?: string;
+    address?: string;
+    workStatus?: 'fresher' | 'experienced';
+    experience?: string;
+    noticePeriod?: string;
+    currentSalary?: string;
+    resume?: string;
+    profileSummary?: string;
+    keySkills?: string[];
+    employment?: any[];
+    education?: any[];
+    projects?: any[];
+    linkedin?: string;
+    naukri?: string;
+    gender?: string;
+    maritalStatus?: string;
+    dob?: string;
+    permanentAddress?: string;
+    languages?: string[];
+}
+
+    

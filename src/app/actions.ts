@@ -1,5 +1,4 @@
 
-
 "use server";
 
 import { analyzeResumeForJobMatching } from "@/ai/flows/resume-analysis-for-job-matching";
@@ -663,52 +662,41 @@ export async function updateCouponAction(prevState: any, formData: FormData) {
 }
 
 export async function updateUserProfileAction(prevState: any, formData: FormData) {
-  const name = formData.get('name') as string;
-  const phone = formData.get('phone') as string;
   const userId = formData.get('userId') as string;
-  const role = formData.get('role') as string;
+  if (!userId) {
+    return { error: 'User not authenticated.' };
+  }
   
-  // Company specific fields
-  const website = formData.get('website') as string;
-  const companySize = formData.get('companySize') as string;
-  const linkedin = formData.get('linkedin') as string;
-  const twitter = formData.get('twitter') as string;
-  const naukri = formData.get('naukri') as string;
-  const glassdoor = formData.get('glassdoor') as string;
-  const helplinePhone = formData.get('helplinePhone') as string;
-  const helplineEmail = formData.get('helplineEmail') as string;
-  const aboutCompany = formData.get('aboutCompany') as string;
-  const companyType = formData.get('companyType') as string;
-  const foundedYear = formData.get('foundedYear') as string;
-  const tagsString = formData.get('tags') as string;
-  const benefits = formData.getAll('benefits') as string[];
+  const role = formData.get('role') as string;
+  const dataToUpdate: { [key: string]: any } = {};
 
-  if (!name || !userId) {
-    return { error: 'Missing required fields.' };
+  const fields = [
+    'name', 'phone', 'address', 'profileSummary',
+    'jobTitle', 'currentCompany', 'workStatus', 'experience', 'noticePeriod', 'currentSalary',
+    'gender', 'maritalStatus', 'dob', 'permanentAddress', 'linkedin', 'naukri'
+  ];
+
+  fields.forEach(field => {
+    if (formData.has(field)) {
+      dataToUpdate[field] = formData.get(field);
+    }
+  });
+
+  if (formData.has('keySkills')) {
+    dataToUpdate.keySkills = (formData.get('keySkills') as string).split(',').map(s => s.trim()).filter(s => s);
+  }
+  if (formData.has('languages')) {
+    dataToUpdate.languages = (formData.get('languages') as string).split(',').map(s => s.trim()).filter(s => s);
+  }
+
+  const resumeFile = formData.get('resumeFile') as File;
+  if (resumeFile && resumeFile.size > 0) {
+    dataToUpdate.resume = await fileToDataURI(resumeFile);
   }
 
   try {
     const userRef = doc(db, 'users', userId);
-    const dataToUpdate: any = { name, phone };
-
-    if (role === 'company') {
-        if(companySize) {
-            const [size, employees] = companySize.split('|');
-            dataToUpdate.companySize = { size, employees };
-        }
-        dataToUpdate.website = website;
-        dataToUpdate.socials = { linkedin, twitter, naukri, glassdoor };
-        dataToUpdate.helplinePhone = helplinePhone;
-        dataToUpdate.helplineEmail = helplineEmail;
-        dataToUpdate.aboutCompany = aboutCompany;
-        dataToUpdate.companyType = companyType;
-        dataToUpdate.foundedYear = foundedYear;
-        dataToUpdate.tags = tagsString.split(',').map(tag => tag.trim()).filter(tag => tag);
-        dataToUpdate.benefits = benefits;
-    }
-    
     await updateDoc(userRef, dataToUpdate);
-
     revalidatePath('/dashboard/profile');
     return { success: 'Profile updated successfully.' };
   } catch (error: any) {
@@ -1330,3 +1318,5 @@ export async function generateAtsResumeAction(prevState: any, formData: FormData
         return { error: e.message || "An unexpected error occurred during AI generation." };
     }
 }
+
+    
