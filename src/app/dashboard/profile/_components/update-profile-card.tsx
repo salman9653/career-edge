@@ -24,6 +24,7 @@ import { CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { updateDisplayPictureAction } from '@/app/actions';
 
 
 const initialState = {
@@ -100,18 +101,21 @@ export function UpdateProfileCard({
     }
   }, [state.success, toast, onSave, profile.role]);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file && session?.uid) {
       startAvatarTransition(async () => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = async () => {
-            const base64 = reader.result as string;
-            onAvatarChange(base64);
-            updateSession({ displayImageUrl: base64 });
+        const formData = new FormData();
+        formData.append('avatar', file);
+        formData.append('userId', session.uid);
+        const result = await updateDisplayPictureAction(formData);
+        if (result.success && result.url) {
+            onAvatarChange(result.url);
+            updateSession({ displayImageUrl: result.url });
             toast({ title: 'Avatar updated!' });
-        };
+        } else {
+            toast({ title: 'Upload failed', description: result.error, variant: 'destructive' });
+        }
       });
     }
   };
@@ -173,7 +177,7 @@ export function UpdateProfileCard({
   ];
 
   return (
-    <div className="flex gap-6 h-full">
+    <div className="flex gap-6 h-full w-full">
         <Card className="p-4 w-[250px]">
             <nav className="grid gap-1 text-sm">
                 {navItems.map(item => (
@@ -447,6 +451,7 @@ export function UpdateProfileCard({
                         {state?.error && <Alert variant="destructive" className="mt-2"><AlertDescription>{state.error}</AlertDescription></Alert>}
                     </CardContent>
                 </ScrollArea>
+                 </div>
                  <div className="flex justify-end gap-2 p-6 border-t">
                         <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
                         <SubmitButton />
