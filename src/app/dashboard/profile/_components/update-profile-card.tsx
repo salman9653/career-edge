@@ -1,4 +1,3 @@
-
 'use client';
 import { useActionState, useEffect, useRef, useState, useTransition } from 'react';
 import { useFormStatus } from 'react-dom';
@@ -11,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload, FileText, X, Plus } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import type { CompanySize, Socials } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
@@ -23,6 +22,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 
 const initialState = {
@@ -33,7 +33,7 @@ const initialState = {
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending} className="w-full">
+    <Button type="submit" disabled={pending}>
       {pending ? <Loader2 className="animate-spin" /> : 'Save Changes'}
     </Button>
   );
@@ -172,8 +172,8 @@ export function UpdateProfileCard({
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-[250px_1fr] gap-6">
-        <Card className="p-4 self-start sticky top-24">
+    <div className="flex md:grid md:grid-cols-[250px_1fr] gap-6 h-full">
+        <Card className="p-4 self-start">
             <nav className="grid gap-1 text-sm">
                 {navItems.map(item => (
                     <Button 
@@ -188,9 +188,10 @@ export function UpdateProfileCard({
             </nav>
         </Card>
         
-        <Card>
+        <Card className="flex flex-col h-full">
+            <form action={formAction} ref={formRef} className="flex flex-col h-full">
+            <ScrollArea className="flex-1">
             <CardContent className="p-6">
-            <form action={formAction} ref={formRef} className="space-y-8">
                 <input type="hidden" name="userId" value={session?.uid} />
                 <input type="hidden" name="role" value={profile.role} />
 
@@ -442,15 +443,14 @@ export function UpdateProfileCard({
                 )}
                 
                 {state?.error && <Alert variant="destructive" className="mt-2"><AlertDescription>{state.error}</AlertDescription></Alert>}
-                <div className="flex justify-end gap-2 pt-8 border-t">
+            </CardContent>
+            </ScrollArea>
+             <div className="flex justify-end gap-2 p-6 border-t">
                     <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
                     <SubmitButton />
                 </div>
             </form>
-            </CardContent>
         </Card>
     </div>
   );
 }
-
-    
