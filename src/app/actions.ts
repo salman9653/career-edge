@@ -49,29 +49,44 @@ ${input.message}`,
   return stream.textStream;
 }
 
-export async function analyzeResumeAction(
+export async function analyzeAndSaveResumeAction(
   prevState: any,
   formData: FormData,
 ) {
   const resumeFile = formData.get("resume") as File;
+  const jobId = formData.get("jobId") as string;
+  const jobTitle = formData.get("jobTitle") as string;
   const jobDescription = formData.get("jobDescription") as string;
+  const companyName = formData.get("companyName") as string;
+  const userId = formData.get("userId") as string;
+
 
   if (!resumeFile || resumeFile.size === 0) {
     return { error: "Please upload a resume file." };
   }
-  if (!jobDescription) {
-    return { error: "Job description is missing." };
+  if (!jobId || !jobDescription || !userId) {
+    return { error: "Required data is missing." };
   }
   
   try {
     const resumeDataUri = await fileToDataURI(resumeFile);
 
-    const result = await analyzeResumeForJobMatching({
+    const analysisResult = await analyzeResumeForJobMatching({
       resumeDataUri,
       jobDescription,
+      jobTitle
+    });
+
+    const analysisDocRef = await addDoc(collection(db, `users/${userId}/resume-analyses`), {
+      userId,
+      jobId,
+      jobTitle,
+      companyName,
+      analyzedAt: serverTimestamp(),
+      ...analysisResult
     });
     
-    return { result };
+    return { analysisId: analysisDocRef.id };
 
   } catch (e: any) {
     console.error(e);

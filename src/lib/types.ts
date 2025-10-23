@@ -158,17 +158,6 @@ export interface CompanyDetails {
     benefits?: string[];
 }
 
-export interface Assessment {
-    id: string;
-    name: string;
-    assessmentType: string;
-    description?: string;
-    questionIds: string[];
-    createdBy: string;
-    createdByName: string;
-    createdAt: any;
-}
-
 export interface AiInterview {
     id: string;
     companyId: string;
