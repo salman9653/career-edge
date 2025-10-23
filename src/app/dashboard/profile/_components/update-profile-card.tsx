@@ -1,5 +1,4 @@
 
-
 'use client';
 import { useActionState, useEffect, useRef, useState, useTransition } from 'react';
 import { useFormStatus } from 'react-dom';
@@ -9,15 +8,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User } from 'lucide-react';
+import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import type { CompanySize, Socials } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { allBenefits } from '@/lib/benefits';
+import { cn } from '@/lib/utils';
+import type { DragEvent } from 'react';
 
 const initialState = {
   error: null,
@@ -27,7 +26,7 @@ const initialState = {
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending}>
+    <Button type="submit" disabled={pending} className="w-full">
       {pending ? <Loader2 className="animate-spin" /> : 'Save Changes'}
     </Button>
   );
@@ -60,6 +59,10 @@ export function UpdateProfileCard({
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isAvatarPending, startAvatarTransition] = useTransition();
+  const [activeSection, setActiveSection] = useState('profile-summary');
+  
+  const [existingResume, setExistingResume] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     if (state.success) {
@@ -73,25 +76,8 @@ export function UpdateProfileCard({
       
       const updatedProfile: any = { name: newName, phone: newPhone };
 
-      if(profile.role === 'company') {
-        const companySizeValue = formData.get('companySize') as string;
-        const [size, employees] = companySizeValue.split('|');
-        updatedProfile.companySize = { size, employees };
-        updatedProfile.website = formData.get('website') as string;
-        updatedProfile.socials = {
-            linkedin: formData.get('linkedin') as string,
-            twitter: formData.get('twitter') as string,
-            naukri: formData.get('naukri') as string,
-            glassdoor: formData.get('glassdoor') as string,
-        };
-        updatedProfile.helplinePhone = formData.get('helplinePhone') as string;
-        updatedProfile.helplineEmail = formData.get('helplineEmail') as string;
-        updatedProfile.aboutCompany = formData.get('aboutCompany') as string;
-        updatedProfile.companyType = formData.get('companyType') as string;
-        updatedProfile.foundedYear = formData.get('foundedYear') as string;
-        updatedProfile.tags = (formData.get('tags') as string).split(',').map(tag => tag.trim());
-        updatedProfile.benefits = formData.getAll('benefits') as string[];
-      }
+      // This part would need to be updated to gather data from all sections
+      // For now, it will only save the currently visible section's data if structured properly
       onSave(updatedProfile);
     }
   }, [state.success, toast, onSave, profile.role]);
@@ -100,14 +86,13 @@ export function UpdateProfileCard({
     const file = event.target.files?.[0];
     if (file && session?.uid) {
       startAvatarTransition(async () => {
+        // This is a mock upload for prototype purposes
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = async () => {
             const base64 = reader.result as string;
-            const formData = new FormData();
-            // In a real app, you'd upload to storage, but for proto let's send base64
-            // For simplicity, we'll just update it in the user doc directly as a data URI
-            const result = await updateDisplayPictureAction(formData); // This action needs to be adapted for base64
+            // In a real app, you'd upload to a storage service.
+            // For now, we simulate this by updating the state directly.
             onAvatarChange(base64);
             updateSession({ displayImageUrl: base64 });
             toast({ title: 'Avatar updated!' });
@@ -116,217 +101,193 @@ export function UpdateProfileCard({
     }
   };
 
-  const handleRemovePicture = () => {
-      if(session?.uid) {
-        startAvatarTransition(async () => {
-            const result = await removeDisplayPictureAction(session.uid);
-            if (result.success) {
-                toast({ title: 'Avatar removed' });
-                onAvatarChange(null);
-                updateSession({ displayImageUrl: null });
-            } else {
-                toast({ variant: 'destructive', title: 'Error', description: result.error });
-            }
-        });
-      }
-  }
-  
-  const companySizeValue = profile.companySize ? `${profile.companySize.size}|${profile.companySize.employees}` : undefined;
+  const handleResumeFileSelect = (file: File | null) => {
+    if (file && (file.type.includes('pdf') || file.type.includes('document'))) {
+        setExistingResume(file);
+    } else {
+        setExistingResume(null);
+    }
+  };
+
+  const handleResumeFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    handleResumeFileSelect(event.target.files?.[0] || null);
+  };
+
+  const handleResumeDrop = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(false);
+    if (event.dataTransfer.files?.[0]) {
+        handleResumeFileSelect(event.dataTransfer.files[0]);
+    }
+  };
+  const handleResumeDragOver = (e: DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); };
+  const handleResumeDragLeave = (e: DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); };
+  const handleResumeButtonClick = () => document.getElementById('resume-upload-input')?.click();
+
+  const navItems = [
+    { id: 'profile-summary', label: 'Profile Summary' },
+    { id: 'resume', label: 'Resume' },
+    { id: 'key-skills', label: 'Key Skills' },
+    { id: 'employment', label: 'Employment' },
+    { id: 'education', label: 'Education' },
+    { id: 'projects', label: 'Projects' },
+    { id: 'online-profiles', label: 'Online Profiles' },
+    { id: 'personal-details', label: 'Personal Details' },
+  ];
 
   return (
-    <div className="grid grid-cols-[250px_1fr] gap-6">
-        <nav className="grid gap-4 text-sm text-muted-foreground sticky top-20 self-start">
-            <a href="#profile-summary" className="font-semibold text-primary">Profile Summary</a>
-            <a href="#resume">Resume</a>
-            <a href="#key-skills">Key Skills</a>
-            <a href="#employment">Employment</a>
-            <a href="#education">Education</a>
-            <a href="#projects">Projects</a>
-            <a href="#online-profiles">Online Profiles</a>
-            <a href="#personal-details">Personal Details</a>
-        </nav>
-        <div className="grid gap-6">
-            <Card>
-                <CardContent className="p-6">
-                <div className="space-y-6">
-                    <div>
-                        <h2 className="text-2xl font-semibold leading-none tracking-tight">Edit Profile</h2>
-                        <p className="text-sm text-muted-foreground">Update your personal and professional information.</p>
-                    </div>
-                    
-                    <form action={formAction} ref={formRef} className="space-y-8">
-                    <input type="hidden" name="userId" value={session?.uid} />
-                    <input type="hidden" name="role" value={profile.role} />
+    <div className="grid grid-cols-1 md:grid-cols-[250px_1fr] gap-6">
+        <Card className="p-4 self-start sticky top-24">
+            <nav className="grid gap-1 text-sm">
+                {navItems.map(item => (
+                    <Button 
+                        key={item.id} 
+                        variant={activeSection === item.id ? 'default' : 'ghost'} 
+                        className="justify-start"
+                        onClick={() => setActiveSection(item.id)}
+                    >
+                        {item.label}
+                    </Button>
+                ))}
+            </nav>
+        </Card>
+        
+        <Card>
+            <CardContent className="p-6">
+            <form action={formAction} ref={formRef} className="space-y-8">
+                <input type="hidden" name="userId" value={session?.uid} />
+                <input type="hidden" name="role" value={profile.role} />
 
-                        {/* Personal & Contact Section */}
-                        <section id="personal-details" className="space-y-4">
-                            <h3 className="text-lg font-semibold">Personal & Contact</h3>
-                            <div className="flex items-center gap-6">
-                                <div className="relative">
-                                    <Avatar className="h-24 w-24">
-                                        <AvatarImage src={profile.displayImageUrl ?? undefined} />
-                                        <AvatarFallback className="text-3xl bg-dash-primary text-dash-primary-foreground">{getInitials(profile.name)}</AvatarFallback>
-                                    </Avatar>
-                                    {isAvatarPending && (
-                                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
-                                            <Loader2 className="h-8 w-8 animate-spin text-white" />
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="flex flex-wrap gap-2">
-                                    <input
-                                        type="file"
-                                        ref={fileInputRef}
-                                        onChange={handleFileChange}
-                                        className="hidden"
-                                        accept="image/png, image/jpeg, image/gif"
-                                    />
-                                    <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isAvatarPending}>
-                                        <Edit className="mr-2 h-4 w-4" /> {profile.displayImageUrl ? 'Change' : 'Add'} Picture
-                                    </Button>
-                                    {profile.displayImageUrl && (
-                                        <Button variant="destructive" onClick={handleRemovePicture} disabled={isAvatarPending}>
-                                            <Trash2 className="mr-2 h-4 w-4" /> Remove
-                                        </Button>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="grid gap-2">
-                                    <Label htmlFor="name">Name</Label>
-                                    <Input id="name" name="name" defaultValue={profile.name} required />
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="phone">Phone Number</Label>
-                                    <Input id="phone" name="phone" defaultValue={profile.phone ?? ''} type="tel" />
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="address">City / Town</Label>
-                                    <Input id="address" name="address" defaultValue={profile.address ?? ''} />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="grid gap-2">
-                                    <Label htmlFor="gender">Gender</Label>
-                                    <Select name="gender" defaultValue={profile.gender}>
-                                        <SelectTrigger><SelectValue placeholder="Select..."/></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="Male">Male</SelectItem>
-                                            <SelectItem value="Female">Female</SelectItem>
-                                            <SelectItem value="Other">Other</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="maritalStatus">Marital Status</Label>
-                                    <Select name="maritalStatus" defaultValue={profile.maritalStatus}>
-                                        <SelectTrigger><SelectValue placeholder="Select..."/></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="Single">Single</SelectItem>
-                                            <SelectItem value="Married">Married</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="dob">Date of Birth</Label>
-                                    <Input id="dob" name="dob" type="date" defaultValue={profile.dob} />
-                                </div>
-                            </div>
-                        </section>
-
-                        {/* Career Profile Section */}
-                        <section id="career-profile" className="space-y-4 pt-6 border-t">
-                            <h3 className="text-lg font-semibold">Career Profile</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="grid gap-2">
-                                    <Label htmlFor="jobTitle">Current Job Title</Label>
-                                    <Input id="jobTitle" name="jobTitle" defaultValue={profile.jobTitle ?? ''} placeholder="e.g., Software Engineer"/>
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="currentCompany">Current Company</Label>
-                                    <Input id="currentCompany" name="currentCompany" defaultValue={profile.currentCompany ?? ''} placeholder="e.g., Google" />
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="workStatus">Work Status</Label>
-                                    <Select name="workStatus" defaultValue={profile.workStatus}>
-                                        <SelectTrigger><SelectValue placeholder="Select..."/></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="fresher">Fresher</SelectItem>
-                                            <SelectItem value="experienced">Experienced</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="experience">Total Experience</Label>
-                                    <Select name="experience" defaultValue={profile.experience}>
-                                        <SelectTrigger><SelectValue placeholder="Select..."/></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="0-1 Year">0-1 Year</SelectItem>
-                                            <SelectItem value="1-3 years">1-3 years</SelectItem>
-                                            <SelectItem value="3-5 years">3-5 years</SelectItem>
-                                            <SelectItem value="5-7 years">5-7 years</SelectItem>
-                                            <SelectItem value="7+ years">7+ years</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="noticePeriod">Notice Period</Label>
-                                    <Select name="noticePeriod" defaultValue={profile.noticePeriod}>
-                                        <SelectTrigger><SelectValue placeholder="Select..."/></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="Serving">Serving Notice Period</SelectItem>
-                                            <SelectItem value="15 days">15 Days or less</SelectItem>
-                                            <SelectItem value="1 month">1 Month</SelectItem>
-                                            <SelectItem value="2 months">2 Months</SelectItem>
-                                            <SelectItem value="3 months">3 Months</SelectItem>
-                                            <SelectItem value="more">More than 3 months</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="currentSalary">Current Salary (LPA)</Label>
-                                    <Input id="currentSalary" name="currentSalary" type="number" step="0.1" defaultValue={profile.currentSalary ?? ''} placeholder="e.g., 12.5"/>
-                                </div>
-                            </div>
-                        </section>
-                        
-                        {/* Profile Summary section */}
-                        <section id="profile-summary" className="pt-6 border-t space-y-2">
+                {activeSection === 'profile-summary' && (
+                    <section id="profile-summary-section" className="space-y-6">
+                        <div>
                             <h3 className="text-lg font-semibold">Profile Summary</h3>
-                            <Textarea name="profileSummary" defaultValue={profile.profileSummary ?? ''} placeholder="Tell us about yourself..." className="min-h-24"/>
-                        </section>
-
-                        {/* Online Profiles Section */}
-                        <section id="online-profiles" className="space-y-4 pt-6 border-t">
-                            <h3 className="text-lg font-semibold">Online Profiles</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="grid gap-2">
-                                    <Label htmlFor="linkedin">LinkedIn</Label>
-                                    <div className="relative">
-                                        <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                        <Input id="linkedin" name="linkedin" defaultValue={profile.linkedin ?? ''} placeholder="https://linkedin.com/in/..." className="pl-9" />
-                                    </div>
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="naukri">Naukri.com</Label>
-                                    <div className="relative">
-                                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                        <Input id="naukri" name="naukri" defaultValue={profile.naukri ?? ''} placeholder="Profile URL" className="pl-9" />
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-
-                        {state?.error && <Alert variant="destructive" className="mt-2"><AlertDescription>{state.error}</AlertDescription></Alert>}
-                        <div className="flex justify-end gap-2 pt-2">
-                            <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
-                            <SubmitButton />
+                            <p className="text-sm text-muted-foreground">This is your elevator pitch. Make it count.</p>
                         </div>
-                    </form>
+                        <Textarea name="profileSummary" defaultValue={profile.profileSummary ?? ''} placeholder="A brief summary about your professional background..." className="min-h-32"/>
+                    </section>
+                )}
+
+                {activeSection === 'resume' && (
+                    <section id="resume-section" className="space-y-6">
+                         <div>
+                            <h3 className="text-lg font-semibold">Resume</h3>
+                            <p className="text-sm text-muted-foreground">Upload your latest resume. This will be used for AI analysis.</p>
+                        </div>
+                         <div className="space-y-2">
+                            <input type="file" id="resume-upload-input" ref={fileInputRef} onChange={handleResumeFileChange} accept=".pdf,.doc,.docx" className="hidden" name="resumeFile"/>
+                            <div
+                                className={cn("relative flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 transition-colors", isDragging && "border-dash-primary bg-dash-primary/10")}
+                                onDrop={handleResumeDrop} onDragOver={handleResumeDragOver} onDragLeave={handleResumeDragLeave} onClick={handleResumeButtonClick}
+                            >
+                                {existingResume ? (
+                                    <div className="text-center">
+                                        <FileText className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                                        <p className="font-semibold">{existingResume.name}</p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
+                                        <p className="text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    </section>
+                )}
+                
+                {activeSection === 'personal-details' && (
+                  <section id="personal-details-section" className="space-y-6">
+                    <div>
+                      <h3 className="text-lg font-semibold">Personal & Contact</h3>
+                      <p className="text-sm text-muted-foreground">Update your personal and contact details.</p>
+                    </div>
+                    <div className="flex items-center gap-6">
+                        <div className="relative">
+                            <Avatar className="h-24 w-24">
+                                <AvatarImage src={profile.displayImageUrl ?? undefined} />
+                                <AvatarFallback className="text-3xl bg-dash-primary text-dash-primary-foreground">{getInitials(profile.name)}</AvatarFallback>
+                            </Avatar>
+                            {isAvatarPending && (
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
+                                    <Loader2 className="h-8 w-8 animate-spin text-white" />
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleFileChange}
+                                className="hidden"
+                                accept="image/png, image/jpeg, image/gif"
+                            />
+                            <Button variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isAvatarPending}>
+                                <Edit className="mr-2 h-4 w-4" /> {profile.displayImageUrl ? 'Change' : 'Add'} Picture
+                            </Button>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="name">Name</Label>
+                        <Input id="name" name="name" defaultValue={profile.name} required />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="phone">Phone Number</Label>
+                        <Input id="phone" name="phone" defaultValue={profile.phone ?? ''} type="tel" />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="address">City / Town</Label>
+                        <Input id="address" name="address" defaultValue={profile.address ?? ''} />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="gender">Gender</Label>
+                        <Select name="gender" defaultValue={profile.gender}>
+                          <SelectTrigger><SelectValue placeholder="Select..."/></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Male">Male</SelectItem>
+                            <SelectItem value="Female">Female</SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="maritalStatus">Marital Status</Label>
+                        <Select name="maritalStatus" defaultValue={profile.maritalStatus}>
+                          <SelectTrigger><SelectValue placeholder="Select..."/></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Single">Single</SelectItem>
+                            <SelectItem value="Married">Married</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="dob">Date of Birth</Label>
+                        <Input id="dob" name="dob" type="date" defaultValue={profile.dob} />
+                      </div>
+                    </div>
+                  </section>
+                )}
+
+                {/* Placeholder for other sections */}
+                {activeSection !== 'profile-summary' && activeSection !== 'resume' && activeSection !== 'personal-details' && (
+                    <div className="text-center py-12">
+                        <h3 className="text-lg font-semibold">Under Construction</h3>
+                        <p className="text-sm text-muted-foreground">The form for the &quot;{navItems.find(i => i.id === activeSection)?.label}&quot; section will be here.</p>
+                    </div>
+                )}
+                
+                {state?.error && <Alert variant="destructive" className="mt-2"><AlertDescription>{state.error}</AlertDescription></Alert>}
+                <div className="flex justify-end gap-2 pt-8 border-t">
+                    <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
+                    <SubmitButton />
                 </div>
-                </CardContent>
-            </Card>
-        </div>
+            </form>
+            </CardContent>
+        </Card>
     </div>
   );
 }
