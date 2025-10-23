@@ -1,18 +1,16 @@
 
 "use client";
 
-import { useState, useRef, useTransition, DragEvent, useEffect } from "react";
-import { useFormState } from "react-dom";
+import { useState, useRef, useTransition, DragEvent, useEffect, useActionState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { analyzeAndSaveResumeAction } from "@/app/actions";
 import { Loader2, AlertCircle, Sparkles, UploadCloud, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { GradientButton } from "./ui/gradient-button";
 import { useSession } from "@/hooks/use-session";
+import { GradientButton } from "./ui/gradient-button";
 
 const initialState: {
   analysisId?: string;
@@ -30,10 +28,10 @@ interface ResumeAnalysisProps {
 export function ResumeAnalysis({ jobId, jobTitle, jobDescription, companyName, view = 'drag-and-drop' }: ResumeAnalysisProps) {
   const router = useRouter();
   const { session } = useSession();
-  const [state, formAction] = useFormState(analyzeAndSaveResumeAction, initialState);
+  const [state, formAction] = useActionState(analyzeAndSaveResumeAction, initialState);
   const [isPending, startTransition] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [fileName, setFileName] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
@@ -42,26 +40,17 @@ export function ResumeAnalysis({ jobId, jobTitle, jobDescription, companyName, v
     }
   }, [state, router]);
 
-  const handleFile = (file: File) => {
-    if (!session?.uid) return;
-    setFileName(file.name);
-    const formData = new FormData();
-    formData.append("resume", file);
-    formData.append("jobId", jobId);
-    formData.append("jobTitle", jobTitle);
-    formData.append("jobDescription", jobDescription);
-    formData.append("companyName", companyName);
-    formData.append("userId", session.uid);
-    startTransition(() => {
-      formAction(formData);
-    });
+  const handleFileSelect = (file: File | null) => {
+    if (file && (file.type.includes('pdf') || file.type.includes('document'))) {
+        setSelectedFile(file);
+    } else {
+        setSelectedFile(null);
+    }
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      handleFile(file);
-    }
+    handleFileSelect(file || null);
   };
 
   const handleDrop = (event: DragEvent<HTMLDivElement>) => {
@@ -70,9 +59,7 @@ export function ResumeAnalysis({ jobId, jobTitle, jobDescription, companyName, v
     setIsDragging(false);
     if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
       const file = event.dataTransfer.files[0];
-      if(file.type.includes('pdf') || file.type.includes('document')) {
-        handleFile(file);
-      }
+      handleFileSelect(file);
       event.dataTransfer.clearData();
     }
   };
@@ -93,10 +80,23 @@ export function ResumeAnalysis({ jobId, jobTitle, jobDescription, companyName, v
     fileInputRef.current?.click();
   };
   
+  const handleSubmit = (formData: FormData) => {
+    if (!selectedFile || !session?.uid) return;
+    formData.append("resume", selectedFile);
+    formData.append("jobId", jobId);
+    formData.append("jobTitle", jobTitle);
+    formData.append("jobDescription", jobDescription);
+    formData.append("companyName", companyName);
+    formData.append("userId", session.uid);
+    startTransition(() => {
+        formAction(formData);
+    });
+  }
+  
   const error = state?.error;
 
   return (
-    <div className="space-y-4 max-w-2xl mx-auto">
+    <form action={handleSubmit} className="space-y-4 max-w-2xl mx-auto">
       <Input
         id="resume-upload"
         type="file"
@@ -118,13 +118,13 @@ export function ResumeAnalysis({ jobId, jobTitle, jobDescription, companyName, v
           onDragLeave={isPending ? undefined : handleDragLeave}
           onClick={isPending ? undefined : handleButtonClick}
         >
-          {isPending ? (
-            <>
-              <Loader2 className="w-8 h-8 mb-4 text-muted-foreground animate-spin" />
-              <p className="mb-2 text-sm text-muted-foreground">Analyzing...</p>
-              <p className="text-xs text-muted-foreground">{fileName}</p>
-            </>
-          ) : (
+            {selectedFile ? (
+                <div className="text-center">
+                    <FileText className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                    <p className="font-semibold">{selectedFile.name}</p>
+                    <p className="text-xs text-muted-foreground">Click or drag a different file to change</p>
+                </div>
+            ) : (
             <>
               <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
               <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
@@ -134,11 +134,28 @@ export function ResumeAnalysis({ jobId, jobTitle, jobDescription, companyName, v
         </div>
       ) : (
         <div className="text-center">
-            <Button variant="link" onClick={handleButtonClick} className="text-base text-dash-primary" disabled={isPending}>
-                <FileText className="mr-2 h-4 w-4" />
-                Upload a resume to analyze
-            </Button>
+             {selectedFile ? (
+                <div className="flex items-center justify-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    <p>{selectedFile.name}</p>
+                    <Button variant="link" onClick={handleButtonClick} className="text-xs">Change</Button>
+                </div>
+            ) : (
+                <Button variant="link" onClick={handleButtonClick} className="text-base text-dash-primary" disabled={isPending}>
+                    <FileText className="mr-2 h-4 w-4" />
+                    Upload a resume to analyze
+                </Button>
+            )}
         </div>
+      )}
+
+      {selectedFile && (
+          <div className="flex justify-center">
+            <GradientButton type="submit" disabled={isPending}>
+                {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                {isPending ? 'Analyzing...' : 'Analyze Resume'}
+            </GradientButton>
+          </div>
       )}
 
       {error && (
@@ -148,6 +165,6 @@ export function ResumeAnalysis({ jobId, jobTitle, jobDescription, companyName, v
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
-    </div>
+    </form>
   );
 }
