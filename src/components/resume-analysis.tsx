@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useRef, useTransition, DragEvent, useEffect, useActionState } from "react";
@@ -80,14 +81,18 @@ export function ResumeAnalysis({ jobId, jobTitle, jobDescription, companyName, v
     fileInputRef.current?.click();
   };
   
-  const handleSubmit = (formData: FormData) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     if (!selectedFile || !session?.uid) return;
+
+    const formData = new FormData(e.currentTarget);
     formData.append("resume", selectedFile);
     formData.append("jobId", jobId);
     formData.append("jobTitle", jobTitle);
     formData.append("jobDescription", jobDescription);
     formData.append("companyName", companyName);
     formData.append("userId", session.uid);
+    
     startTransition(() => {
         formAction(formData);
     });
@@ -96,7 +101,7 @@ export function ResumeAnalysis({ jobId, jobTitle, jobDescription, companyName, v
   const error = state?.error;
 
   return (
-    <form action={handleSubmit} className="space-y-4 max-w-2xl mx-auto">
+    <form onSubmit={handleSubmit} className="space-y-4 max-w-2xl mx-auto">
       <Input
         id="resume-upload"
         type="file"

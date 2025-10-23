@@ -64,7 +64,7 @@ export async function analyzeAndSaveResumeAction(
   if (!resumeFile || resumeFile.size === 0) {
     return { error: "Please upload a resume file." };
   }
-  if (!jobId || !jobDescription || !userId) {
+  if (!jobId || !jobDescription || !userId || !jobTitle) {
     return { error: "Required data is missing." };
   }
   

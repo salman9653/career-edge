@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState, useMemo, useContext } from 'react';
@@ -540,7 +541,12 @@ export default function CandidateJobDetailsPage() {
                                             <h2 className='text-2xl font-bold font-headline'>AI Resume Analysis</h2>
                                             <p className='text-muted-foreground'>Upload a resume to analyze it against this job .</p>
                                         </div>
-                                        <ResumeAnalysis jobDescription={job.description} />
+                                        <ResumeAnalysis 
+                                            jobId={job.id} 
+                                            jobTitle={job.title}
+                                            jobDescription={job.description}
+                                            companyName={company?.name || ''}
+                                        />
                                     </TabsContent>
                                     <TabsContent value="about" className="pt-6">
                                       {company && (
