@@ -9,13 +9,15 @@ import { db } from '@/lib/firebase/config';
 import { DashboardSidebar } from '@/components/dashboard-sidebar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, ArrowLeft, TrendingUp, TrendingDown, Lightbulb, Trophy, Target, Star, CheckCircle } from 'lucide-react';
+import { Loader2, ArrowLeft, TrendingUp, TrendingDown, Lightbulb, Trophy, Target, Star, CheckCircle, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import type { ResumeAnalysisResult } from '@/lib/types';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+
 
 const ScoreRing = ({ score }: { score: number }) => {
     const circumference = 2 * Math.PI * 45;
