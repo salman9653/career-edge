@@ -1,5 +1,4 @@
 
-
 'use client';
 import { useEffect, useContext, useCallback, useState } from 'react';
 import { useSession } from '@/hooks/use-session';
@@ -13,14 +12,15 @@ import { CompanyContext } from '@/context/company-context';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { MobileSearch } from '@/components/mobile-search';
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase/config';
 import { sendEmailVerification } from 'firebase/auth';
-import type { Job, Applicant, Schedule } from '@/lib/types';
-import { format } from 'date-fns';
+import type { Job, Applicant, Schedule, ResumeAnalysisResult } from '@/lib/types';
+import { format, formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { JobContext } from '@/context/job-context';
 import { Loader2 } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 
 
 const AdminDashboard = () => {
@@ -119,7 +119,30 @@ const CandidateDashboard = ({ user }: { user: any }) => {
     const [schedules, setSchedules] = useState<UpcomingSchedule[]>([]);
     const [applicationCount, setApplicationCount] = useState(0);
     const [loadingData, setLoadingData] = useState(true);
+    const [recentAnalyses, setRecentAnalyses] = useState<ResumeAnalysisResult[]>([]);
+    const [loadingAnalyses, setLoadingAnalyses] = useState(true);
     const router = useRouter();
+
+    useEffect(() => {
+        if (!user?.uid) return;
+        
+        const analysesRef = collection(db, `users/${user.uid}/resume-analyses`);
+        const q = query(analysesRef, orderBy('analyzedAt', 'desc'), limit(5));
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const analysesList = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            } as ResumeAnalysisResult));
+            setRecentAnalyses(analysesList);
+            setLoadingAnalyses(false);
+        }, (error) => {
+            console.error("Error fetching analyses:", error);
+            setLoadingAnalyses(false);
+        });
+
+        return () => unsubscribe();
+    }, [user?.uid]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -202,6 +225,48 @@ const CandidateDashboard = ({ user }: { user: any }) => {
                 </CardContent>
             </Card>
         </div>
+         <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <LineChart className="h-5 w-5" />
+                        Recent Resume Analyses
+                    </div>
+                    <Button variant="secondary" size="sm" asChild>
+                        <Link href="/dashboard/candidate/resume-analysis">View All</Link>
+                    </Button>
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                {loadingAnalyses ? (
+                    <div className="space-y-4">
+                        <Skeleton className="h-16 w-full" />
+                        <Skeleton className="h-16 w-full" />
+                    </div>
+                ) : recentAnalyses.length > 0 ? (
+                    <div className="space-y-3">
+                        {recentAnalyses.map(analysis => (
+                           <Link href={`/dashboard/candidate/resume-analysis/${analysis.id}`} key={analysis.id}>
+                               <div className="p-4 border rounded-lg hover:bg-accent transition-colors">
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                                        <div className="flex-1">
+                                            <p className="font-semibold">{analysis.jobTitle}</p>
+                                            <p className="text-sm text-muted-foreground">{analysis.companyName}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2 self-start sm:self-center">
+                                            <span className="font-bold text-lg">{analysis.overallScore}</span>
+                                            <Progress value={analysis.overallScore} className="w-20 h-2" />
+                                        </div>
+                                    </div>
+                                </div>
+                           </Link>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-sm text-muted-foreground">No analyses found. Analyze your resume against a job to get started.</p>
+                )}
+            </CardContent>
+        </Card>
          <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">

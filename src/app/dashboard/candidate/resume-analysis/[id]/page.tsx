@@ -13,10 +13,9 @@ import { Loader2, ArrowLeft, TrendingUp, TrendingDown, Lightbulb, Trophy, Target
 import { format } from 'date-fns';
 import type { ResumeAnalysisResult } from '@/lib/types';
 import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import Link from 'next/link';
 
 
 const ScoreRing = ({ score }: { score: number }) => {
@@ -140,7 +139,12 @@ export default function ResumeAnalysisDetailPage() {
                     <div className="max-w-4xl mx-auto space-y-6">
                         <Card>
                             <CardHeader>
-                                <CardTitle className="font-headline text-2xl">Analysis for: {analysis.jobTitle}</CardTitle>
+                                 <CardTitle className="font-headline text-2xl">
+                                    Analysis for: 
+                                    <Link href={`/dashboard/candidate/jobs/${analysis.jobId}`} className="ml-2 text-dash-primary hover:underline">
+                                        {analysis.jobTitle}
+                                    </Link>
+                                </CardTitle>
                                 <CardDescription>at {analysis.companyName}</CardDescription>
                             </CardHeader>
                             <CardContent className="flex flex-col md:flex-row items-center gap-8">
@@ -227,14 +231,6 @@ export default function ResumeAnalysisDetailPage() {
                                 </ul>
                             </CardContent>
                         </Card>
-                         <div className="text-center pt-4">
-                            <Button asChild>
-                                <Link href={`/dashboard/candidate/jobs/${analysis.jobId}`}>
-                                    <ArrowLeft className="mr-2 h-4 w-4" />
-                                    Back to Job
-                                </Link>
-                            </Button>
-                        </div>
                     </div>
                 </main>
             </div>
