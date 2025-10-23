@@ -190,8 +190,8 @@ export function UpdateProfileCard({
   ];
 
   return (
-    <div className="flex gap-6 h-full w-full">
-        <Card className="p-4 w-[250px] self-start">
+    <div className="flex gap-6 flex-1">
+        <Card className="p-4 w-[250px] self-stretch">
             <nav className="grid gap-1 text-sm">
                 {navItems.map(item => (
                     <Button 
@@ -213,8 +213,18 @@ export function UpdateProfileCard({
                         <CardContent className="p-6">
                             <input type="hidden" name="userId" value={session?.uid} />
                             <input type="hidden" name="role" value={profile.role} />
-                            {existingResume && <input type="file" name="resumeFile" className="hidden" value={undefined} files={new DataTransfer().files} />}
-
+                            
+                            <input 
+                                type="file" 
+                                name="resumeFile" 
+                                ref={resumeInputRef}
+                                className="hidden" 
+                                onChange={(e) => {
+                                    if(e.target.files && e.target.files.length > 0) {
+                                        setExistingResume(e.target.files[0])
+                                    }
+                                }}
+                            />
 
                             {activeSection === 'profile-details' && (
                                 <section className="space-y-6">
@@ -255,7 +265,7 @@ export function UpdateProfileCard({
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="grid gap-2">
                                         <Label htmlFor="name">Name</Label>
-                                        <Input id="name" name="name" defaultValue={profile.name} required />
+                                        <Input id="name" name="name" defaultValue={profile.name ?? ''} required />
                                     </div>
                                     <div className="grid gap-2">
                                         <Label htmlFor="phone">Phone Number</Label>
@@ -290,7 +300,7 @@ export function UpdateProfileCard({
                                     </div>
                                     <div className="grid gap-2">
                                     <Label htmlFor="workStatus">Work Status</Label>
-                                    <Select name="workStatus" defaultValue={profile.workStatus}>
+                                    <Select name="workStatus" defaultValue={profile.workStatus ?? ''}>
                                         <SelectTrigger><SelectValue placeholder="Select..."/></SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="fresher">Fresher</SelectItem>
@@ -304,7 +314,7 @@ export function UpdateProfileCard({
                                     </div>
                                     <div className="grid gap-2">
                                     <Label htmlFor="noticePeriod">Notice Period</Label>
-                                    <Select name="noticePeriod" defaultValue={profile.noticePeriod}>
+                                    <Select name="noticePeriod" defaultValue={profile.noticePeriod ?? ''}>
                                         <SelectTrigger><SelectValue placeholder="Select..."/></SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="Immediate">Immediate</SelectItem>
@@ -330,7 +340,6 @@ export function UpdateProfileCard({
                                         <p className="text-sm text-muted-foreground">Upload your latest resume. This will be used for AI analysis.</p>
                                     </div>
                                     <div className="space-y-2">
-                                        <input type="file" ref={resumeInputRef} onChange={handleResumeFileChange} accept=".pdf,.doc,.docx" className="hidden" name="resumeFile"/>
                                         <div
                                             className={cn("relative flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 transition-colors", isDragging && "border-dash-primary bg-dash-primary/10")}
                                             onDrop={handleResumeDrop} onDragOver={handleResumeDragOver} onDragLeave={handleResumeDragLeave} onClick={handleResumeButtonClick}
@@ -339,6 +348,12 @@ export function UpdateProfileCard({
                                                 <div className="text-center">
                                                     <FileText className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
                                                     <p className="font-semibold">{existingResume.name}</p>
+                                                </div>
+                                            ) : profile.resume ? (
+                                                <div className="text-center">
+                                                    <FileText className="w-8 h-8 mx-auto mb-2 text-green-500" />
+                                                    <p className="font-semibold">Resume on file</p>
+                                                     <p className="text-xs text-muted-foreground">Click or drag a different file to replace</p>
                                                 </div>
                                             ) : (
                                                 <>
@@ -402,7 +417,7 @@ export function UpdateProfileCard({
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="grid gap-2">
                                     <Label htmlFor="gender">Gender</Label>
-                                    <Select name="gender" defaultValue={profile.gender}>
+                                    <Select name="gender" defaultValue={profile.gender ?? ''}>
                                     <SelectTrigger><SelectValue placeholder="Select..."/></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="Male">Male</SelectItem>
@@ -413,7 +428,7 @@ export function UpdateProfileCard({
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="maritalStatus">Marital Status</Label>
-                                    <Select name="maritalStatus" defaultValue={profile.maritalStatus}>
+                                    <Select name="maritalStatus" defaultValue={profile.maritalStatus ?? ''}>
                                     <SelectTrigger><SelectValue placeholder="Select..."/></SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="Single">Single</SelectItem>
@@ -447,7 +462,7 @@ export function UpdateProfileCard({
                                             />
                                         </PopoverContent>
                                     </Popover>
-                                    <Input id="dob" name="dob" type="hidden" value={profile.dob} />
+                                    <Input id="dob" name="dob" type="hidden" defaultValue={profile.dob ?? ''} />
                                 </div>
                                 <div className="grid gap-2">
                                     <Label htmlFor="permanentAddress">Permanent Address</Label>
