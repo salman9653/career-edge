@@ -18,6 +18,7 @@ const AnalyzeResumeForJobMatchingInputSchema = z.object({
       "A resume file, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
   jobDescription: z.string().describe('The job description to match the resume against.'),
+  jobTitle: z.string().describe('The title of the job.'),
 });
 
 export type AnalyzeResumeForJobMatchingInput = z.infer<
@@ -25,18 +26,18 @@ export type AnalyzeResumeForJobMatchingInput = z.infer<
 >;
 
 const AnalyzeResumeForJobMatchingOutputSchema = z.object({
-  skills: z.array(z.string()).describe('List of skills identified in the resume.'),
-  experienceSummary:
-    z.string().describe('Summary of the candidate\'s work experience.'),
-  qualificationsSummary:
-    z.string().describe('Summary of the candidate\'s qualifications.'),
-  matchScore: z
-    .number()
-    .describe('A score indicating how well the resume matches the job description.'),
-  reasoning: z
-    .string()
-    .describe('Reasoning for match score based on skills, experience, and qualifications.'),
+  overallScore: z.number().min(0).max(100).describe('A score from 0-100 indicating how well the resume matches the job description.'),
+  summary: z.string().describe("A brief, one-paragraph summary of the candidate's suitability for the role."),
+  ratings: z.object({
+    skills: z.number().min(0).max(100).describe("A score from 0-100 for how well the candidate's skills match the job requirements."),
+    experience: z.number().min(0).max(100).describe("A score from 0-100 based on the relevance and duration of the candidate's experience."),
+    qualifications: z.number().min(0).max(100).describe("A score from 0-100 for the candidate's educational and other qualifications.")
+  }),
+  pros: z.array(z.string()).describe("A list of 3-5 key strengths or positive points from the resume that align with the job."),
+  cons: z.array(z.string()).describe("A list of 3-5 potential weaknesses or areas where the resume is lacking for this specific role."),
+  improvements: z.array(z.string()).describe("A list of 3-5 actionable suggestions for how the candidate could improve their resume to be a better fit for this job."),
 });
+
 
 export type AnalyzeResumeForJobMatchingOutput = z.infer<
   typeof AnalyzeResumeForJobMatchingOutputSchema
@@ -52,15 +53,27 @@ const prompt = ai.definePrompt({
   name: 'analyzeResumeForJobMatchingPrompt',
   input: {schema: AnalyzeResumeForJobMatchingInputSchema},
   output: {schema: AnalyzeResumeForJobMatchingOutputSchema},
-  prompt: `You are an AI resume analysis tool designed to help recruiters quickly assess candidate suitability for a job.
+  prompt: `You are an expert career coach and resume analyst. Your task is to provide a detailed, constructive analysis of a resume for a specific job.
 
-  Analyze the following resume and determine the candidate's skills, experience, and qualifications.
-  Then, compare these against the provided job description and determine a match score (0-100) and a reasoning for the score.
+Analyze the provided resume against the job description for the role of **{{jobTitle}}**.
 
-  Resume: {{media url=resumeDataUri}}
-  Job Description: {{{jobDescription}}}
+**Resume:** 
+{{media url=resumeDataUri}}
 
-  Provide the skills, experience summary, qualifications summary, match score, and reasoning in the output.`,
+**Job Description:**
+\`\`\`
+{{{jobDescription}}}
+\`\`\`
+
+Based on your analysis, provide a structured breakdown. Be critical but encouraging. Your scores should be realistic.
+
+1.  **Overall Score:** A single score from 0 to 100 representing the overall match.
+2.  **Summary:** A concise paragraph summarizing the candidate's fit.
+3.  **Ratings Breakdown:** Score the resume on a scale of 0-100 for each of these three categories: Skills, Experience, and Qualifications.
+4.  **Pros:** List 3-5 specific strengths of the resume in relation to the job.
+5.  **Cons:** List 3-5 specific areas where the resume is weak or mismatched for the role.
+6.  **Improvements:** Provide 3-5 concrete, actionable suggestions for how the candidate could tailor their resume to better fit this job description.
+`,
 });
 
 const analyzeResumeForJobMatchingFlow = ai.defineFlow(

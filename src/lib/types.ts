@@ -1,5 +1,3 @@
-
-
 import type { LucideIcon } from 'lucide-react';
 
 export interface NavItem {
@@ -222,4 +220,23 @@ export interface Notification {
   applicantCount?: number;
   newApplicantNames?: string[];
   originalIds?: string[];
+}
+
+export interface ResumeAnalysisResult {
+  id: string;
+  userId: string;
+  jobId: string;
+  jobTitle: string;
+  companyName: string;
+  analyzedAt: any;
+  overallScore: number;
+  summary: string;
+  ratings: {
+    skills: number;
+    experience: number;
+    qualifications: number;
+  };
+  pros: string[];
+  cons: string[];
+  improvements: string[];
 }
