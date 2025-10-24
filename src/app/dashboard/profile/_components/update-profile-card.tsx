@@ -257,10 +257,7 @@ export function UpdateProfileCard({
 
   const handleAddSkill = (skillName: string) => {
     const trimmedSkill = skillName.trim();
-    const skillExists = skillsData.find(s => s.name.toLowerCase() === trimmedSkill.toLowerCase());
-    if (skillExists && !skills.includes(skillExists.name)) {
-      setSkills([...skills, skillExists.name]);
-    } else if (trimmedSkill && !skills.includes(trimmedSkill)) { // Allow adding custom skills
+    if (trimmedSkill && !skills.includes(trimmedSkill)) {
         setSkills([...skills, trimmedSkill])
     }
     setSkillInput('');
@@ -700,7 +697,7 @@ export function UpdateProfileCard({
                                 </div>
                                 <div className="space-y-2">
                                   <Label>Permanent Address</Label>
-                                  <div className="p-4 border rounded-lg bg-muted/50 space-y-4">
+                                  <div className="space-y-4">
                                     <Textarea name="permanentAddress.address" placeholder="Street Address" defaultValue={profile.permanentAddress?.address ?? ''}/>
                                     <div className="grid grid-cols-2 gap-4">
                                       <Input name="permanentAddress.city" placeholder="City" defaultValue={profile.permanentAddress?.city ?? ''}/>
@@ -746,7 +743,7 @@ export function UpdateProfileCard({
                                         </div>
                                       </div>
                                       <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-6">
                                           <div className="flex items-center gap-2">
                                             <Checkbox id={`read-${index}`} checked={lang.canRead} onCheckedChange={(checked) => handleLanguageChange(index, 'canRead', !!checked)}/>
                                             <Label htmlFor={`read-${index}`} className="font-normal">Read</Label>
