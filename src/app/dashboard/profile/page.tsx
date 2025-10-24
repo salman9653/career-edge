@@ -4,57 +4,12 @@ import { useState, useEffect } from 'react';
 import { useSession } from '@/hooks/use-session';
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { Skeleton } from '@/components/ui/skeleton';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
-import type { CompanySize, Socials } from '@/lib/types';
+import type { CompanySize, Socials, UserProfile } from '@/lib/types';
 import { MobileSearch } from '@/components/mobile-search';
 import { ProfileDisplayCard } from './_components/profile-display-card';
 import { UpdateProfileCard } from './_components/update-profile-card';
-
-export interface UserProfile {
-    uid: string;
-    email: string;
-    name: string;
-    role: 'candidate' | 'company' | 'admin' | 'manager';
-    phone: string;
-    displayImageUrl: string | null;
-    emailVerified: boolean;
-    companySize?: CompanySize;
-    website?: string;
-    socials?: Socials;
-    helplinePhone?: string;
-    helplineEmail?: string;
-    company_uid?: string;
-    designation?: string;
-    permissions_role?: string;
-    aboutCompany?: string;
-    companyType?: string;
-    foundedYear?: string;
-    tags?: string[];
-    benefits?: string[];
-    // Candidate specific fields
-    jobTitle?: string;
-    currentCompany?: string;
-    address?: string;
-    workStatus?: 'fresher' | 'experienced';
-    experience?: string;
-    noticePeriod?: string;
-    currentSalary?: string;
-    resume?: string;
-    profileSummary?: string;
-    keySkills?: string[];
-    employment?: any[];
-    education?: any[];
-    projects?: any[];
-    linkedin?: string;
-    naukri?: string;
-    gender?: string;
-    maritalStatus?: string;
-    dob?: string;
-    permanentAddress?: string;
-    languages?: string[];
-}
-
 
 export default function ProfilePage() {
   const { session, loading: sessionLoading, updateSession } = useSession();
@@ -65,16 +20,25 @@ export default function ProfilePage() {
   useEffect(() => {
     if (session?.uid) {
         const userDocRef = doc(db, 'users', session.uid);
-        const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+        const unsubscribe = onSnapshot(userDocRef, async (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
+                
+                let displayImageUrl = data.displayImageUrl || null;
+                if(data.hasDisplayImage && !displayImageUrl) {
+                    const imageDoc = await getDoc(doc(db, `users/${session.uid}/uploads/displayImage`));
+                    if (imageDoc.exists()) {
+                        displayImageUrl = imageDoc.data().data;
+                    }
+                }
+
                 const profileData: UserProfile = {
                     uid: session.uid,
                     email: data.email || '',
                     name: data.name || session.displayName || '',
                     role: data.role,
                     phone: data.phone || '',
-                    displayImageUrl: data.displayImageUrl || null,
+                    displayImageUrl: displayImageUrl,
                     emailVerified: session.emailVerified || false,
                     companySize: data.companySize,
                     website: data.website,

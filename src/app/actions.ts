@@ -56,7 +56,6 @@ export async function analyzeAndSaveResumeAction(
   const resumeFile = formData.get("resume") as File;
   const jobId = formData.get("jobId") as string;
   const jobTitle = formData.get("jobTitle") as string;
-  const jobDescription = formData.get("jobDescription") as string;
   const companyName = formData.get("companyName") as string;
   const userId = formData.get("userId") as string;
 
@@ -665,7 +664,7 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
   if (!userId) {
     return { error: 'User not authenticated.' };
   }
-  
+
   const role = formData.get('role') as string;
   const dataToUpdate: { [key: string]: any } = {};
 
@@ -689,8 +688,15 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
   }
 
   const resumeFile = formData.get('resumeFile') as File;
+  const MAX_FILE_SIZE = 750 * 1024; // 750KB
+
   if (resumeFile && resumeFile.size > 0) {
-    dataToUpdate.resume = await fileToDataURI(resumeFile);
+    if (resumeFile.size > MAX_FILE_SIZE) {
+        return { error: `Resume file size should not exceed ${MAX_FILE_SIZE / 1024}KB.`};
+    }
+    const resumeDataUri = await fileToDataURI(resumeFile);
+    await setDoc(doc(db, `users/${userId}/uploads`, 'resume'), { data: resumeDataUri });
+    dataToUpdate.hasResume = true;
   }
 
   try {
@@ -703,23 +709,30 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
   }
 }
 
+
 export async function updateDisplayPictureAction(formData: FormData) {
     const avatarFile = formData.get('avatar') as File;
     const userId = formData.get('userId') as string;
+    const MAX_FILE_SIZE = 750 * 1024; // 750KB
 
     if (!avatarFile) {
         return { error: 'No file selected for upload.' };
     }
-     if (!userId) {
+    if (!userId) {
         return { error: 'User not authenticated.' };
+    }
+    if (avatarFile.size > MAX_FILE_SIZE) {
+        return { error: `Image file size should not exceed ${MAX_FILE_SIZE / 1024}KB.`};
     }
 
     try {
         const userDocRef = doc(db, 'users', userId);
         const dataUrl = await fileToDataURI(avatarFile);
+        
+        await setDoc(doc(db, `users/${userId}/uploads`, 'displayImage'), { data: dataUrl });
 
         await updateDoc(userDocRef, {
-            displayImageUrl: dataUrl
+            hasDisplayImage: true
         });
         
         revalidatePath('/dashboard/profile');
@@ -735,9 +748,13 @@ export async function removeDisplayPictureAction(userId: string) {
     }
     try {
         const userDocRef = doc(db, 'users', userId);
-        await updateDoc(userDocRef, {
-            displayImageUrl: deleteField()
-        });
+        const uploadDocRef = doc(db, `users/${userId}/uploads`, 'displayImage');
+        
+        const batch = writeBatch(db);
+        batch.delete(uploadDocRef);
+        batch.update(userDocRef, { hasDisplayImage: false });
+        await batch.commit();
+
         revalidatePath('/dashboard/profile');
         return { success: true };
 
