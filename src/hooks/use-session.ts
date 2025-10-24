@@ -5,7 +5,7 @@ import Cookies from 'js-cookie';
 import type { CompanySize, Socials, UserProfile } from '@/lib/types';
 import { onIdTokenChanged, type User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase/config';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, getDoc } from 'firebase/firestore';
 
 export interface UserPreferences {
   themeMode: 'light' | 'dark' | 'system';
@@ -46,20 +46,18 @@ export function useSession() {
 
     useEffect(() => {
         const sessionCookie = Cookies.get('firebase-session');
+        let initialSession: UserSession | null = null;
         if (sessionCookie) {
             try {
-                const decodedSession = JSON.parse(atob(sessionCookie));
-                setSession(decodedSession);
+                initialSession = JSON.parse(atob(sessionCookie));
+                setSession(initialSession);
             } catch (e) {
                 console.error("Failed to parse session cookie", e);
                 Cookies.remove('firebase-session', { path: '/' });
-                setSession(null);
             }
         }
         setLoading(false);
 
-        // This listener handles auth state changes (login/logout)
-        // and updates to things like emailVerified from the auth object itself.
         const unsubscribeFromAuth = onIdTokenChanged(auth, async (user: User | null) => {
             if (user) {
                  const currentSessionCookie = Cookies.get('firebase-session');
@@ -79,34 +77,33 @@ export function useSession() {
                 setSession(null);
             }
         });
-
-        // This listener handles real-time updates from the user's Firestore document.
+        
         let unsubscribeFromFirestore: () => void = () => {};
-        if(session?.uid) {
-            const userDocRef = doc(db, 'users', session.uid);
-            unsubscribeFromFirestore = onSnapshot(userDocRef, (docSnap) => {
+        const sessionUid = initialSession?.uid;
+
+        if (sessionUid) {
+            const userDocRef = doc(db, 'users', sessionUid);
+            unsubscribeFromFirestore = onSnapshot(userDocRef, async (docSnap) => {
                 if (docSnap.exists()) {
                     const firestoreData = docSnap.data();
-                     const sessionData: Partial<UserSession> = {
+                    
+                    let displayImageUrl = firestoreData.displayImageUrl || null;
+                    if(firestoreData.hasDisplayImage && !displayImageUrl) {
+                        const imageDoc = await getDoc(doc(db, `users/${sessionUid}/uploads/displayImage`));
+                        if (imageDoc.exists()) {
+                            displayImageUrl = imageDoc.data().data;
+                        }
+                    }
+
+                    const sessionUpdate: Partial<UserSession> = {
                         name: firestoreData.name,
                         phone: firestoreData.phone,
-                        displayImageUrl: firestoreData.displayImageUrl,
-                        companySize: firestoreData.companySize,
-                        website: firestoreData.website,
-                        socials: firestoreData.socials,
-                        helplinePhone: firestoreData.helplinePhone,
-                        helplineEmail: firestoreData.helplineEmail,
-                        aboutCompany: firestoreData.aboutCompany,
-                        companyType: firestoreData.companyType,
-                        foundedYear: firestoreData.foundedYear,
-                        tags: firestoreData.tags,
-                        benefits: firestoreData.benefits,
+                        displayImageUrl: displayImageUrl,
                         preferences: firestoreData.preferences,
-                        permissions_role: firestoreData.permissions_role,
                         favourite_jobs: firestoreData.favourite_jobs,
-                        // Update any other fields from firestore here
+                        // Add any other fields from Firestore that should be in the session
                     };
-                    updateSessionCookie(sessionData);
+                    updateSessionCookie(sessionUpdate);
                 }
             });
         }
@@ -117,7 +114,7 @@ export function useSession() {
             unsubscribeFromFirestore();
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [session?.uid]);
+    }, []);
 
     return { session, loading, updateSession: updateSessionCookie };
 }
