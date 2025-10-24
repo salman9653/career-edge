@@ -695,7 +695,12 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
         return { error: `Resume file size should not exceed ${MAX_RESUME_SIZE / 1024}KB.`};
     }
     const resumeDataUri = await fileToDataURI(resumeFile);
-    await setDoc(doc(db, `users/${userId}/uploads/resume`), { data: resumeDataUri });
+    await setDoc(doc(db, `users/${userId}/uploads/resume`), { 
+      data: resumeDataUri,
+      name: resumeFile.name,
+      size: resumeFile.size,
+      updatedAt: serverTimestamp(),
+    });
     dataToUpdate.hasResume = true;
   }
 

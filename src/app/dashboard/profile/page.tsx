@@ -6,7 +6,7 @@ import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { Skeleton } from '@/components/ui/skeleton';
 import { doc, onSnapshot, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
-import type { CompanySize, Socials, UserProfile } from '@/lib/types';
+import type { CompanySize, Socials, UserProfile, Resume } from '@/lib/types';
 import { MobileSearch } from '@/components/mobile-search';
 import { ProfileDisplayCard } from './_components/profile-display-card';
 import { UpdateProfileCard } from './_components/update-profile-card';
@@ -32,11 +32,11 @@ export default function ProfilePage() {
                     }
                 }
                 
-                let resume = data.resume || null;
-                if(data.hasResume && !resume) {
+                let resume: Resume | null = null;
+                if(data.hasResume) {
                     const resumeDoc = await getDoc(doc(db, `users/${session.uid}/uploads/resume`));
                     if (resumeDoc.exists()) {
-                        resume = resumeDoc.data().data;
+                        resume = resumeDoc.data() as Resume;
                     }
                 }
 

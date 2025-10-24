@@ -79,7 +79,7 @@ export function UpdateProfileCard({
   const [isAvatarPending, startAvatarTransition] = useTransition();
   const [activeSection, setActiveSection] = useState('profile-details');
   
-  const [existingResume, setExistingResume] = useState<File | null>(null);
+  const [existingResumeFile, setExistingResumeFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isResumePending, startResumeTransition] = useTransition();
 
@@ -146,9 +146,9 @@ export function UpdateProfileCard({
 
   const handleResumeFileSelect = (file: File | null) => {
     if (file && (file.type.includes('pdf') || file.type.includes('document'))) {
-        setExistingResume(file);
+        setExistingResumeFile(file);
     } else {
-        setExistingResume(null);
+        setExistingResumeFile(null);
     }
   };
 
@@ -174,6 +174,7 @@ export function UpdateProfileCard({
         const result = await removeResumeAction(session.uid);
         if(result.success) {
             toast({ title: 'Resume removed' });
+            setExistingResumeFile(null);
             // The onSnapshot in profile page will update the state
         } else {
             toast({ title: 'Error', description: result.error, variant: 'destructive' });
@@ -182,10 +183,10 @@ export function UpdateProfileCard({
   };
   
   const handleResumeDownload = () => {
-    if(profile.resume) {
+    if(profile.resume?.data) {
         const link = document.createElement('a');
-        link.href = profile.resume;
-        link.download = 'resume.pdf'; // Or derive from original name if available
+        link.href = profile.resume.data;
+        link.download = profile.resume.name || 'resume.pdf';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -211,6 +212,15 @@ export function UpdateProfileCard({
     }
   };
 
+  const formatFileSize = (bytes?: number) => {
+    if (!bytes) return 'N/A';
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
 
   const navItems = [
     { id: 'profile-details', label: 'Profile Details' },
@@ -225,8 +235,8 @@ export function UpdateProfileCard({
   ];
 
   return (
-     <div className="flex gap-6 h-full">
-        <Card className="p-4 w-[250px]">
+    <div className="flex gap-6 h-full w-full">
+        <Card className="p-4 w-[250px] self-stretch">
             <nav className="grid gap-1 text-sm">
                 {navItems.map(item => (
                     <Button 
@@ -254,11 +264,8 @@ export function UpdateProfileCard({
                                 name="resumeFile" 
                                 ref={resumeInputRef}
                                 className="hidden" 
-                                onChange={(e) => {
-                                    if(e.target.files && e.target.files.length > 0) {
-                                        setExistingResume(e.target.files[0])
-                                    }
-                                }}
+                                onChange={handleResumeFileChange}
+                                accept=".pdf,.doc,.docx"
                             />
 
                             {activeSection === 'profile-details' && (
@@ -375,17 +382,20 @@ export function UpdateProfileCard({
                                         <p className="text-sm text-muted-foreground">Upload your latest resume. This will be used for AI analysis.</p>
                                     </div>
                                     <div className="space-y-2">
-                                        {profile.hasResume && !existingResume ? (
+                                        {profile.hasResume && !existingResumeFile ? (
                                             <Card className="flex items-center justify-between p-4">
                                                 <div className="flex items-center gap-3">
                                                     <FileText className="h-8 w-8 text-green-500" />
                                                     <div>
-                                                        <p className="font-semibold">Resume on file</p>
-                                                        <p className="text-xs text-muted-foreground">Last updated: {profile.resume?.updatedAt || 'N/A'}</p>
+                                                        <p className="font-semibold">{profile.resume?.name || 'resume.pdf'}</p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                          {formatFileSize(profile.resume?.size)}
+                                                          {profile.resume?.updatedAt && ` • Last updated: ${format(profile.resume.updatedAt.toDate(), "dd MMM yyyy")}`}
+                                                        </p>
                                                     </div>
                                                 </div>
                                                 <div className="flex gap-2">
-                                                    <Button type="button" variant="secondary" size="sm" onClick={handleResumeDownload} disabled={!profile.resume}><Download className="mr-2 h-4 w-4"/>Download</Button>
+                                                    <Button type="button" variant="secondary" size="sm" onClick={handleResumeDownload} disabled={!profile.resume?.data}><Download className="mr-2 h-4 w-4"/>Download</Button>
                                                     <Button type="button" variant="secondary" size="sm" onClick={handleResumeButtonClick} disabled={isResumePending}><RefreshCw className="mr-2 h-4 w-4"/>Update</Button>
                                                      <AlertDialog>
                                                         <AlertDialogTrigger asChild>
@@ -406,10 +416,10 @@ export function UpdateProfileCard({
                                                 className={cn("relative flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 transition-colors", isDragging && "border-dash-primary bg-dash-primary/10")}
                                                 onDrop={handleResumeDrop} onDragOver={handleResumeDragOver} onDragLeave={handleResumeDragLeave} onClick={handleResumeButtonClick}
                                             >
-                                                {existingResume ? (
+                                                {existingResumeFile ? (
                                                     <div className="text-center">
                                                         <FileText className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                                                        <p className="font-semibold">{existingResume.name}</p>
+                                                        <p className="font-semibold">{existingResumeFile.name}</p>
                                                     </div>
                                                 ) : (
                                                     <>

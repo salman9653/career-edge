@@ -242,6 +242,13 @@ export interface GeneratedResume {
   createdAt: any;
 }
 
+export interface Resume {
+    name: string;
+    size: number;
+    updatedAt: any; // Firestore Timestamp
+    data: string; // Base64 data URI
+}
+
 // Added from new request
 export interface UserProfile {
     uid: string;
@@ -273,7 +280,7 @@ export interface UserProfile {
     experience?: string;
     noticePeriod?: string;
     currentSalary?: string;
-    resume?: string;
+    resume?: Resume | null;
     hasResume?: boolean;
     profileSummary?: string;
     keySkills?: string[];
