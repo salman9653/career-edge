@@ -245,6 +245,7 @@ export interface GeneratedResume {
 export interface Resume {
     name: string;
     size: number;
+    type: string;
     updatedAt: any; // Firestore Timestamp
     data: string; // Base64 data URI
 }
@@ -295,3 +296,5 @@ export interface UserProfile {
     permanentAddress?: string;
     languages?: string[];
 }
+
+  

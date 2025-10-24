@@ -699,6 +699,7 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
       data: resumeDataUri,
       name: resumeFile.name,
       size: resumeFile.size,
+      type: resumeFile.type,
       updatedAt: serverTimestamp(),
     });
     dataToUpdate.hasResume = true;
@@ -1325,3 +1326,5 @@ export async function generateAtsResumeAction(prevState: any, formData: FormData
         return { error: e.message || "An unexpected error occurred during AI generation." };
     }
 }
+
+  
