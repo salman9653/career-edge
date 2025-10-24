@@ -688,14 +688,14 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
   }
 
   const resumeFile = formData.get('resumeFile') as File;
-  const MAX_FILE_SIZE = 750 * 1024; // 750KB
+  const MAX_RESUME_SIZE = 750 * 1024; // 750KB
 
   if (resumeFile && resumeFile.size > 0) {
-    if (resumeFile.size > MAX_FILE_SIZE) {
-        return { error: `Resume file size should not exceed ${MAX_FILE_SIZE / 1024}KB.`};
+    if (resumeFile.size > MAX_RESUME_SIZE) {
+        return { error: `Resume file size should not exceed ${MAX_RESUME_SIZE / 1024}KB.`};
     }
     const resumeDataUri = await fileToDataURI(resumeFile);
-    await setDoc(doc(db, `users/${userId}/uploads`, 'resume'), { data: resumeDataUri });
+    await setDoc(doc(db, `users/${userId}/uploads/resume`), { data: resumeDataUri });
     dataToUpdate.hasResume = true;
   }
 
@@ -707,6 +707,27 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
   } catch (error: any) {
     return { error: error.message };
   }
+}
+
+export async function removeResumeAction(userId: string) {
+    if (!userId) {
+        return { error: 'User not authenticated.' };
+    }
+    try {
+        const userDocRef = doc(db, 'users', userId);
+        const uploadDocRef = doc(db, `users/${userId}/uploads`, 'resume');
+        
+        const batch = writeBatch(db);
+        batch.delete(uploadDocRef);
+        batch.update(userDocRef, { hasResume: false });
+        await batch.commit();
+
+        revalidatePath('/dashboard/profile');
+        return { success: true };
+
+    } catch (error: any) {
+        return { error: error.message };
+    }
 }
 
 
@@ -729,7 +750,7 @@ export async function updateDisplayPictureAction(formData: FormData) {
         const userDocRef = doc(db, 'users', userId);
         const dataUrl = await fileToDataURI(avatarFile);
         
-        await setDoc(doc(db, `users/${userId}/uploads`, 'displayImage'), { data: dataUrl });
+        await setDoc(doc(db, `users/${userId}/uploads/displayImage`), { data: dataUrl });
 
         await updateDoc(userDocRef, {
             hasDisplayImage: true

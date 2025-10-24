@@ -274,6 +274,7 @@ export interface UserProfile {
     noticePeriod?: string;
     currentSalary?: string;
     resume?: string;
+    hasResume?: boolean;
     profileSummary?: string;
     keySkills?: string[];
     employment?: any[];
@@ -287,5 +288,3 @@ export interface UserProfile {
     permanentAddress?: string;
     languages?: string[];
 }
-
-    

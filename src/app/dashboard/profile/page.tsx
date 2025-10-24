@@ -31,6 +31,15 @@ export default function ProfilePage() {
                         displayImageUrl = imageDoc.data().data;
                     }
                 }
+                
+                let resume = data.resume || null;
+                if(data.hasResume && !resume) {
+                    const resumeDoc = await getDoc(doc(db, `users/${session.uid}/uploads/resume`));
+                    if (resumeDoc.exists()) {
+                        resume = resumeDoc.data().data;
+                    }
+                }
+
 
                 const profileData: UserProfile = {
                     uid: session.uid,
@@ -60,7 +69,8 @@ export default function ProfilePage() {
                     experience: data.experience,
                     noticePeriod: data.noticePeriod,
                     currentSalary: data.currentSalary,
-                    resume: data.resume,
+                    resume: resume,
+                    hasResume: data.hasResume || false,
                     profileSummary: data.profileSummary,
                     keySkills: data.keySkills,
                     employment: data.employment,

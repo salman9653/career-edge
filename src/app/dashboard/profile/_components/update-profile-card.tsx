@@ -2,13 +2,13 @@
 'use client';
 import { useActionState, useEffect, useRef, useState, useTransition } from 'react';
 import { useFormStatus } from 'react-dom';
-import { updateUserProfileAction, updateDisplayPictureAction, removeDisplayPictureAction } from '@/app/actions';
+import { updateUserProfileAction, updateDisplayPictureAction, removeDisplayPictureAction, removeResumeAction } from '@/app/actions';
 import { useSession } from '@/hooks/use-session';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload, FileText, X, Plus, CalendarIcon, UploadCloud } from 'lucide-react';
+import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload, FileText, X, Plus, CalendarIcon, UploadCloud, Download, RefreshCw } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -23,7 +23,17 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { ScrollArea } from '@/components/ui/scroll-area';
-
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 const initialState = {
   error: null,
@@ -55,7 +65,7 @@ export function UpdateProfileCard({
     onCancel,
     onAvatarChange
 }: { 
-    profile: any,
+    profile: UserProfile,
     onSave: (updatedProfile: any) => void, 
     onCancel: () => void ,
     onAvatarChange: (url: string | null) => void
@@ -71,6 +81,7 @@ export function UpdateProfileCard({
   
   const [existingResume, setExistingResume] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isResumePending, startResumeTransition] = useTransition();
 
   const [skills, setSkills] = useState(profile.keySkills || []);
   const [skillInput, setSkillInput] = useState('');
@@ -157,6 +168,30 @@ export function UpdateProfileCard({
   const handleResumeDragLeave = (e: DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); };
   const handleResumeButtonClick = () => resumeInputRef.current?.click();
 
+  const handleRemoveResume = () => {
+    if (!session?.uid) return;
+     startResumeTransition(async () => {
+        const result = await removeResumeAction(session.uid);
+        if(result.success) {
+            toast({ title: 'Resume removed' });
+            // The onSnapshot in profile page will update the state
+        } else {
+            toast({ title: 'Error', description: result.error, variant: 'destructive' });
+        }
+     });
+  };
+  
+  const handleResumeDownload = () => {
+    if(profile.resume) {
+        const link = document.createElement('a');
+        link.href = profile.resume;
+        link.download = 'resume.pdf'; // Or derive from original name if available
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+  };
+
   const handleAddSkill = (skill: string) => {
     const trimmedSkill = skill.trim();
     if (trimmedSkill && !skills.includes(trimmedSkill)) {
@@ -190,8 +225,8 @@ export function UpdateProfileCard({
   ];
 
   return (
-    <div className="flex gap-6 flex-1">
-        <Card className="p-4 w-[250px] self-stretch">
+     <div className="flex gap-6 h-full">
+        <Card className="p-4 w-[250px]">
             <nav className="grid gap-1 text-sm">
                 {navItems.map(item => (
                     <Button 
@@ -333,35 +368,57 @@ export function UpdateProfileCard({
                             </section>
                             )}
 
-                            {activeSection === 'resume' && (
+                             {activeSection === 'resume' && (
                                 <section className="space-y-6">
                                     <div>
                                         <h3 className="text-lg font-semibold">Resume</h3>
                                         <p className="text-sm text-muted-foreground">Upload your latest resume. This will be used for AI analysis.</p>
                                     </div>
                                     <div className="space-y-2">
-                                        <div
-                                            className={cn("relative flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 transition-colors", isDragging && "border-dash-primary bg-dash-primary/10")}
-                                            onDrop={handleResumeDrop} onDragOver={handleResumeDragOver} onDragLeave={handleResumeDragLeave} onClick={handleResumeButtonClick}
-                                        >
-                                            {existingResume ? (
-                                                <div className="text-center">
-                                                    <FileText className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                                                    <p className="font-semibold">{existingResume.name}</p>
+                                        {profile.hasResume && !existingResume ? (
+                                            <Card className="flex items-center justify-between p-4">
+                                                <div className="flex items-center gap-3">
+                                                    <FileText className="h-8 w-8 text-green-500" />
+                                                    <div>
+                                                        <p className="font-semibold">Resume on file</p>
+                                                        <p className="text-xs text-muted-foreground">Last updated: {profile.resume?.updatedAt || 'N/A'}</p>
+                                                    </div>
                                                 </div>
-                                            ) : profile.resume ? (
-                                                <div className="text-center">
-                                                    <FileText className="w-8 h-8 mx-auto mb-2 text-green-500" />
-                                                    <p className="font-semibold">Resume on file</p>
-                                                     <p className="text-xs text-muted-foreground">Click or drag a different file to replace</p>
+                                                <div className="flex gap-2">
+                                                    <Button type="button" variant="secondary" size="sm" onClick={handleResumeDownload} disabled={!profile.resume}><Download className="mr-2 h-4 w-4"/>Download</Button>
+                                                    <Button type="button" variant="secondary" size="sm" onClick={handleResumeButtonClick} disabled={isResumePending}><RefreshCw className="mr-2 h-4 w-4"/>Update</Button>
+                                                     <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <Button type="button" variant="destructive" size="sm" disabled={isResumePending}><Trash2 className="mr-2 h-4 w-4"/>Delete</Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader><AlertDialogTitle>Are you sure?</AlertDialogTitle><AlertDialogDescription>This will permanently delete your uploaded resume.</AlertDialogDescription></AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                <AlertDialogAction onClick={handleRemoveResume} disabled={isResumePending} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                     </AlertDialog>
                                                 </div>
-                                            ) : (
-                                                <>
-                                                    <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" />
-                                                    <p className="text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                                                </>
-                                            )}
-                                        </div>
+                                            </Card>
+                                        ) : (
+                                            <div
+                                                className={cn("relative flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 transition-colors", isDragging && "border-dash-primary bg-dash-primary/10")}
+                                                onDrop={handleResumeDrop} onDragOver={handleResumeDragOver} onDragLeave={handleResumeDragLeave} onClick={handleResumeButtonClick}
+                                            >
+                                                {existingResume ? (
+                                                    <div className="text-center">
+                                                        <FileText className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+                                                        <p className="font-semibold">{existingResume.name}</p>
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" />
+                                                        <p className="text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                                    </>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
                                 </section>
                             )}
