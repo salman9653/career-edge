@@ -157,7 +157,7 @@ export function UpdateProfileCard({
     handleResumeFileSelect(event.target.files?.[0] || null);
   };
 
-  const handleResumeDrop = (event: DragEvent<HTMLDivElement>) => {
+  const handleDrop = (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.stopPropagation();
     setIsDragging(false);
@@ -423,13 +423,14 @@ export function UpdateProfileCard({
                                         ) : (
                                             <div
                                                 className={cn("relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 transition-colors", isDragging && "border-dash-primary bg-dash-primary/10")}
-                                                onDrop={handleResumeDrop} onDragOver={handleResumeDragOver} onDragLeave={handleResumeDragLeave} onClick={handleResumeButtonClick}
+                                                onDrop={handleDrop} onDragOver={handleResumeDragOver} onDragLeave={handleResumeDragLeave} onClick={handleResumeButtonClick}
                                             >
                                                 {existingResumeFile ? (
-                                                    <div className="text-center">
+                                                    <div className="text-center p-4">
                                                         {getFileIcon(existingResumeFile.type)}
-                                                        <p className="font-semibold mt-4">{existingResumeFile.name}</p>
+                                                        <p className="font-semibold mt-4 text-sm">{existingResumeFile.name}</p>
                                                         <p className="text-xs text-muted-foreground">{existingResumeFile.type} • {formatFileSize(existingResumeFile.size)}</p>
+                                                         <Button type="button" variant="link" size="sm" className="text-destructive h-auto p-1 mt-2" onClick={(e) => { e.stopPropagation(); setExistingResumeFile(null); }}>Remove</Button>
                                                     </div>
                                                 ) : (
                                                     <>
