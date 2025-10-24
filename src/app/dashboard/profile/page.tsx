@@ -97,10 +97,16 @@ export default function ProfilePage() {
   
   const handleSave = (updatedProfile: Partial<UserProfile>) => {
     if (userProfile) {
-        const newProfile = { ...userProfile, ...updatedProfile };
+        // When updating, if keySkills is a string, convert it back to an array
+        const processedProfile = { ...updatedProfile };
+        if (typeof processedProfile.keySkills === 'string') {
+            processedProfile.keySkills = processedProfile.keySkills.split(',').filter(s => s);
+        }
+
+        const newProfile = { ...userProfile, ...processedProfile };
         setUserProfile(newProfile);
-        const sessionUpdate: Partial<UserProfile> = { ...updatedProfile };
         
+        const sessionUpdate: Partial<UserProfile> = { ...processedProfile };
         if (updatedProfile.name) {
             sessionUpdate.displayName = updatedProfile.name;
         }
