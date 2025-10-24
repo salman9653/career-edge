@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload, FileText, X, Plus, CalendarIcon, UploadCloud, Download, RefreshCw, File, FileCode, FileImage } from 'lucide-react';
+import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload, FileText, X, Plus, CalendarIcon, UploadCloud, Download, RefreshCw, File as FileIcon } from 'lucide-react';
+import { FaFilePdf, FaFileWord, FaFileImage } from 'react-icons/fa';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -222,11 +223,11 @@ export function UpdateProfileCard({
   }
   
   const getFileIcon = (fileType?: string) => {
-    if (!fileType) return <File className="h-12 w-12 text-muted-foreground" />;
-    if (fileType.includes('pdf')) return <FileCode className="h-12 w-12 text-red-500" />;
-    if (fileType.includes('word')) return <FileCode className="h-12 w-12 text-blue-500" />;
-    if (fileType.startsWith('image')) return <FileImage className="h-12 w-12 text-green-500" />;
-    return <File className="h-12 w-12 text-muted-foreground" />;
+    if (!fileType) return <FileIcon className="h-12 w-12 text-muted-foreground" />;
+    if (fileType.includes('pdf')) return <FaFilePdf className="h-12 w-12 text-red-500" />;
+    if (fileType.includes('word')) return <FaFileWord className="h-12 w-12 text-blue-500" />;
+    if (fileType.startsWith('image')) return <FaFileImage className="h-12 w-12 text-green-500" />;
+    return <FileIcon className="h-12 w-12 text-muted-foreground" />;
   }
 
 
@@ -244,7 +245,7 @@ export function UpdateProfileCard({
 
   return (
     <div className="flex gap-6 h-full w-full">
-        <Card className="p-4 w-[250px] self-stretch">
+        <Card className="p-4 w-[250px]">
             <nav className="grid gap-1 text-sm">
                 {navItems.map(item => (
                     <Button 
@@ -259,7 +260,7 @@ export function UpdateProfileCard({
             </nav>
         </Card>
         
-        <form action={formAction} ref={formRef} className="flex-1 min-h-0">
+        <form action={formAction} ref={formRef} className="flex-1 flex flex-col min-h-0">
             <Card className="h-full flex flex-col">
                 <div className="flex-1 overflow-hidden">
                     <ScrollArea className="h-full">
