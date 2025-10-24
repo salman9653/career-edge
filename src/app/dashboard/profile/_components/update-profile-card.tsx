@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { motion } from 'framer-motion';
 import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload, FileText, X, Plus, CalendarIcon, UploadCloud, Download, RefreshCw, File as FileIcon } from 'lucide-react';
 import { FaFilePdf, FaFileWord, FaFileImage } from 'react-icons/fa';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -82,6 +83,7 @@ export function UpdateProfileCard({
   const [existingResumeFile, setExistingResumeFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isResumePending, startResumeTransition] = useTransition();
+  const [isDownloadHovered, setIsDownloadHovered] = useState(false);
 
   const [skills, setSkills] = useState(profile.keySkills || []);
   const [skillInput, setSkillInput] = useState('');
@@ -392,7 +394,38 @@ export function UpdateProfileCard({
                                     </div>
                                     <div className="space-y-2">
                                         {profile.hasResume && !existingResumeFile ? (
-                                            <Card className="flex flex-col items-center justify-center p-6 text-center">
+                                            <Card className="relative flex flex-col items-center justify-center p-6 text-center">
+                                                <motion.button
+                                                    type="button"
+                                                    onHoverStart={() => setIsDownloadHovered(true)}
+                                                    onHoverEnd={() => setIsDownloadHovered(false)}
+                                                    onClick={handleResumeDownload}
+                                                    disabled={!profile.resume?.data}
+                                                    className="absolute top-4 right-4 flex items-center justify-center overflow-hidden rounded-full bg-secondary text-secondary-foreground"
+                                                    style={{ height: '2.5rem' }} // 40px
+                                                >
+                                                    <motion.div
+                                                        animate={{ width: isDownloadHovered ? 'auto' : '2.5rem' }}
+                                                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                                        className="flex items-center justify-center h-full px-3"
+                                                    >
+                                                        <Download className="h-5 w-5 flex-shrink-0" />
+                                                        <AnimatePresence>
+                                                        {isDownloadHovered && (
+                                                            <motion.span
+                                                            initial={{ opacity: 0, x: -10 }}
+                                                            animate={{ opacity: 1, x: 0 }}
+                                                            exit={{ opacity: 0, x: -10 }}
+                                                            transition={{ duration: 0.2, delay: 0.1 }}
+                                                            className="ml-2 whitespace-nowrap"
+                                                            >
+                                                            Download
+                                                            </motion.span>
+                                                        )}
+                                                        </AnimatePresence>
+                                                    </motion.div>
+                                                </motion.button>
+
                                                 <div className="flex justify-center">{getFileIcon(profile.resume?.type)}</div>
                                                 <p className="font-semibold mt-4">{profile.resume?.name}</p>
                                                 <p className="text-xs text-muted-foreground">
@@ -404,7 +437,6 @@ export function UpdateProfileCard({
                                                   </p>
                                                 )}
                                                 <div className="flex gap-2 mt-6">
-                                                    <Button type="button" variant="secondary" size="sm" onClick={handleResumeDownload} disabled={!profile.resume?.data}><Download className="mr-2 h-4 w-4"/>Download</Button>
                                                     <Button type="button" variant="secondary" size="sm" onClick={handleResumeButtonClick} disabled={isResumePending}><RefreshCw className="mr-2 h-4 w-4"/>Update</Button>
                                                     <AlertDialog>
                                                         <AlertDialogTrigger asChild>
@@ -429,7 +461,7 @@ export function UpdateProfileCard({
                                                 onClick={isPending ? undefined : handleResumeButtonClick}
                                             >
                                                 {existingResumeFile ? (
-                                                     <div className="text-center p-4 flex flex-col items-center">
+                                                    <div className="text-center p-4 flex flex-col items-center">
                                                         <div className="flex justify-center">{getFileIcon(existingResumeFile.type)}</div>
                                                         <p className="font-semibold mt-4 text-sm">{existingResumeFile.name}</p>
                                                         <p className="text-xs text-muted-foreground">{existingResumeFile.type} • {formatFileSize(existingResumeFile.size)}</p>
