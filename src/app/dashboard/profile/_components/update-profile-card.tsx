@@ -60,6 +60,26 @@ const getInitials = (name: string) => {
 }
 
 
+// A simple knowledge base for skill relationships
+const allSkills = [
+    'React', 'JavaScript', 'TypeScript', 'Node.js', 'Next.js', 'Redux', 'GraphQL', 
+    'REST APIs', 'HTML5', 'CSS3', 'SASS', 'Tailwind CSS', 'Material-UI', 
+    'Python', 'Django', 'Flask', 'Java', 'Spring Boot', 'C#', '.NET',
+    'SQL', 'PostgreSQL', 'MySQL', 'MongoDB', 'Firebase', 
+    'Docker', 'Kubernetes', 'AWS', 'Google Cloud', 'Azure', 'CI/CD',
+    'Project Management', 'Agile', 'Scrum', 'JIRA', 'Product Management',
+    'UI/UX Design', 'Figma', 'Adobe XD', 'Data Analysis', 'Machine Learning'
+];
+
+const skillRelations: Record<string, string[]> = {
+    'React': ['Next.js', 'Redux', 'JavaScript', 'TypeScript', 'Tailwind CSS'],
+    'Node.js': ['Express', 'JavaScript', 'TypeScript', 'REST APIs', 'MongoDB'],
+    'Python': ['Django', 'Flask', 'Data Analysis', 'Machine Learning'],
+    'Java': ['Spring Boot', 'SQL', 'Microservices'],
+    'Project Management': ['Agile', 'Scrum', 'JIRA'],
+    'UI/UX Design': ['Figma', 'Adobe XD']
+};
+
 export function UpdateProfileCard({ 
     profile,
     onSave, 
@@ -87,8 +107,34 @@ export function UpdateProfileCard({
 
   const [skills, setSkills] = useState(profile.keySkills || []);
   const [skillInput, setSkillInput] = useState('');
-  const suggestedSkills = ['React', 'Node.js', 'TypeScript', 'GraphQL', 'Docker', 'AWS', 'Project Management', 'Agile'];
+  const [suggestedSkills, setSuggestedSkills] = useState<string[]>([]);
+  
   const isPending = isAvatarPending || isResumePending;
+
+  // Logic for skill suggestions
+  useEffect(() => {
+    let newSuggestions: string[] = [];
+    if (skills.length === 0) {
+        // Show initial random suggestions
+        newSuggestions = allSkills
+            .filter(s => !skills.includes(s))
+            .sort(() => 0.5 - Math.random()) // Shuffle
+            .slice(0, 8); // Take first 8
+    } else {
+        const lastSkill = skills[skills.length - 1];
+        const related = skillRelations[lastSkill] || [];
+        
+        // Add related skills
+        newSuggestions.push(...related.filter(s => !skills.includes(s) && !newSuggestions.includes(s)));
+
+        // Fill with other random skills if not enough suggestions
+        if (newSuggestions.length < 8) {
+            const otherSkills = allSkills.filter(s => !skills.includes(s) && !newSuggestions.includes(s));
+            newSuggestions.push(...otherSkills.sort(() => 0.5 - Math.random()).slice(0, 8 - newSuggestions.length));
+        }
+    }
+    setSuggestedSkills(newSuggestions.slice(0, 8));
+  }, [skills]);
 
   useEffect(() => {
     if (state.success) {
@@ -505,7 +551,7 @@ export function UpdateProfileCard({
                                         <CardContent className="p-4 space-y-4">
                                             <div className="space-y-2">
                                                 <Label>Your skills</Label>
-                                                <div className="min-h-[40px] flex flex-wrap items-center gap-2">
+                                                <div className="min-h-[40px] p-2 rounded-md flex flex-wrap items-center gap-2">
                                                     {skills.map((skill: string) => (
                                                         <Badge key={skill} variant="secondary" className="flex items-center gap-1 text-base py-1">
                                                             {skill}
@@ -525,7 +571,7 @@ export function UpdateProfileCard({
                                             <div className="space-y-2 pt-4">
                                             <Label>Or you can select from the suggested set of skills</Label>
                                                 <div className="flex flex-wrap gap-2">
-                                                    {filteredSuggestedSkills.map(skill => (
+                                                    {suggestedSkills.map(skill => (
                                                         <Button key={skill} type="button" variant="outline" size="sm" onClick={() => handleAddSkill(skill)}>
                                                             {skill} <Plus className="ml-1 h-4 w-4" />
                                                         </Button>
