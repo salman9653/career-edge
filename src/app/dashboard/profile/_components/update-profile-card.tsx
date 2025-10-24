@@ -254,6 +254,11 @@ export function UpdateProfileCard({
     { id: 'online-profiles', label: 'Online Profiles' },
     { id: 'personal-details', label: 'Personal Details' },
   ];
+  
+  const filteredSuggestedSkills = suggestedSkills.filter(s => 
+    !skills.includes(s) && 
+    (skillInput ? s.toLowerCase().includes(skillInput.toLowerCase()) : true)
+  );
 
   return (
     <div className="flex gap-6 h-full w-full">
@@ -498,19 +503,17 @@ export function UpdateProfileCard({
                                     <input type="hidden" name="keySkills" value={skills.join(',')} />
                                     <Card>
                                         <CardContent className="p-4 space-y-4">
-                                            <div>
+                                            <div className="space-y-2">
                                                 <Label>Your skills</Label>
-                                                <div className="mt-2 min-h-[40px]">
-                                                    <div className="flex flex-wrap items-center gap-2">
-                                                        {skills.map((skill: string) => (
-                                                            <Badge key={skill} variant="secondary" className="flex items-center gap-1 text-base py-1">
-                                                                {skill}
-                                                                <button type="button" onClick={() => handleRemoveSkill(skill)} className="rounded-full hover:bg-black/20 p-0.5">
-                                                                    <X className="h-3 w-3" />
-                                                                </button>
-                                                            </Badge>
-                                                        ))}
-                                                    </div>
+                                                <div className="min-h-[40px] flex flex-wrap items-center gap-2">
+                                                    {skills.map((skill: string) => (
+                                                        <Badge key={skill} variant="secondary" className="flex items-center gap-1 text-base py-1">
+                                                            {skill}
+                                                            <button type="button" onClick={() => handleRemoveSkill(skill)} className="rounded-full hover:bg-black/20 p-0.5">
+                                                                <X className="h-3 w-3" />
+                                                            </button>
+                                                        </Badge>
+                                                    ))}
                                                 </div>
                                             </div>
                                             <Input
@@ -522,10 +525,10 @@ export function UpdateProfileCard({
                                             <div className="space-y-2 pt-4">
                                             <Label>Or you can select from the suggested set of skills</Label>
                                                 <div className="flex flex-wrap gap-2">
-                                                    {suggestedSkills.filter(s => !skills.includes(s)).map(skill => (
-                                                    <Button key={skill} type="button" variant="outline" size="sm" onClick={() => handleAddSkill(skill)}>
-                                                        {skill} <Plus className="ml-1 h-4 w-4" />
-                                                    </Button>
+                                                    {filteredSuggestedSkills.map(skill => (
+                                                        <Button key={skill} type="button" variant="outline" size="sm" onClick={() => handleAddSkill(skill)}>
+                                                            {skill} <Plus className="ml-1 h-4 w-4" />
+                                                        </Button>
                                                     ))}
                                                 </div>
                                             </div>
@@ -622,4 +625,3 @@ export function UpdateProfileCard({
     </div>
   );
 }
-
