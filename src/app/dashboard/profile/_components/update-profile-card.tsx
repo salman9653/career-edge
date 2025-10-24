@@ -588,7 +588,7 @@ export function UpdateProfileCard({
                                     <div className="space-y-4">
                                         <div className="space-y-2">
                                             <Label>Your skills</Label>
-                                            <div className="min-h-[40px] flex flex-wrap gap-2">
+                                            <div className="min-h-[80px] p-2 flex flex-wrap gap-2">
                                                 {skills.map((skill: string) => (
                                                     <Badge key={skill} variant="secondary" className="flex items-center gap-1 text-base py-1">
                                                         {skill}
