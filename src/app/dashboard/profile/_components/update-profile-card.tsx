@@ -232,6 +232,16 @@ export function UpdateProfileCard({
     return <FileIcon className="h-12 w-12 text-muted-foreground" />;
   }
 
+  const getSimplifiedFileType = (mimeType?: string) => {
+    if (!mimeType) return 'File';
+    if (mimeType.includes('pdf')) return 'PDF';
+    if (mimeType.includes('word')) {
+        if (mimeType.includes('openxmlformats')) return 'DOCX';
+        return 'DOC';
+    }
+    if (mimeType.startsWith('image')) return mimeType.split('/')[1]?.toUpperCase() || 'Image';
+    return mimeType;
+  }
 
   const navItems = [
     { id: 'profile-details', label: 'Profile Details' },
@@ -429,7 +439,7 @@ export function UpdateProfileCard({
                                                 <div className="flex justify-center">{getFileIcon(profile.resume?.type)}</div>
                                                 <p className="font-semibold mt-4">{profile.resume?.name}</p>
                                                 <p className="text-xs text-muted-foreground">
-                                                {profile.resume?.type} • {formatFileSize(profile.resume?.size)}
+                                                {getSimplifiedFileType(profile.resume?.type)} • {formatFileSize(profile.resume?.size)}
                                                 </p>
                                                 {profile.resume?.updatedAt && (
                                                   <p className="text-xs text-muted-foreground mt-2">
@@ -464,7 +474,7 @@ export function UpdateProfileCard({
                                                     <div className="text-center p-4 flex flex-col items-center">
                                                         <div className="flex justify-center">{getFileIcon(existingResumeFile.type)}</div>
                                                         <p className="font-semibold mt-4 text-sm">{existingResumeFile.name}</p>
-                                                        <p className="text-xs text-muted-foreground">{existingResumeFile.type} • {formatFileSize(existingResumeFile.size)}</p>
+                                                        <p className="text-xs text-muted-foreground">{getSimplifiedFileType(existingResumeFile.type)} • {formatFileSize(existingResumeFile.size)}</p>
                                                         <Button type="button" variant="link" size="sm" className="text-destructive h-auto p-1 mt-2" onClick={(e) => { e.stopPropagation(); setExistingResumeFile(null); }}>Remove</Button>
                                                     </div>
                                                 ) : (
@@ -600,7 +610,7 @@ export function UpdateProfileCard({
                             {state?.error && <Alert variant="destructive" className="mt-2"><AlertDescription>{state.error}</AlertDescription></Alert>}
                         </CardContent>
                     </ScrollArea>
-                    </div>
+                </div>
                     <div className="flex justify-end gap-2 p-6 border-t">
                             <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
                             <SubmitButton />
@@ -610,5 +620,3 @@ export function UpdateProfileCard({
     </div>
   );
 }
-
-    
