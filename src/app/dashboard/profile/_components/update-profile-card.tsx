@@ -496,11 +496,11 @@ export function UpdateProfileCard({
                                         <p className="text-sm text-muted-foreground">Add skills that best define your expertise.</p>
                                     </div>
                                     <input type="hidden" name="keySkills" value={skills.join(',')} />
-                                    <Card className="p-4">
-                                        <CardContent className="p-0">
-                                            <div className="space-y-4">
+                                    <Card>
+                                        <CardContent className="p-4 space-y-4">
+                                            <div>
                                                 <Label>Your skills</Label>
-                                                <div className="p-2 border rounded-md min-h-[80px] bg-background">
+                                                <div className="mt-2 min-h-[40px]">
                                                     <div className="flex flex-wrap items-center gap-2">
                                                         {skills.map((skill: string) => (
                                                             <Badge key={skill} variant="secondary" className="flex items-center gap-1 text-base py-1">
@@ -512,14 +512,14 @@ export function UpdateProfileCard({
                                                         ))}
                                                     </div>
                                                 </div>
-                                                <Input
-                                                    value={skillInput}
-                                                    onChange={(e) => setSkillInput(e.target.value)}
-                                                    onKeyDown={handleSkillKeyDown}
-                                                    placeholder="Add skills and press Enter"
-                                                />
                                             </div>
-                                            <div className="space-y-2 mt-6">
+                                            <Input
+                                                value={skillInput}
+                                                onChange={(e) => setSkillInput(e.target.value)}
+                                                onKeyDown={handleSkillKeyDown}
+                                                placeholder="Add skills and press Enter"
+                                            />
+                                            <div className="space-y-2 pt-4">
                                             <Label>Or you can select from the suggested set of skills</Label>
                                                 <div className="flex flex-wrap gap-2">
                                                     {suggestedSkills.filter(s => !skills.includes(s)).map(skill => (
@@ -622,3 +622,4 @@ export function UpdateProfileCard({
     </div>
   );
 }
+
