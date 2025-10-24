@@ -119,7 +119,7 @@ export function UpdateProfileCard({
 
             // Add other skills from the same category
             const categorySkills = skillsData
-                .filter(s => s.category === lastSkill.category && s.name !== lastSkill.name && !skills.includes(s.name))
+                .filter(s => s.category === lastSkill.category && s.name !== lastSkill.name && !skills.includes(s.name) && !related.some(rel => rel.id === s.id))
                 .sort(() => 0.5 - Math.random()); // Shuffle
             
             newSuggestions.push(...categorySkills);
@@ -583,7 +583,7 @@ export function UpdateProfileCard({
                                                                     key={skill.id}
                                                                     variant="ghost"
                                                                     className="w-full justify-start"
-                                                                    onClick={() => handleAddSkill(skill.name)}
+                                                                    onMouseDown={() => handleAddSkill(skill.name)}
                                                                 >
                                                                     {skill.name}
                                                                 </Button>
@@ -695,3 +695,5 @@ export function UpdateProfileCard({
     </div>
   );
 }
+
+    
