@@ -36,6 +36,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { skillsData, type Skill } from '@/lib/skills-data';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const initialState = {
   error: null,
