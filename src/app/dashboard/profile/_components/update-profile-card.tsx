@@ -524,8 +524,8 @@ export function UpdateProfileCard({
                                                 <p className="font-semibold mt-4 text-sm">{selectedFile.name}</p>
                                                 <p className="text-xs text-muted-foreground">Type: {getSimplifiedFileType(selectedFile.type)} &bull; Size: {formatFileSize(selectedFile.size)}</p>
                                                 <div className="flex gap-2 mt-6">
-                                                    <Button type="button" variant="secondary" size="sm" onClick={handleResumeButtonClick} disabled={isResumePending}><RefreshCw className="mr-2 h-4 w-4"/>Change</Button>
-                                                    <Button type="button" variant="destructive" size="sm" disabled={isResumePending} onClick={() => setSelectedFile(null)}><X className="mr-2 h-4 w-4"/>Remove</Button>
+                                                    <Button type="button" variant="secondary" size="sm" onClick={handleResumeButtonClick} disabled={isPending}><RefreshCw className="mr-2 h-4 w-4"/>Change</Button>
+                                                    <Button type="button" variant="destructive" size="sm" disabled={isPending} onClick={() => setSelectedFile(null)}><X className="mr-2 h-4 w-4"/>Remove</Button>
                                                 </div>
                                             </Card>
                                         ) : (
@@ -555,7 +555,7 @@ export function UpdateProfileCard({
                                         <CardContent className="p-4 space-y-4">
                                             <div className="space-y-2">
                                                 <Label>Your skills</Label>
-                                                <div className="p-2 min-h-[40px] flex flex-wrap gap-2">
+                                                <div className="min-h-[40px] flex flex-wrap gap-2">
                                                     {skills.map((skill: string) => (
                                                         <Badge key={skill} variant="secondary" className="flex items-center gap-1 text-base py-1">
                                                             {skill}
