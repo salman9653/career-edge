@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload, FileText, X, Plus, CalendarIcon, UploadCloud, Download, RefreshCw, File as FileIcon } from 'lucide-react';
 import { FaFilePdf, FaFileWord, FaFileImage } from 'react-icons/fa';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -402,7 +402,7 @@ export function UpdateProfileCard({
                                                     onClick={handleResumeDownload}
                                                     disabled={!profile.resume?.data}
                                                     className="absolute top-4 right-4 flex items-center justify-center overflow-hidden rounded-full bg-secondary text-secondary-foreground"
-                                                    style={{ height: '2.5rem' }} // 40px
+                                                    style={{ height: '2.5rem' }} 
                                                 >
                                                     <motion.div
                                                         animate={{ width: isDownloadHovered ? 'auto' : '2.5rem' }}
@@ -425,7 +425,7 @@ export function UpdateProfileCard({
                                                         </AnimatePresence>
                                                     </motion.div>
                                                 </motion.button>
-
+                                                
                                                 <div className="flex justify-center">{getFileIcon(profile.resume?.type)}</div>
                                                 <p className="font-semibold mt-4">{profile.resume?.name}</p>
                                                 <p className="text-xs text-muted-foreground">
@@ -610,3 +610,5 @@ export function UpdateProfileCard({
     </div>
   );
 }
+
+    
