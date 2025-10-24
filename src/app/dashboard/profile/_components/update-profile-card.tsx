@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload, FileText, X, Plus, CalendarIcon, UploadCloud, Download, RefreshCw } from 'lucide-react';
+import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload, FileText, X, Plus, CalendarIcon, UploadCloud, Download, RefreshCw, File, FileCode, FileImage } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -21,7 +21,7 @@ import type { UserProfile } from '../page';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   AlertDialog,
@@ -220,6 +220,14 @@ export function UpdateProfileCard({
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
+  
+  const getFileIcon = (fileType?: string) => {
+    if (!fileType) return <File className="h-12 w-12 text-muted-foreground" />;
+    if (fileType.includes('pdf')) return <FileCode className="h-12 w-12 text-red-500" />;
+    if (fileType.includes('word')) return <FileCode className="h-12 w-12 text-blue-500" />;
+    if (fileType.startsWith('image')) return <FileImage className="h-12 w-12 text-green-500" />;
+    return <File className="h-12 w-12 text-muted-foreground" />;
+  }
 
 
   const navItems = [
@@ -383,21 +391,21 @@ export function UpdateProfileCard({
                                     </div>
                                     <div className="space-y-2">
                                         {profile.hasResume && !existingResumeFile ? (
-                                            <Card className="flex items-center justify-between p-4">
-                                                <div className="flex items-center gap-3">
-                                                    <FileText className="h-8 w-8 text-green-500" />
-                                                    <div>
-                                                        <p className="font-semibold">{profile.resume?.name || 'resume.pdf'}</p>
-                                                        <p className="text-xs text-muted-foreground">
-                                                          {formatFileSize(profile.resume?.size)}
-                                                          {profile.resume?.updatedAt && ` • Last updated: ${format(profile.resume.updatedAt.toDate(), "dd MMM yyyy")}`}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <div className="flex gap-2">
+                                            <Card className="flex flex-col items-center justify-center p-6 text-center">
+                                                {getFileIcon(profile.resume?.type)}
+                                                <p className="font-semibold mt-4">{profile.resume?.name}</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                {profile.resume?.type} • {formatFileSize(profile.resume?.size)}
+                                                </p>
+                                                {profile.resume?.updatedAt && (
+                                                  <p className="text-xs text-muted-foreground mt-2">
+                                                      Last updated: {formatDistanceToNow(profile.resume.updatedAt.toDate(), { addSuffix: true })}
+                                                  </p>
+                                                )}
+                                                <div className="flex gap-2 mt-6">
                                                     <Button type="button" variant="secondary" size="sm" onClick={handleResumeDownload} disabled={!profile.resume?.data}><Download className="mr-2 h-4 w-4"/>Download</Button>
                                                     <Button type="button" variant="secondary" size="sm" onClick={handleResumeButtonClick} disabled={isResumePending}><RefreshCw className="mr-2 h-4 w-4"/>Update</Button>
-                                                     <AlertDialog>
+                                                    <AlertDialog>
                                                         <AlertDialogTrigger asChild>
                                                             <Button type="button" variant="destructive" size="sm" disabled={isResumePending}><Trash2 className="mr-2 h-4 w-4"/>Delete</Button>
                                                         </AlertDialogTrigger>
@@ -408,23 +416,25 @@ export function UpdateProfileCard({
                                                                 <AlertDialogAction onClick={handleRemoveResume} disabled={isResumePending} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
                                                             </AlertDialogFooter>
                                                         </AlertDialogContent>
-                                                     </AlertDialog>
+                                                    </AlertDialog>
                                                 </div>
                                             </Card>
                                         ) : (
                                             <div
-                                                className={cn("relative flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 transition-colors", isDragging && "border-dash-primary bg-dash-primary/10")}
+                                                className={cn("relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 transition-colors", isDragging && "border-dash-primary bg-dash-primary/10")}
                                                 onDrop={handleResumeDrop} onDragOver={handleResumeDragOver} onDragLeave={handleResumeDragLeave} onClick={handleResumeButtonClick}
                                             >
                                                 {existingResumeFile ? (
                                                     <div className="text-center">
-                                                        <FileText className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                                                        <p className="font-semibold">{existingResumeFile.name}</p>
+                                                        {getFileIcon(existingResumeFile.type)}
+                                                        <p className="font-semibold mt-4">{existingResumeFile.name}</p>
+                                                        <p className="text-xs text-muted-foreground">{existingResumeFile.type} • {formatFileSize(existingResumeFile.size)}</p>
                                                     </div>
                                                 ) : (
                                                     <>
-                                                        <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground" />
-                                                        <p className="text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                                        <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
+                                                        <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                                        <p className="text-xs text-muted-foreground">PDF, DOC, or DOCX (MAX. 750KB)</p>
                                                     </>
                                                 )}
                                             </div>
