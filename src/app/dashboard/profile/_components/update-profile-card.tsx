@@ -245,7 +245,7 @@ export function UpdateProfileCard({
 
   return (
     <div className="flex gap-6 h-full w-full">
-        <Card className="p-4 w-[250px]">
+        <Card className="p-4 w-[250px] self-start">
             <nav className="grid gap-1 text-sm">
                 {navItems.map(item => (
                     <Button 
@@ -393,7 +393,7 @@ export function UpdateProfileCard({
                                     <div className="space-y-2">
                                         {profile.hasResume && !existingResumeFile ? (
                                             <Card className="flex flex-col items-center justify-center p-6 text-center">
-                                                {getFileIcon(profile.resume?.type)}
+                                                <div className="flex justify-center">{getFileIcon(profile.resume?.type)}</div>
                                                 <p className="font-semibold mt-4">{profile.resume?.name}</p>
                                                 <p className="text-xs text-muted-foreground">
                                                 {profile.resume?.type} • {formatFileSize(profile.resume?.size)}
@@ -423,14 +423,17 @@ export function UpdateProfileCard({
                                         ) : (
                                             <div
                                                 className={cn("relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 transition-colors", isDragging && "border-dash-primary bg-dash-primary/10")}
-                                                onDrop={handleDrop} onDragOver={handleResumeDragOver} onDragLeave={handleResumeDragLeave} onClick={handleResumeButtonClick}
+                                                onDrop={isPending ? undefined : handleDrop}
+                                                onDragOver={isPending ? undefined : handleResumeDragOver}
+                                                onDragLeave={isPending ? undefined : handleResumeDragLeave}
+                                                onClick={isPending ? undefined : handleResumeButtonClick}
                                             >
                                                 {existingResumeFile ? (
-                                                    <div className="text-center p-4">
-                                                        {getFileIcon(existingResumeFile.type)}
+                                                     <div className="text-center p-4 flex flex-col items-center">
+                                                        <div className="flex justify-center">{getFileIcon(existingResumeFile.type)}</div>
                                                         <p className="font-semibold mt-4 text-sm">{existingResumeFile.name}</p>
                                                         <p className="text-xs text-muted-foreground">{existingResumeFile.type} • {formatFileSize(existingResumeFile.size)}</p>
-                                                         <Button type="button" variant="link" size="sm" className="text-destructive h-auto p-1 mt-2" onClick={(e) => { e.stopPropagation(); setExistingResumeFile(null); }}>Remove</Button>
+                                                        <Button type="button" variant="link" size="sm" className="text-destructive h-auto p-1 mt-2" onClick={(e) => { e.stopPropagation(); setExistingResumeFile(null); }}>Remove</Button>
                                                     </div>
                                                 ) : (
                                                     <>
