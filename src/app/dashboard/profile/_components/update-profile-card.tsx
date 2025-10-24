@@ -439,7 +439,7 @@ export function UpdateProfileCard({
                                                 <div className="flex justify-center">{getFileIcon(profile.resume?.type)}</div>
                                                 <p className="font-semibold mt-4">{profile.resume?.name}</p>
                                                 <p className="text-xs text-muted-foreground">
-                                                {getSimplifiedFileType(profile.resume?.type)} • {formatFileSize(profile.resume?.size)}
+                                                    Type: {getSimplifiedFileType(profile.resume?.type)} &bull; Size: {formatFileSize(profile.resume?.size)}
                                                 </p>
                                                 {profile.resume?.updatedAt && (
                                                   <p className="text-xs text-muted-foreground mt-2">
@@ -466,7 +466,7 @@ export function UpdateProfileCard({
                                              <Card className="relative flex flex-col items-center justify-center p-6 text-center">
                                                 <div className="flex justify-center">{getFileIcon(selectedFile.type)}</div>
                                                 <p className="font-semibold mt-4 text-sm">{selectedFile.name}</p>
-                                                <p className="text-xs text-muted-foreground">{getSimplifiedFileType(selectedFile.type)} • {formatFileSize(selectedFile.size)}</p>
+                                                <p className="text-xs text-muted-foreground">Type: {getSimplifiedFileType(selectedFile.type)} &bull; Size: {formatFileSize(selectedFile.size)}</p>
                                                 <div className="flex gap-2 mt-6">
                                                     <Button type="button" variant="secondary" size="sm" onClick={handleResumeButtonClick} disabled={isResumePending}><RefreshCw className="mr-2 h-4 w-4"/>Change</Button>
                                                     <Button type="button" variant="destructive" size="sm" disabled={isResumePending} onClick={() => setSelectedFile(null)}><X className="mr-2 h-4 w-4"/>Remove</Button>
@@ -498,27 +498,28 @@ export function UpdateProfileCard({
                                     <input type="hidden" name="keySkills" value={skills.join(',')} />
                                     <Card className="p-4">
                                         <CardContent className="p-0">
-                                            <div className="space-y-2">
+                                            <div className="space-y-4">
                                                 <Label>Your skills</Label>
-                                                <div className="flex flex-wrap items-center gap-2 p-2 border rounded-md min-h-[40px] bg-background">
-                                                    {skills.map((skill: string) => (
-                                                        <Badge key={skill} variant="secondary" className="flex items-center gap-1 text-base py-1">
-                                                            {skill}
-                                                            <button type="button" onClick={() => handleRemoveSkill(skill)} className="rounded-full hover:bg-black/20 p-0.5">
-                                                                <X className="h-3 w-3" />
-                                                            </button>
-                                                        </Badge>
-                                                    ))}
-                                                    <Input
-                                                        value={skillInput}
-                                                        onChange={(e) => setSkillInput(e.target.value)}
-                                                        onKeyDown={handleSkillKeyDown}
-                                                        placeholder="Add skills and press Enter"
-                                                        className="flex-1 border-none focus-visible:ring-0 shadow-none p-2 h-auto bg-transparent"
-                                                    />
+                                                <div className="p-2 border rounded-md min-h-[80px] bg-background">
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        {skills.map((skill: string) => (
+                                                            <Badge key={skill} variant="secondary" className="flex items-center gap-1 text-base py-1">
+                                                                {skill}
+                                                                <button type="button" onClick={() => handleRemoveSkill(skill)} className="rounded-full hover:bg-black/20 p-0.5">
+                                                                    <X className="h-3 w-3" />
+                                                                </button>
+                                                            </Badge>
+                                                        ))}
+                                                    </div>
                                                 </div>
+                                                <Input
+                                                    value={skillInput}
+                                                    onChange={(e) => setSkillInput(e.target.value)}
+                                                    onKeyDown={handleSkillKeyDown}
+                                                    placeholder="Add skills and press Enter"
+                                                />
                                             </div>
-                                            <div className="space-y-2 mt-4">
+                                            <div className="space-y-2 mt-6">
                                             <Label>Or you can select from the suggested set of skills</Label>
                                                 <div className="flex flex-wrap gap-2">
                                                     {suggestedSkills.filter(s => !skills.includes(s)).map(skill => (
