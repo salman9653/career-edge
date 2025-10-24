@@ -1,6 +1,6 @@
 
 'use client';
-import { useActionState, useEffect, useRef, useState, useTransition } from 'react';
+import { useActionState, useEffect, useRef, useState, useTransition, type DragEvent } from 'react';
 import { useFormStatus } from 'react-dom';
 import { updateUserProfileAction, updateDisplayPictureAction, removeDisplayPictureAction, removeResumeAction } from '@/app/actions';
 import { useSession } from '@/hooks/use-session';
@@ -17,7 +17,6 @@ import type { CompanySize, Socials } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import type { DragEvent } from 'react';
 import type { UserProfile } from '../page';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -87,6 +86,7 @@ export function UpdateProfileCard({
   const [skills, setSkills] = useState(profile.keySkills || []);
   const [skillInput, setSkillInput] = useState('');
   const suggestedSkills = ['React', 'Node.js', 'TypeScript', 'GraphQL', 'Docker', 'AWS', 'Project Management', 'Agile'];
+  const isPending = isAvatarPending || isResumePending;
 
   useEffect(() => {
     if (state.success) {
