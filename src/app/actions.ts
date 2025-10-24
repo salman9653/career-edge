@@ -671,7 +671,8 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
   const fields = [
     'name', 'phone', 'address', 'profileSummary',
     'jobTitle', 'currentCompany', 'workStatus', 'experience', 'noticePeriod', 'currentSalary',
-    'gender', 'maritalStatus', 'dob', 'permanentAddress', 'linkedin', 'naukri'
+    'gender', 'maritalStatus', 'dob',
+    'linkedin', 'naukri'
   ];
 
   fields.forEach(field => {
@@ -680,12 +681,30 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
     }
   });
 
+  const permanentAddress = {
+      address: formData.get('permanentAddress.address'),
+      city: formData.get('permanentAddress.city'),
+      state: formData.get('permanentAddress.state'),
+      country: formData.get('permanentAddress.country'),
+      pincode: formData.get('permanentAddress.pincode'),
+  };
+  dataToUpdate['permanentAddress'] = permanentAddress;
+
   if (formData.has('keySkills')) {
-    dataToUpdate.keySkills = (formData.get('keySkills') as string).split(',').map(s => s.trim()).filter(s => s);
+    const keySkills = formData.get('keySkills') as string;
+    dataToUpdate.keySkills = keySkills ? keySkills.split(',').map(s => s.trim()).filter(s => s) : [];
   }
+
   if (formData.has('languages')) {
-    dataToUpdate.languages = (formData.get('languages') as string).split(',').map(s => s.trim()).filter(s => s);
+    try {
+      const languagesString = formData.get('languages') as string;
+      dataToUpdate.languages = languagesString ? JSON.parse(languagesString) : [];
+    } catch (e) {
+      console.error("Error parsing languages JSON:", e);
+      // handle error, maybe return an error message
+    }
   }
+
 
   const resumeFile = formData.get('resumeFile') as File;
   const MAX_RESUME_SIZE = 750 * 1024; // 750KB
@@ -1301,7 +1320,7 @@ export async function generateAtsResumeAction(prevState: any, formData: FormData
     
     const input: GenerateAtsResumeInput = {
         jobDescription,
-        userDetails,
+        userDetails: JSON.stringify(userDetails),
         existingResumeDataUri: resumeDataUri,
     };
     
@@ -1326,5 +1345,3 @@ export async function generateAtsResumeAction(prevState: any, formData: FormData
         return { error: e.message || "An unexpected error occurred during AI generation." };
     }
 }
-
-  

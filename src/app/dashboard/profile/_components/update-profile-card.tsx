@@ -60,6 +60,14 @@ const getInitials = (name: string) => {
     return name.substring(0, 2).toUpperCase();
 }
 
+interface LanguageProficiency {
+    language: string;
+    proficiency: string;
+    canRead: boolean;
+    canWrite: boolean;
+    canSpeak: boolean;
+}
+
 export function UpdateProfileCard({ 
     profile,
     onSave, 
@@ -89,8 +97,38 @@ export function UpdateProfileCard({
   const [skillInput, setSkillInput] = useState('');
   const [suggestedSkills, setSuggestedSkills] = useState<Skill[]>([]);
   const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
+
+  const [dob, setDob] = useState<Date | undefined>(profile.dob ? new Date(profile.dob) : undefined);
+  const [languages, setLanguages] = useState<LanguageProficiency[]>(profile.languages || []);
   
   const isPending = isAvatarPending || isResumePending;
+  
+  useEffect(() => {
+    if (state.success) {
+      toast({
+        title: 'Success',
+        description: state.success,
+      });
+      const formData = new FormData(formRef.current!);
+      const newProfile: Partial<UserProfile> = {};
+        for (const [key, value] of formData.entries()) {
+            if (key.includes('.')) {
+                const [parent, child] = key.split('.');
+                // @ts-ignore
+                if (!newProfile[parent]) newProfile[parent] = {};
+                // @ts-ignore
+                newProfile[parent][child] = value;
+            } else if (key !== 'keySkills' && key !== 'languages') {
+                // @ts-ignore
+                newProfile[key] = value;
+            }
+        }
+      newProfile.keySkills = skills;
+      newProfile.languages = languages;
+
+      onSave(newProfile);
+    }
+  }, [state.success, toast, onSave, profile.role, skills, languages]);
 
   // Logic for skill suggestions
   useEffect(() => {
@@ -132,29 +170,7 @@ export function UpdateProfileCard({
 
   }, [skills]);
 
-  useEffect(() => {
-    if (state.success) {
-      toast({
-        title: 'Success',
-        description: state.success,
-      });
-      const formData = new FormData(formRef.current!);
-      const newProfile: Partial<UserProfile> = {};
-        for (const [key, value] of formData.entries()) {
-            if (key.includes('.')) {
-                const [parent, child] = key.split('.');
-                // @ts-ignore
-                if (!newProfile[parent]) newProfile[parent] = {};
-                // @ts-ignore
-                newProfile[parent][child] = value;
-            } else {
-                 // @ts-ignore
-                newProfile[key] = value;
-            }
-        }
-      onSave(newProfile);
-    }
-  }, [state.success, toast, onSave, profile.role]);
+  
 
    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -304,10 +320,25 @@ export function UpdateProfileCard({
   
   const autocompleteSkills = skillsData.filter(skill => {
     if (skills.includes(skill.name)) return false;
+    if (!skillInput) return false;
     const searchLower = skillInput.toLowerCase();
     return skill.name.toLowerCase().includes(searchLower) || skill.other_names.some(o => o.toLowerCase().includes(searchLower));
   }).slice(0, 5);
   
+  const handleAddLanguage = () => {
+    setLanguages([...languages, { language: '', proficiency: '', canRead: false, canWrite: false, canSpeak: false }]);
+  };
+
+  const handleLanguageChange = (index: number, field: keyof LanguageProficiency, value: string | boolean) => {
+    const newLanguages = [...languages];
+    (newLanguages[index] as any)[field] = value;
+    setLanguages(newLanguages);
+  };
+  
+  const handleRemoveLanguage = (index: number) => {
+    setLanguages(languages.filter((_, i) => i !== index));
+  };
+
 
   return (
     <div className="flex gap-6 h-full w-full">
@@ -344,6 +375,8 @@ export function UpdateProfileCard({
                             />
                             
                             <input type="hidden" name="keySkills" value={skills.join(',')} />
+                            <input type="hidden" name="languages" value={JSON.stringify(languages)} />
+
 
                             {activeSection === 'profile-details' && (
                                 <section className="space-y-6">
@@ -551,59 +584,58 @@ export function UpdateProfileCard({
                                         <h3 className="text-lg font-semibold">Key Skills</h3>
                                         <p className="text-sm text-muted-foreground">Add skills that best define your expertise.</p>
                                     </div>
-                                    <Card>
-                                        <CardContent className="p-4 space-y-4">
-                                            <div className="space-y-2">
-                                                <Label>Your skills</Label>
-                                                <div className="min-h-[40px] flex flex-wrap gap-2">
-                                                    {skills.map((skill: string) => (
-                                                        <Badge key={skill} variant="secondary" className="flex items-center gap-1 text-base py-1">
-                                                            {skill}
-                                                            <button type="button" onClick={() => handleRemoveSkill(skill)} className="rounded-full hover:bg-black/20 p-0.5">
-                                                                <X className="h-3 w-3" />
-                                                            </button>
-                                                        </Badge>
-                                                    ))}
-                                                </div>
+                                    <div className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label>Your skills</Label>
+                                            <div className="min-h-[40px] flex flex-wrap gap-2">
+                                                {skills.map((skill: string) => (
+                                                    <Badge key={skill} variant="secondary" className="flex items-center gap-1 text-base py-1">
+                                                        {skill}
+                                                        <button type="button" onClick={() => handleRemoveSkill(skill)} className="rounded-full hover:bg-black/20 p-0.5">
+                                                            <X className="h-3 w-3" />
+                                                        </button>
+                                                    </Badge>
+                                                ))}
                                             </div>
-                                            <div className="relative">
-                                                <Input
-                                                    value={skillInput}
-                                                    onChange={(e) => setSkillInput(e.target.value)}
-                                                    onKeyDown={handleSkillKeyDown}
-                                                    onFocus={() => setIsAutocompleteOpen(true)}
-                                                    onBlur={() => setTimeout(() => setIsAutocompleteOpen(false), 150)}
-                                                    placeholder="Add skills and press Enter"
-                                                />
-                                                {isAutocompleteOpen && skillInput && autocompleteSkills.length > 0 && (
-                                                    <Card className="absolute z-10 w-full mt-1 max-h-60 overflow-y-auto">
-                                                        <CardContent className="p-2">
-                                                            {autocompleteSkills.map(skill => (
-                                                                <Button
-                                                                    key={skill.id}
-                                                                    variant="ghost"
-                                                                    className="w-full justify-start"
-                                                                    onMouseDown={() => handleAddSkill(skill.name)}
-                                                                >
-                                                                    {skill.name}
-                                                                </Button>
-                                                            ))}
-                                                        </CardContent>
-                                                    </Card>
-                                                )}
+                                        </div>
+                                        <div className="relative">
+                                            <Input
+                                                value={skillInput}
+                                                onChange={(e) => setSkillInput(e.target.value)}
+                                                onKeyDown={handleSkillKeyDown}
+                                                onFocus={() => setIsAutocompleteOpen(true)}
+                                                onBlur={() => setTimeout(() => setIsAutocompleteOpen(false), 150)}
+                                                placeholder="Add skills and press Enter"
+                                            />
+                                            {isAutocompleteOpen && skillInput && autocompleteSkills.length > 0 && (
+                                                <Card className="absolute z-10 w-full mt-1 max-h-60 overflow-y-auto">
+                                                    <CardContent className="p-2">
+                                                        {autocompleteSkills.map(skill => (
+                                                            <Button
+                                                                key={skill.id}
+                                                                type="button"
+                                                                variant="ghost"
+                                                                className="w-full justify-start"
+                                                                onMouseDown={() => handleAddSkill(skill.name)}
+                                                            >
+                                                                {skill.name}
+                                                            </Button>
+                                                        ))}
+                                                    </CardContent>
+                                                </Card>
+                                            )}
+                                        </div>
+                                        <div className="space-y-2 pt-4">
+                                        <Label>Or you can select from the suggested set of skills</Label>
+                                            <div className="flex flex-wrap gap-2">
+                                                {suggestedSkills.map(skill => (
+                                                    <Button key={skill.id} type="button" variant="outline" size="sm" onClick={() => handleAddSkill(skill.name)}>
+                                                        {skill.name} <Plus className="ml-1 h-4 w-4" />
+                                                    </Button>
+                                                ))}
                                             </div>
-                                            <div className="space-y-2 pt-4">
-                                            <Label>Or you can select from the suggested set of skills</Label>
-                                                <div className="flex flex-wrap gap-2">
-                                                    {suggestedSkills.map(skill => (
-                                                        <Button key={skill.id} type="button" variant="outline" size="sm" onClick={() => handleAddSkill(skill.name)}>
-                                                            {skill.name} <Plus className="ml-1 h-4 w-4" />
-                                                        </Button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
+                                        </div>
+                                    </div>
                                 </section>
                             )}
                             
@@ -643,34 +675,95 @@ export function UpdateProfileCard({
                                             variant={"outline"}
                                             className={cn(
                                                 "justify-start text-left font-normal",
-                                                !profile.dob && "text-muted-foreground"
+                                                !dob && "text-muted-foreground"
                                             )}
                                             >
                                             <CalendarIcon className="mr-2 h-4 w-4" />
-                                            {profile.dob ? format(new Date(profile.dob), "PPP") : <span>Pick a date</span>}
+                                            {dob ? format(dob, "PPP") : <span>Pick a date</span>}
                                             </Button>
                                         </PopoverTrigger>
                                         <PopoverContent className="w-auto p-0">
                                             <Calendar
-                                            mode="single"
-                                            selected={profile.dob ? new Date(profile.dob) : undefined}
-                                            onSelect={(date) => {
-                                                // You would need to update the state here if you want it to be reactive
-                                            }}
-                                            initialFocus
+                                                mode="single"
+                                                captionLayout="dropdown-nav"
+                                                fromYear={1950}
+                                                toYear={new Date().getFullYear() - 10}
+                                                selected={dob}
+                                                onSelect={setDob}
+                                                initialFocus
                                             />
                                         </PopoverContent>
                                     </Popover>
-                                    <Input id="dob" name="dob" type="hidden" defaultValue={profile.dob ?? ''} />
+                                    <Input id="dob" name="dob" type="hidden" defaultValue={dob?.toISOString() ?? ''} />
                                 </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="permanentAddress">Permanent Address</Label>
-                                    <Input id="permanentAddress" name="permanentAddress" defaultValue={profile.permanentAddress ?? ''} />
                                 </div>
-                                <div className="grid gap-2 col-span-2">
-                                    <Label htmlFor="languages">Languages</Label>
-                                    <Input id="languages" name="languages" defaultValue={profile.languages?.join(', ') ?? ''} placeholder="e.g., English, Hindi, Spanish" />
+                                <div className="space-y-2">
+                                  <Label>Permanent Address</Label>
+                                  <div className="p-4 border rounded-lg bg-muted/50 space-y-4">
+                                    <Textarea name="permanentAddress.address" placeholder="Street Address" defaultValue={profile.permanentAddress?.address ?? ''}/>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <Input name="permanentAddress.city" placeholder="City" defaultValue={profile.permanentAddress?.city ?? ''}/>
+                                      <Input name="permanentAddress.state" placeholder="State" defaultValue={profile.permanentAddress?.state ?? ''}/>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <Input name="permanentAddress.country" placeholder="Country" defaultValue={profile.permanentAddress?.country ?? ''}/>
+                                      <Input name="permanentAddress.pincode" placeholder="Pin Code" defaultValue={profile.permanentAddress?.pincode ?? ''}/>
+                                    </div>
+                                  </div>
                                 </div>
+
+                                <div className="space-y-4 pt-4">
+                                  <Label className="font-semibold text-lg">Language Proficiency</Label>
+                                  {languages.map((lang, index) => (
+                                    <div key={index} className="p-4 border rounded-lg bg-muted/50 space-y-4">
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                          <Label>Language</Label>
+                                          <Select value={lang.language} onValueChange={(value) => handleLanguageChange(index, 'language', value)}>
+                                            <SelectTrigger><SelectValue placeholder="Select Language"/></SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="English">English</SelectItem>
+                                              <SelectItem value="Hindi">Hindi</SelectItem>
+                                              <SelectItem value="Spanish">Spanish</SelectItem>
+                                              <SelectItem value="French">French</SelectItem>
+                                              <SelectItem value="German">German</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                        <div className="space-y-2">
+                                          <Label>Proficiency</Label>
+                                          <Select value={lang.proficiency} onValueChange={(value) => handleLanguageChange(index, 'proficiency', value)}>
+                                            <SelectTrigger><SelectValue placeholder="Select Proficiency"/></SelectTrigger>
+                                            <SelectContent>
+                                              <SelectItem value="Beginner">Beginner</SelectItem>
+                                              <SelectItem value="Intermediate">Intermediate</SelectItem>
+                                              <SelectItem value="Advanced">Advanced</SelectItem>
+                                              <SelectItem value="Proficient">Proficient</SelectItem>
+                                              <SelectItem value="Expert">Expert</SelectItem>
+                                            </SelectContent>
+                                          </Select>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-4">
+                                          <div className="flex items-center gap-2">
+                                            <Checkbox id={`read-${index}`} checked={lang.canRead} onCheckedChange={(checked) => handleLanguageChange(index, 'canRead', !!checked)}/>
+                                            <Label htmlFor={`read-${index}`} className="font-normal">Read</Label>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <Checkbox id={`write-${index}`} checked={lang.canWrite} onCheckedChange={(checked) => handleLanguageChange(index, 'canWrite', !!checked)}/>
+                                            <Label htmlFor={`write-${index}`} className="font-normal">Write</Label>
+                                          </div>
+                                          <div className="flex items-center gap-2">
+                                            <Checkbox id={`speak-${index}`} checked={lang.canSpeak} onCheckedChange={(checked) => handleLanguageChange(index, 'canSpeak', !!checked)}/>
+                                            <Label htmlFor={`speak-${index}`} className="font-normal">Speak</Label>
+                                          </div>
+                                        </div>
+                                        <Button variant="link" size="sm" type="button" onClick={() => handleRemoveLanguage(index)} className="text-destructive p-0 h-auto">Delete</Button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                  <Button type="button" variant="link" onClick={handleAddLanguage}>+ Add another language</Button>
                                 </div>
                             </section>
                             )}
@@ -695,5 +788,3 @@ export function UpdateProfileCard({
     </div>
   );
 }
-
-    
