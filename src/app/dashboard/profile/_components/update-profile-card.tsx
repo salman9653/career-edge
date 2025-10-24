@@ -80,7 +80,7 @@ export function UpdateProfileCard({
   const [isAvatarPending, startAvatarTransition] = useTransition();
   const [activeSection, setActiveSection] = useState('profile-details');
   
-  const [existingResumeFile, setExistingResumeFile] = useState<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isResumePending, startResumeTransition] = useTransition();
   const [isDownloadHovered, setIsDownloadHovered] = useState(false);
@@ -149,9 +149,9 @@ export function UpdateProfileCard({
 
   const handleResumeFileSelect = (file: File | null) => {
     if (file && (file.type.includes('pdf') || file.type.includes('document'))) {
-        setExistingResumeFile(file);
+        setSelectedFile(file);
     } else {
-        setExistingResumeFile(null);
+        setSelectedFile(null);
     }
   };
 
@@ -177,7 +177,7 @@ export function UpdateProfileCard({
         const result = await removeResumeAction(session.uid);
         if(result.success) {
             toast({ title: 'Resume removed' });
-            setExistingResumeFile(null);
+            setSelectedFile(null);
             // The onSnapshot in profile page will update the state
         } else {
             toast({ title: 'Error', description: result.error, variant: 'destructive' });
@@ -224,14 +224,6 @@ export function UpdateProfileCard({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
   
-  const getFileIcon = (fileType?: string) => {
-    if (!fileType) return <FileIcon className="h-12 w-12 text-muted-foreground" />;
-    if (fileType.includes('pdf')) return <FaFilePdf className="h-12 w-12 text-red-500" />;
-    if (fileType.includes('word')) return <FaFileWord className="h-12 w-12 text-blue-500" />;
-    if (fileType.startsWith('image')) return <FaFileImage className="h-12 w-12 text-green-500" />;
-    return <FileIcon className="h-12 w-12 text-muted-foreground" />;
-  }
-
   const getSimplifiedFileType = (mimeType?: string) => {
     if (!mimeType) return 'File';
     if (mimeType.includes('pdf')) return 'PDF';
@@ -241,6 +233,14 @@ export function UpdateProfileCard({
     }
     if (mimeType.startsWith('image')) return mimeType.split('/')[1]?.toUpperCase() || 'Image';
     return mimeType;
+  }
+
+  const getFileIcon = (fileType?: string) => {
+    if (!fileType) return <FileIcon className="h-12 w-12 text-muted-foreground" />;
+    if (fileType.includes('pdf')) return <FaFilePdf className="h-12 w-12 text-red-500" />;
+    if (fileType.includes('word')) return <FaFileWord className="h-12 w-12 text-blue-500" />;
+    if (fileType.startsWith('image')) return <FaFileImage className="h-12 w-12 text-green-500" />;
+    return <FileIcon className="h-12 w-12 text-muted-foreground" />;
   }
 
   const navItems = [
@@ -403,7 +403,7 @@ export function UpdateProfileCard({
                                         <p className="text-sm text-muted-foreground">Upload your latest resume. This will be used for AI analysis.</p>
                                     </div>
                                     <div className="space-y-2">
-                                        {profile.hasResume && !existingResumeFile ? (
+                                        {profile.hasResume && !selectedFile ? (
                                             <Card className="relative flex flex-col items-center justify-center p-6 text-center">
                                                 <motion.button
                                                     type="button"
@@ -462,6 +462,16 @@ export function UpdateProfileCard({
                                                     </AlertDialog>
                                                 </div>
                                             </Card>
+                                        ) : selectedFile ? (
+                                             <Card className="relative flex flex-col items-center justify-center p-6 text-center">
+                                                <div className="flex justify-center">{getFileIcon(selectedFile.type)}</div>
+                                                <p className="font-semibold mt-4 text-sm">{selectedFile.name}</p>
+                                                <p className="text-xs text-muted-foreground">{getSimplifiedFileType(selectedFile.type)} • {formatFileSize(selectedFile.size)}</p>
+                                                <div className="flex gap-2 mt-6">
+                                                    <Button type="button" variant="secondary" size="sm" onClick={handleResumeButtonClick} disabled={isResumePending}><RefreshCw className="mr-2 h-4 w-4"/>Change</Button>
+                                                    <Button type="button" variant="destructive" size="sm" disabled={isResumePending} onClick={() => setSelectedFile(null)}><X className="mr-2 h-4 w-4"/>Remove</Button>
+                                                </div>
+                                            </Card>
                                         ) : (
                                             <div
                                                 className={cn("relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 transition-colors", isDragging && "border-dash-primary bg-dash-primary/10")}
@@ -470,20 +480,9 @@ export function UpdateProfileCard({
                                                 onDragLeave={isPending ? undefined : handleResumeDragLeave}
                                                 onClick={isPending ? undefined : handleResumeButtonClick}
                                             >
-                                                {existingResumeFile ? (
-                                                    <div className="text-center p-4 flex flex-col items-center">
-                                                        <div className="flex justify-center">{getFileIcon(existingResumeFile.type)}</div>
-                                                        <p className="font-semibold mt-4 text-sm">{existingResumeFile.name}</p>
-                                                        <p className="text-xs text-muted-foreground">{getSimplifiedFileType(existingResumeFile.type)} • {formatFileSize(existingResumeFile.size)}</p>
-                                                        <Button type="button" variant="link" size="sm" className="text-destructive h-auto p-1 mt-2" onClick={(e) => { e.stopPropagation(); setExistingResumeFile(null); }}>Remove</Button>
-                                                    </div>
-                                                ) : (
-                                                    <>
-                                                        <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
-                                                        <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                                                        <p className="text-xs text-muted-foreground">PDF, DOC, or DOCX (MAX. 750KB)</p>
-                                                    </>
-                                                )}
+                                                <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
+                                                <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                                <p className="text-xs text-muted-foreground">PDF, DOC, or DOCX (MAX. 750KB)</p>
                                             </div>
                                         )}
                                     </div>
@@ -501,19 +500,21 @@ export function UpdateProfileCard({
                                         <CardContent className="p-0">
                                             <div className="space-y-2">
                                                 <Label>Your skills</Label>
-                                                <div className="flex flex-wrap gap-2 p-2 border rounded-md min-h-20 bg-background">
+                                                <div className="flex flex-wrap items-center gap-2 p-2 border rounded-md min-h-[40px] bg-background">
                                                     {skills.map((skill: string) => (
-                                                        <Badge key={skill} variant="secondary" className="flex items-center gap-1.5 text-base">
+                                                        <Badge key={skill} variant="secondary" className="flex items-center gap-1 text-base py-1">
                                                             {skill}
-                                                            <button onClick={() => handleRemoveSkill(skill)}><X className="h-4 w-4" /></button>
+                                                            <button type="button" onClick={() => handleRemoveSkill(skill)} className="rounded-full hover:bg-black/20 p-0.5">
+                                                                <X className="h-3 w-3" />
+                                                            </button>
                                                         </Badge>
                                                     ))}
                                                     <Input
-                                                    value={skillInput}
-                                                    onChange={(e) => setSkillInput(e.target.value)}
-                                                    onKeyDown={handleSkillKeyDown}
-                                                    placeholder="Add skills"
-                                                    className="flex-1 border-none focus-visible:ring-0 shadow-none p-0 h-auto bg-transparent"
+                                                        value={skillInput}
+                                                        onChange={(e) => setSkillInput(e.target.value)}
+                                                        onKeyDown={handleSkillKeyDown}
+                                                        placeholder="Add skills and press Enter"
+                                                        className="flex-1 border-none focus-visible:ring-0 shadow-none p-2 h-auto bg-transparent"
                                                     />
                                                 </div>
                                             </div>
