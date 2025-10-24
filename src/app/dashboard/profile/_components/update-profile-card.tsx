@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload, FileText, X, Plus, CalendarIcon, UploadCloud, Download, RefreshCw, File as FileIcon } from 'lucide-react';
+import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload, FileText, X, Plus, CalendarIcon, UploadCloud, Download, RefreshCw } from 'lucide-react';
 import { FaFilePdf, FaFileWord, FaFileImage } from 'react-icons/fa';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -34,7 +34,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
+import { skillsData, type Skill } from '@/lib/skills-data';
 
 const initialState = {
   error: null,
@@ -58,27 +59,6 @@ const getInitials = (name: string) => {
     }
     return name.substring(0, 2).toUpperCase();
 }
-
-
-// A simple knowledge base for skill relationships
-const allSkills = [
-    'React', 'JavaScript', 'TypeScript', 'Node.js', 'Next.js', 'Redux', 'GraphQL', 
-    'REST APIs', 'HTML5', 'CSS3', 'SASS', 'Tailwind CSS', 'Material-UI', 
-    'Python', 'Django', 'Flask', 'Java', 'Spring Boot', 'C#', '.NET',
-    'SQL', 'PostgreSQL', 'MySQL', 'MongoDB', 'Firebase', 
-    'Docker', 'Kubernetes', 'AWS', 'Google Cloud', 'Azure', 'CI/CD',
-    'Project Management', 'Agile', 'Scrum', 'JIRA', 'Product Management',
-    'UI/UX Design', 'Figma', 'Adobe XD', 'Data Analysis', 'Machine Learning'
-];
-
-const skillRelations: Record<string, string[]> = {
-    'React': ['Next.js', 'Redux', 'JavaScript', 'TypeScript', 'Tailwind CSS'],
-    'Node.js': ['Express', 'JavaScript', 'TypeScript', 'REST APIs', 'MongoDB'],
-    'Python': ['Django', 'Flask', 'Data Analysis', 'Machine Learning'],
-    'Java': ['Spring Boot', 'SQL', 'Microservices'],
-    'Project Management': ['Agile', 'Scrum', 'JIRA'],
-    'UI/UX Design': ['Figma', 'Adobe XD']
-};
 
 export function UpdateProfileCard({ 
     profile,
@@ -107,29 +87,31 @@ export function UpdateProfileCard({
 
   const [skills, setSkills] = useState(profile.keySkills || []);
   const [skillInput, setSkillInput] = useState('');
-  const [suggestedSkills, setSuggestedSkills] = useState<string[]>([]);
+  const [suggestedSkills, setSuggestedSkills] = useState<Skill[]>([]);
+  const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
   
   const isPending = isAvatarPending || isResumePending;
 
   // Logic for skill suggestions
   useEffect(() => {
-    let newSuggestions: string[] = [];
+    let newSuggestions: Skill[] = [];
     if (skills.length === 0) {
         // Show initial random suggestions
-        newSuggestions = allSkills
-            .filter(s => !skills.includes(s))
+        newSuggestions = skillsData
+            .filter(s => !skills.includes(s.name))
             .sort(() => 0.5 - Math.random()) // Shuffle
             .slice(0, 8); // Take first 8
     } else {
-        const lastSkill = skills[skills.length - 1];
-        const related = skillRelations[lastSkill] || [];
-        
-        // Add related skills
-        newSuggestions.push(...related.filter(s => !skills.includes(s) && !newSuggestions.includes(s)));
+        const lastSkillName = skills[skills.length - 1];
+        const lastSkill = skillsData.find(s => s.name === lastSkillName);
+        if (lastSkill) {
+            const related = lastSkill.related_skills.map(id => skillsData.find(s => s.id === id)).filter(Boolean) as Skill[];
+            newSuggestions.push(...related.filter(s => !skills.includes(s.name) && !newSuggestions.some(ns => ns.id === s.id)));
+        }
 
         // Fill with other random skills if not enough suggestions
         if (newSuggestions.length < 8) {
-            const otherSkills = allSkills.filter(s => !skills.includes(s) && !newSuggestions.includes(s));
+            const otherSkills = skillsData.filter(s => !skills.includes(s.name) && !newSuggestions.some(ns => ns.id === s.id));
             newSuggestions.push(...otherSkills.sort(() => 0.5 - Math.random()).slice(0, 8 - newSuggestions.length));
         }
     }
@@ -242,12 +224,16 @@ export function UpdateProfileCard({
     }
   };
 
-  const handleAddSkill = (skill: string) => {
-    const trimmedSkill = skill.trim();
-    if (trimmedSkill && !skills.includes(trimmedSkill)) {
-      setSkills([...skills, trimmedSkill]);
+  const handleAddSkill = (skillName: string) => {
+    const trimmedSkill = skillName.trim();
+    const skillExists = skillsData.find(s => s.name.toLowerCase() === trimmedSkill.toLowerCase());
+    if (skillExists && !skills.includes(skillExists.name)) {
+      setSkills([...skills, skillExists.name]);
+    } else if (trimmedSkill && !skills.includes(trimmedSkill)) { // Allow adding custom skills
+        setSkills([...skills, trimmedSkill])
     }
     setSkillInput('');
+    setIsAutocompleteOpen(false);
   };
 
   const handleRemoveSkill = (skillToRemove: string) => {
@@ -272,21 +258,22 @@ export function UpdateProfileCard({
   
   const getSimplifiedFileType = (mimeType?: string) => {
     if (!mimeType) return 'File';
-    if (mimeType.includes('pdf')) return 'PDF';
+    if (mimeType.includes('pdf')) return 'pdf';
     if (mimeType.includes('word')) {
-        if (mimeType.includes('openxmlformats')) return 'DOCX';
-        return 'DOC';
+        if (mimeType.includes('openxmlformats')) return 'docx';
+        return 'doc';
     }
-    if (mimeType.startsWith('image')) return mimeType.split('/')[1]?.toUpperCase() || 'Image';
+    if (mimeType.startsWith('image')) return mimeType.split('/')[1]?.toLowerCase() || 'image';
     return mimeType;
   }
 
   const getFileIcon = (fileType?: string) => {
-    if (!fileType) return <FileIcon className="h-12 w-12 text-muted-foreground" />;
-    if (fileType.includes('pdf')) return <FaFilePdf className="h-12 w-12 text-red-500" />;
-    if (fileType.includes('word')) return <FaFileWord className="h-12 w-12 text-blue-500" />;
+    if (!fileType) return <FileText className="h-12 w-12 text-muted-foreground" />;
+    const simpleType = getSimplifiedFileType(fileType);
+    if (simpleType === 'pdf') return <FaFilePdf className="h-12 w-12 text-red-500" />;
+    if (simpleType === 'doc' || simpleType === 'docx') return <FaFileWord className="h-12 w-12 text-blue-500" />;
     if (fileType.startsWith('image')) return <FaFileImage className="h-12 w-12 text-green-500" />;
-    return <FileIcon className="h-12 w-12 text-muted-foreground" />;
+    return <FileText className="h-12 w-12 text-muted-foreground" />;
   }
 
   const navItems = [
@@ -301,10 +288,12 @@ export function UpdateProfileCard({
     { id: 'personal-details', label: 'Personal Details' },
   ];
   
-  const filteredSuggestedSkills = suggestedSkills.filter(s => 
-    !skills.includes(s) && 
-    (skillInput ? s.toLowerCase().includes(skillInput.toLowerCase()) : true)
-  );
+  const autocompleteSkills = skillsData.filter(skill => {
+    if (skills.includes(skill.name)) return false;
+    const searchLower = skillInput.toLowerCase();
+    return skill.name.toLowerCase().includes(searchLower) || skill.other_names.some(o => o.toLowerCase().includes(searchLower));
+  }).slice(0, 5);
+  
 
   return (
     <div className="flex gap-6 h-full w-full">
@@ -400,8 +389,8 @@ export function UpdateProfileCard({
                             {activeSection === 'career-profile' && (
                             <section className="space-y-6">
                                 <div>
-                                    <h3 className="text-lg font-semibold">Career Profile</h3>
-                                    <p className="text-sm text-muted-foreground">Your current professional status.</p>
+                                <h3 className="text-lg font-semibold">Career Profile</h3>
+                                <p className="text-sm text-muted-foreground">Your current professional status.</p>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="grid gap-2">
@@ -551,7 +540,7 @@ export function UpdateProfileCard({
                                         <CardContent className="p-4 space-y-4">
                                             <div className="space-y-2">
                                                 <Label>Your skills</Label>
-                                                <div className="min-h-[40px] p-2 rounded-md flex flex-wrap items-center gap-2">
+                                                <div className="p-2 min-h-[40px] flex flex-wrap gap-2">
                                                     {skills.map((skill: string) => (
                                                         <Badge key={skill} variant="secondary" className="flex items-center gap-1 text-base py-1">
                                                             {skill}
@@ -562,18 +551,38 @@ export function UpdateProfileCard({
                                                     ))}
                                                 </div>
                                             </div>
-                                            <Input
-                                                value={skillInput}
-                                                onChange={(e) => setSkillInput(e.target.value)}
-                                                onKeyDown={handleSkillKeyDown}
-                                                placeholder="Add skills and press Enter"
-                                            />
+                                            <div className="relative">
+                                                <Input
+                                                    value={skillInput}
+                                                    onChange={(e) => setSkillInput(e.target.value)}
+                                                    onKeyDown={handleSkillKeyDown}
+                                                    onFocus={() => setIsAutocompleteOpen(true)}
+                                                    onBlur={() => setTimeout(() => setIsAutocompleteOpen(false), 150)}
+                                                    placeholder="Add skills and press Enter"
+                                                />
+                                                {isAutocompleteOpen && skillInput && autocompleteSkills.length > 0 && (
+                                                    <Card className="absolute z-10 w-full mt-1 max-h-60 overflow-y-auto">
+                                                        <CardContent className="p-2">
+                                                            {autocompleteSkills.map(skill => (
+                                                                <Button
+                                                                    key={skill.id}
+                                                                    variant="ghost"
+                                                                    className="w-full justify-start"
+                                                                    onClick={() => handleAddSkill(skill.name)}
+                                                                >
+                                                                    {skill.name}
+                                                                </Button>
+                                                            ))}
+                                                        </CardContent>
+                                                    </Card>
+                                                )}
+                                            </div>
                                             <div className="space-y-2 pt-4">
                                             <Label>Or you can select from the suggested set of skills</Label>
                                                 <div className="flex flex-wrap gap-2">
                                                     {suggestedSkills.map(skill => (
-                                                        <Button key={skill} type="button" variant="outline" size="sm" onClick={() => handleAddSkill(skill)}>
-                                                            {skill} <Plus className="ml-1 h-4 w-4" />
+                                                        <Button key={skill.id} type="button" variant="outline" size="sm" onClick={() => handleAddSkill(skill.name)}>
+                                                            {skill.name} <Plus className="ml-1 h-4 w-4" />
                                                         </Button>
                                                     ))}
                                                 </div>
