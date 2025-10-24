@@ -95,27 +95,41 @@ export function UpdateProfileCard({
   // Logic for skill suggestions
   useEffect(() => {
     let newSuggestions: Skill[] = [];
+
     if (skills.length === 0) {
-        // Show initial random suggestions
-        newSuggestions = skillsData
-            .filter(s => !skills.includes(s.name))
-            .sort(() => 0.5 - Math.random()) // Shuffle
-            .slice(0, 8); // Take first 8
+        // Show initial random suggestions from various categories
+        const categories = [...new Set(skillsData.map(s => s.category))];
+        categories.forEach(cat => {
+            const skillsInCategory = skillsData.filter(s => s.category === cat && !skills.includes(s.name));
+            if (skillsInCategory.length > 0) {
+                newSuggestions.push(skillsInCategory[Math.floor(Math.random() * skillsInCategory.length)]);
+            }
+        });
+        newSuggestions = [...new Set(newSuggestions)].slice(0, 8); // Remove duplicates and limit
     } else {
         const lastSkillName = skills[skills.length - 1];
         const lastSkill = skillsData.find(s => s.name === lastSkillName);
-        if (lastSkill) {
-            const related = lastSkill.related_skills.map(id => skillsData.find(s => s.id === id)).filter(Boolean) as Skill[];
-            newSuggestions.push(...related.filter(s => !skills.includes(s.name) && !newSuggestions.some(ns => ns.id === s.id)));
-        }
 
-        // Fill with other random skills if not enough suggestions
-        if (newSuggestions.length < 8) {
-            const otherSkills = skillsData.filter(s => !skills.includes(s.name) && !newSuggestions.some(ns => ns.id === s.id));
-            newSuggestions.push(...otherSkills.sort(() => 0.5 - Math.random()).slice(0, 8 - newSuggestions.length));
+        if (lastSkill) {
+            // Add related skills
+            const related = lastSkill.related_skills
+                .map(id => skillsData.find(s => s.id === id))
+                .filter((s): s is Skill => !!s && !skills.includes(s.name));
+            newSuggestions.push(...related);
+
+            // Add other skills from the same category
+            const categorySkills = skillsData
+                .filter(s => s.category === lastSkill.category && s.name !== lastSkill.name && !skills.includes(s.name))
+                .sort(() => 0.5 - Math.random()); // Shuffle
+            
+            newSuggestions.push(...categorySkills);
         }
     }
-    setSuggestedSkills(newSuggestions.slice(0, 8));
+    
+    // Remove duplicates and limit to 8 suggestions
+    const uniqueSuggestions = Array.from(new Set(newSuggestions.map(s => s.id))).map(id => newSuggestions.find(s => s.id === id)).filter(Boolean) as Skill[];
+    setSuggestedSkills(uniqueSuggestions.slice(0, 8));
+
   }, [skills]);
 
   useEffect(() => {
@@ -328,6 +342,8 @@ export function UpdateProfileCard({
                                 onChange={handleResumeFileChange}
                                 accept=".pdf,.doc,.docx"
                             />
+                            
+                            <input type="hidden" name="keySkills" value={skills.join(',')} />
 
                             {activeSection === 'profile-details' && (
                                 <section className="space-y-6">
@@ -535,7 +551,6 @@ export function UpdateProfileCard({
                                         <h3 className="text-lg font-semibold">Key Skills</h3>
                                         <p className="text-sm text-muted-foreground">Add skills that best define your expertise.</p>
                                     </div>
-                                    <input type="hidden" name="keySkills" value={skills.join(',')} />
                                     <Card>
                                         <CardContent className="p-4 space-y-4">
                                             <div className="space-y-2">
