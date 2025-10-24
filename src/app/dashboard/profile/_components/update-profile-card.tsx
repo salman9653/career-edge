@@ -743,7 +743,7 @@ export function UpdateProfileCard({
                                         </div>
                                       </div>
                                       <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-6">
+                                        <div className="flex items-center gap-12">
                                           <div className="flex items-center gap-2">
                                             <Checkbox id={`read-${index}`} checked={lang.canRead} onCheckedChange={(checked) => handleLanguageChange(index, 'canRead', !!checked)}/>
                                             <Label htmlFor={`read-${index}`} className="font-normal">Read</Label>
