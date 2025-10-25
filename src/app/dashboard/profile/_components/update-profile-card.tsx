@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload, FileText, X, Plus, CalendarIcon, UploadCloud, Download, RefreshCw, Github, FolderKanban, AlertTriangle } from 'lucide-react';
+import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload, FileText, X, Plus, CalendarIcon, UploadCloud, Download, RefreshCw, Github, FolderKanban, AlertTriangle, GraduationCap } from 'lucide-react';
 import { FaFilePdf, FaFileWord, FaFileImage } from 'react-icons/fa';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -535,6 +535,7 @@ export function UpdateProfileCard({
   const [editingEmployment, setEditingEmployment] = useState<Employment | null>(null);
   const [deleteEmploymentId, setDeleteEmploymentId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isEmploymentPending, startDeleteTransition] = useTransition();
 
   const [educationRecords, setEducationRecords] = useState<Education[]>(profile.education || []);
   const [isAddingEducation, setIsAddingEducation] = useState(false);
@@ -783,16 +784,11 @@ export function UpdateProfileCard({
   };
 
   const handleDeleteEmployment = (id: string) => {
-      startEmploymentTransition(() => {
+      startDeleteTransition(() => {
           const newEmployments = employments.filter(emp => emp.id !== id);
           const formData = new FormData();
           formData.append('userId', session!.uid);
-          // When deleting the last item, we need to send an empty array
-          if (newEmployments.length > 0) {
-              formData.append('employment', JSON.stringify(newEmployments));
-          } else {
-              formData.append('employment', '[]');
-          }
+          formData.append('employment', JSON.stringify(newEmployments));
           employmentAction(formData);
       });
   };
@@ -846,8 +842,8 @@ export function UpdateProfileCard({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setDeleteEmploymentId(null)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} disabled={employmentIsPending} className="bg-destructive hover:bg-destructive/90">
-              {employmentIsPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Delete'}
+            <AlertDialogAction onClick={confirmDelete} disabled={isEmploymentPending} className="bg-destructive hover:bg-destructive/90">
+              {isEmploymentPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1238,7 +1234,7 @@ export function UpdateProfileCard({
                      <div className="space-y-4">
                        {educationRecords.length === 0 && !isAddingEducation && !editingEducation ? (
                         <div className="text-center py-12 border-2 border-dashed rounded-lg flex flex-col items-center justify-center">
-                          <Briefcase className="mx-auto h-12 w-12 text-muted-foreground" />
+                          <GraduationCap className="mx-auto h-12 w-12 text-muted-foreground" />
                           <h3 className="mt-4 text-lg font-semibold">No Education Yet</h3>
                           <p className="mt-1 text-sm text-muted-foreground">Add your educational qualifications.</p>
                           <Button className="mt-6" variant="secondary" type="button" onClick={() => setIsAddingEducation(true)}>
