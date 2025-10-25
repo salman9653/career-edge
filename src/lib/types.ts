@@ -1,4 +1,5 @@
 
+
 import type { LucideIcon } from 'lucide-react';
 
 export interface NavItem {
@@ -267,6 +268,25 @@ export interface Employment {
     skillsUsed: string[];
 }
 
+export interface Education {
+    id: string;
+    level: 'Class 10th' | 'Class 12th' | 'Graduation/Diploma' | 'Masters/Post-Graduations' | 'Doctorate/PhD';
+    isPrimary?: boolean;
+    // For 10th/12th
+    board?: string;
+    passingYear?: number;
+    marks?: number; // as percentage
+    // For higher education
+    university?: string;
+    course?: string;
+    specialization?: string;
+    courseType?: 'Full time' | 'Part time' | 'Correspondence/Distance learning';
+    startYear?: number;
+    endYear?: number;
+    gradingSystem?: string;
+}
+
+
 export interface UserProfile {
     uid: string;
     email: string;
@@ -302,7 +322,7 @@ export interface UserProfile {
     profileSummary?: string;
     keySkills?: string[];
     employment?: Employment[];
-    education?: any[];
+    education?: Education[];
     projects?: any[];
     portfolio?: string;
     linkedin?: string; // DEPRECATED: use socials.linkedin instead

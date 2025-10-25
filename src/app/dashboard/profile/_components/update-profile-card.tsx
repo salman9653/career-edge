@@ -15,7 +15,7 @@ import { FaFilePdf, FaFileWord, FaFileImage } from 'react-icons/fa';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import type { CompanySize, Socials, UserProfile, Resume, Employment } from '@/lib/types';
+import type { CompanySize, Socials, UserProfile, Resume, Employment, Education } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
@@ -300,25 +300,186 @@ const EmploymentForm = ({ employment, onSave, onCancel }: { employment: Employme
     );
 };
 
-const useFormFeedback = (state: any, name: string) => {
-    const { toast } = useToast();
-  
-    useEffect(() => {
-      if (state.success) {
-        toast({
-          title: `Success`,
-          description: `${name} updated successfully.`,
+const EducationForm = ({ education, onSave, onCancel }: { education: Education | null, onSave: (education: Education) => void, onCancel: () => void }) => {
+    const [level, setLevel] = useState<Education['level'] | ''>(education?.level || '');
+    const [board, setBoard] = useState(education?.board || '');
+    const [passingYear, setPassingYear] = useState<number | undefined>(education?.passingYear);
+    const [marks, setMarks] = useState(education?.marks?.toString() || '');
+    const [university, setUniversity] = useState(education?.university || '');
+    const [course, setCourse] = useState(education?.course || '');
+    const [specialization, setSpecialization] = useState(education?.specialization || '');
+    const [courseType, setCourseType] = useState(education?.courseType || '');
+    const [startYear, setStartYear] = useState<number | undefined>(education?.startYear);
+    const [endYear, setEndYear] = useState<number | undefined>(education?.endYear);
+    const [gradingSystem, setGradingSystem] = useState(education?.gradingSystem || '');
+    const [isPrimary, setIsPrimary] = useState(education?.isPrimary || false);
+    const [isPending, startTransition] = useTransition();
+
+    const handleSave = () => {
+        if (!level) return;
+
+        let educationData: Partial<Education> = { level };
+
+        if (level === 'Class 10th' || level === 'Class 12th') {
+            educationData = { ...educationData, board, passingYear, marks: Number(marks) };
+        } else {
+            educationData = { ...educationData, university, course, specialization, courseType, startYear, endYear, gradingSystem, marks: Number(marks) };
+            if (level === 'Graduation/Diploma') {
+                educationData.isPrimary = isPrimary;
+            }
+        }
+        
+        const newEducation: Education = {
+            id: education?.id || Date.now().toString(),
+            ...educationData
+        } as Education;
+
+        startTransition(() => {
+            onSave(newEducation);
         });
-      }
-      if(state.error) {
-        toast({
-            variant: 'destructive',
-            title: `Error updating ${name}`,
-            description: state.error,
-        });
-      }
-    }, [state.success, state.error, toast, name]);
+    };
+    
+    const yearOptions = Array.from({ length: 50 }, (_, i) => new Date().getFullYear() - i);
+
+    return (
+         <Card className="mt-4">
+            <CardContent className="p-6 space-y-4">
+                 <div className="grid gap-2">
+                    <Label htmlFor="education-level">Education Level</Label>
+                    <Select value={level} onValueChange={(value) => setLevel(value as Education['level'])}>
+                        <SelectTrigger id="education-level"><SelectValue placeholder="Select education level" /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="Class 10th">Class 10th</SelectItem>
+                            <SelectItem value="Class 12th">Class 12th</SelectItem>
+                            <SelectItem value="Graduation/Diploma">Graduation/Diploma</SelectItem>
+                            <SelectItem value="Masters/Post-Graduations">Masters/Post-Graduation</SelectItem>
+                            <SelectItem value="Doctorate/PhD">Doctorate/PhD</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                
+                {(level === 'Class 10th' || level === 'Class 12th') && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="board">Board</Label>
+                            <Select value={board} onValueChange={setBoard}>
+                                <SelectTrigger id="board"><SelectValue placeholder="Select Board" /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="CBSE">CBSE</SelectItem>
+                                    <SelectItem value="CISCE">CISCE (ICSE/ISC)</SelectItem>
+                                    <SelectItem value="Diploma">Diploma</SelectItem>
+                                    <SelectItem value="National Open School">National Open School</SelectItem>
+                                    <SelectItem value="IB">IB (International Baccalaureate)</SelectItem>
+                                    <SelectItem value="State Board">State Board</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="passing-year">Passing Out Year</Label>
+                            <Select value={passingYear?.toString()} onValueChange={(val) => setPassingYear(Number(val))}>
+                                <SelectTrigger id="passing-year"><SelectValue placeholder="Select Year" /></SelectTrigger>
+                                <SelectContent>
+                                    {yearOptions.map(year => <SelectItem key={year} value={String(year)}>{year}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="marks-10-12">Marks (%)</Label>
+                            <Input id="marks-10-12" value={marks} onChange={e => setMarks(e.target.value)} type="number" placeholder="e.g. 85" />
+                        </div>
+                    </div>
+                )}
+
+                {(level && level !== 'Class 10th' && level !== 'Class 12th') && (
+                    <div className="space-y-4">
+                         <div className="grid gap-2">
+                            <Label htmlFor="university">University/Institute</Label>
+                            <Input id="university" value={university} onChange={e => setUniversity(e.target.value)} />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="course">Course</Label>
+                                <Select value={course} onValueChange={setCourse}>
+                                    <SelectTrigger id="course"><SelectValue placeholder="Select Course" /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="B.Tech">B.Tech</SelectItem>
+                                        <SelectItem value="B.Sc.">B.Sc.</SelectItem>
+                                        <SelectItem value="B.Com">B.Com</SelectItem>
+                                        <SelectItem value="B.A">B.A</SelectItem>
+                                        <SelectItem value="Diploma">Diploma</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="specialization">Specialization</Label>
+                                <Input id="specialization" value={specialization} onChange={e => setSpecialization(e.target.value)} placeholder="e.g., Computer Science" />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="course-type">Course Type</Label>
+                                <Select value={courseType} onValueChange={(value) => setCourseType(value as any)}>
+                                    <SelectTrigger id="course-type"><SelectValue placeholder="Select type" /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Full time">Full time</SelectItem>
+                                        <SelectItem value="Part time">Part time</SelectItem>
+                                        <SelectItem value="Correspondence/Distance learning">Correspondence/Distance learning</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                             <div className="space-y-2">
+                                <Label>Course Duration</Label>
+                                <div className="flex items-center gap-2">
+                                    <Select value={startYear?.toString()} onValueChange={val => setStartYear(Number(val))}>
+                                        <SelectTrigger><SelectValue placeholder="Start Year" /></SelectTrigger>
+                                        <SelectContent>{yearOptions.map(year => <SelectItem key={year} value={String(year)}>{year}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                    <span className="text-muted-foreground">to</span>
+                                    <Select value={endYear?.toString()} onValueChange={val => setEndYear(Number(val))}>
+                                        <SelectTrigger><SelectValue placeholder="End Year" /></SelectTrigger>
+                                        <SelectContent>{yearOptions.map(year => <SelectItem key={year} value={String(year)}>{year}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             <div className="space-y-2">
+                                <Label htmlFor="grading-system">Grading System</Label>
+                                <Select value={gradingSystem} onValueChange={setGradingSystem}>
+                                    <SelectTrigger id="grading-system"><SelectValue placeholder="Select grading system" /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Scale 10">Scale 10 Grading System</SelectItem>
+                                        <SelectItem value="Scale 4">Scale 4 Grading System</SelectItem>
+                                        <SelectItem value="Percentage">% Marks of 100 Maximum</SelectItem>
+                                        <SelectItem value="Pass">Course Requires a Pass</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="marks-higher-ed">Marks/Score</Label>
+                                <Input id="marks-higher-ed" value={marks} onChange={e => setMarks(e.target.value)} type="number" />
+                            </div>
+                        </div>
+                        {level === 'Graduation/Diploma' && (
+                            <div className="flex items-center space-x-2">
+                                <Checkbox id="isPrimary" checked={isPrimary} onCheckedChange={checked => setIsPrimary(!!checked)} />
+                                <Label htmlFor="isPrimary">Make this as my primary graduation/diploma</Label>
+                            </div>
+                        )}
+                    </div>
+                )}
+                 <div className="flex justify-end gap-2">
+                    <Button variant="ghost" onClick={onCancel} disabled={isPending}>Cancel</Button>
+                    <Button onClick={handleSave} disabled={isPending}>
+                        {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Save
+                    </Button>
+                </div>
+            </CardContent>
+        </Card>
+    );
 };
+
 
 export function UpdateProfileCard({ 
     profile,
@@ -338,12 +499,6 @@ export function UpdateProfileCard({
   const [personalDetailsState, personalDetailsAction] = useActionState(updateUserProfileAction, initialState);
   const [keySkillsState, keySkillsAction] = useActionState(updateUserProfileAction, initialState);
   const [employmentState, employmentAction] = useActionState(updateUserProfileAction, initialState);
-  
-  useFormFeedback(profileDetailsState, 'Profile Details');
-  useFormFeedback(careerProfileState, 'Career Profile');
-  useFormFeedback(onlineProfilesState, 'Online Profiles');
-  useFormFeedback(personalDetailsState, 'Personal Details');
-  useFormFeedback(keySkillsState, 'Key Skills');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isAvatarPending, startAvatarTransition] = useTransition();
@@ -626,7 +781,12 @@ export function UpdateProfileCard({
           const newEmployments = employments.filter(emp => emp.id !== id);
           const formData = new FormData();
           formData.append('userId', session!.uid);
-          formData.append('employment', JSON.stringify(newEmployments));
+          // When deleting the last item, we need to send an empty array
+          if (newEmployments.length > 0) {
+              formData.append('employment', JSON.stringify(newEmployments));
+          } else {
+              formData.append('employment', '[]');
+          }
           employmentAction(formData);
       });
   };
@@ -1011,7 +1171,7 @@ export function UpdateProfileCard({
                 {activeSection === 'employment' && (
                   <section className="space-y-6">
                     <div>
-                      <h3 className="text-lg font-semibold">Employment History</h3>
+                      <h3 className="text-lg font-semibold">Employment</h3>
                       <p className="text-sm text-muted-foreground">Detail your professional experience.</p>
                     </div>
                     <div className="space-y-4">
@@ -1035,10 +1195,10 @@ export function UpdateProfileCard({
                                 <div className="flex justify-between items-start">
                                   <div>
                                     <p className="font-semibold">{emp.designation}</p>
-                                    <p className="text-sm text-muted-foreground">{emp.company} &middot; {emp.employmentType}</p>
+                                    <p className="text-sm text-muted-foreground">{emp.company} &bull; {emp.employmentType}</p>
                                     <p className="text-xs text-muted-foreground mt-1">
                                       {format(new Date(emp.startDate), 'MMM yyyy')} - {emp.isCurrent ? 'Present' : emp.endDate ? format(new Date(emp.endDate), 'MMM yyyy') : 'N/A'}
-                                      <span className="mx-2 text-gray-400">•</span>
+                                      <span className="mx-2 text-gray-400">&bull;</span>
                                       {calculateDuration(emp.startDate, emp.endDate, emp.isCurrent)}
                                     </p>
                                   </div>
@@ -1063,7 +1223,21 @@ export function UpdateProfileCard({
                   </section>
                 )}
 
-                {(activeSection === 'education' || activeSection === 'projects') && (
+                {activeSection === 'education' && (
+                  <section className="space-y-6">
+                     <div>
+                        <h3 className="text-lg font-semibold">Education</h3>
+                        <p className="text-sm text-muted-foreground">Details like course, university, and more, help recruiters identify your educational background.</p>
+                      </div>
+                      <div className="text-center py-12 border-2 border-dashed rounded-lg">
+                            <FolderKanban className="mx-auto h-12 w-12 text-muted-foreground" />
+                            <h3 className="mt-4 text-lg font-semibold">Under Construction</h3>
+                            <p className="text-sm text-muted-foreground">The form for the "Education" section will be here.</p>
+                        </div>
+                  </section>
+                )}
+
+                {(activeSection === 'projects') && (
                   <div className="text-center py-12">
                     <FolderKanban className="mx-auto h-12 w-12 text-muted-foreground" />
                     <h3 className="mt-4 text-lg font-semibold">Under Construction</h3>
@@ -1268,5 +1442,3 @@ export function UpdateProfileCard({
     </>
   );
 }
-
-    
