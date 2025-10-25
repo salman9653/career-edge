@@ -684,11 +684,11 @@ export function UpdateProfileCard({
                                     </SelectContent>
                                     </Select>
                                 </div>
-                                <div className="grid gap-2">
+                                <div className="grid gap-2 md:col-span-2">
                                     <Label>Date of Birth</Label>
-                                     <div className="flex gap-2">
+                                    <div className="flex items-center rounded-md border border-input focus-within:border-b-ring focus-within:border-b-2">
                                         <Select name="dob-day" value={dobDay} onValueChange={setDobDay}>
-                                            <SelectTrigger><SelectValue placeholder="Day" /></SelectTrigger>
+                                            <SelectTrigger className="rounded-r-none border-0 focus:ring-0 focus:ring-offset-0"><SelectValue placeholder="Day" /></SelectTrigger>
                                             <SelectContent>
                                                 {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
                                                     <SelectItem key={day} value={String(day)}>{day}</SelectItem>
@@ -696,7 +696,7 @@ export function UpdateProfileCard({
                                             </SelectContent>
                                         </Select>
                                         <Select name="dob-month" value={dobMonth} onValueChange={setDobMonth}>
-                                            <SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger>
+                                            <SelectTrigger className="rounded-none border-y-0 border-x focus:ring-0 focus:ring-offset-0"><SelectValue placeholder="Month" /></SelectTrigger>
                                             <SelectContent>
                                                 {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
                                                     <SelectItem key={month} value={String(month)}>{format(new Date(0, month - 1), 'MMMM')}</SelectItem>
@@ -704,7 +704,7 @@ export function UpdateProfileCard({
                                             </SelectContent>
                                         </Select>
                                         <Select name="dob-year" value={dobYear} onValueChange={setDobYear}>
-                                            <SelectTrigger><SelectValue placeholder="Year" /></SelectTrigger>
+                                            <SelectTrigger className="rounded-l-none border-0 focus:ring-0 focus:ring-offset-0"><SelectValue placeholder="Year" /></SelectTrigger>
                                             <SelectContent>
                                                 {Array.from({ length: 70 }, (_, i) => new Date().getFullYear() - 18 - i).map(year => (
                                                     <SelectItem key={year} value={String(year)}>{year}</SelectItem>
@@ -716,17 +716,17 @@ export function UpdateProfileCard({
                                 </div>
                                 <div className="space-y-2">
                                   <Label>Permanent Address</Label>
-                                  <div className="space-y-4">
-                                    <Textarea name="permanentAddress.address" placeholder="Street Address" defaultValue={profile.permanentAddress?.address ?? ''}/>
-                                    <div className="grid grid-cols-2 gap-4">
-                                      <Input name="permanentAddress.city" placeholder="City" defaultValue={profile.permanentAddress?.city ?? ''}/>
-                                      <Input name="permanentAddress.state" placeholder="State" defaultValue={profile.permanentAddress?.state ?? ''}/>
+                                    <div className="space-y-4">
+                                        <Textarea name="permanentAddress.address" placeholder="Street Address" defaultValue={profile.permanentAddress?.address ?? ''}/>
+                                        <div className="grid grid-cols-2 gap-4">
+                                        <Input name="permanentAddress.city" placeholder="City" defaultValue={profile.permanentAddress?.city ?? ''}/>
+                                        <Input name="permanentAddress.state" placeholder="State" defaultValue={profile.permanentAddress?.state ?? ''}/>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                        <Input name="permanentAddress.country" placeholder="Country" defaultValue={profile.permanentAddress?.country ?? ''}/>
+                                        <Input name="permanentAddress.pincode" placeholder="Pin Code" defaultValue={profile.permanentAddress?.pincode ?? ''}/>
+                                        </div>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                      <Input name="permanentAddress.country" placeholder="Country" defaultValue={profile.permanentAddress?.country ?? ''}/>
-                                      <Input name="permanentAddress.pincode" placeholder="Pin Code" defaultValue={profile.permanentAddress?.pincode ?? ''}/>
-                                    </div>
-                                  </div>
                                 </div>
 
                                 <div className="space-y-4 pt-4">
