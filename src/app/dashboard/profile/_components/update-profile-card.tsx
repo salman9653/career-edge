@@ -505,6 +505,7 @@ export function UpdateProfileCard({
   const [keySkillsState, keySkillsAction] = useActionState(updateUserProfileAction, initialState);
   const [employmentState, employmentAction] = useActionState(updateUserProfileAction, initialState);
   const [educationState, educationAction] = useActionState(updateUserProfileAction, initialState);
+  const [resumeState, resumeAction] = useActionState(updateUserProfileAction, initialState);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isAvatarPending, startAvatarTransition] = useTransition();
@@ -577,6 +578,15 @@ export function UpdateProfileCard({
    useEffect(() => {
     setEducationRecords(profile.education || []);
   }, [profile.education]);
+
+  useEffect(() => {
+    if (resumeState.success) {
+      toast({ title: 'Resume Uploaded!' });
+      setSelectedFile(null);
+    } else if (resumeState.error) {
+      toast({ variant: 'destructive', title: 'Upload Failed', description: resumeState.error });
+    }
+  }, [resumeState, toast]);
 
   // Logic for skill suggestions
   useEffect(() => {
@@ -656,6 +666,15 @@ export function UpdateProfileCard({
   const handleResumeFileSelect = (file: File | null) => {
     if (file && (file.type.includes('pdf') || file.type.includes('document'))) {
         setSelectedFile(file);
+        // Automatically submit
+        if (session?.uid) {
+            const formData = new FormData();
+            formData.append('resumeFile', file);
+            formData.append('userId', session.uid);
+            startResumeTransition(() => {
+                resumeAction(formData);
+            });
+        }
     } else {
         setSelectedFile(null);
     }
@@ -1076,7 +1095,7 @@ const handleDeleteEducation = (id: string) => {
                 )}
 
                 {activeSection === 'resume' && (
-                  <form action={updateUserProfileAction}>
+                  <form action={resumeAction}>
                     <input type="hidden" name="userId" value={session?.uid} />
                     <section className="space-y-6">
                       <div>
@@ -1093,7 +1112,12 @@ const handleDeleteEducation = (id: string) => {
                           disabled={isResumePending}
                           name="resumeFile"
                         />
-                        {profile.hasResume && !selectedFile ? (
+                        {isResumePending ? (
+                            <Card className="relative flex flex-col items-center justify-center p-6 text-center h-48">
+                               <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
+                               <p className="mt-4 text-sm font-medium">Uploading and processing your resume...</p>
+                            </Card>
+                        ) : profile.hasResume && !selectedFile ? (
                           <Card className="relative flex flex-col items-center justify-center p-6 text-center">
                             <motion.button
                               type="button"
@@ -1152,23 +1176,13 @@ const handleDeleteEducation = (id: string) => {
                               </AlertDialog>
                             </div>
                           </Card>
-                        ) : selectedFile ? (
-                          <Card className="relative flex flex-col items-center justify-center p-6 text-center">
-                            <div className="flex justify-center">{getFileIcon(selectedFile.type)}</div>
-                            <p className="font-semibold mt-4 text-sm">{selectedFile.name}</p>
-                            <p className="text-xs text-muted-foreground">Type: {getSimplifiedFileType(selectedFile.type)} &bull; Size: {formatFileSize(selectedFile.size)}</p>
-                            <div className="flex gap-2 mt-6">
-                              <Button type="button" variant="secondary" size="sm" onClick={handleResumeButtonClick}><RefreshCw className="mr-2 h-4 w-4" />Change</Button>
-                              <Button type="button" variant="destructive" size="sm" onClick={() => setSelectedFile(null)}><X className="mr-2 h-4 w-4" />Remove</Button>
-                            </div>
-                          </Card>
                         ) : (
                           <div
                             className={cn("relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 transition-colors", isDragging && "border-dash-primary bg-dash-primary/10")}
-                            onDrop={handleDrop}
-                            onDragOver={handleResumeDragOver}
-                            onDragLeave={handleResumeDragLeave}
-                            onClick={handleResumeButtonClick}
+                            onDrop={isResumePending ? undefined : handleDrop}
+                            onDragOver={isResumePending ? undefined : handleResumeDragOver}
+                            onDragLeave={isResumePending ? undefined : handleResumeDragLeave}
+                            onClick={isResumePending ? undefined : handleResumeButtonClick}
                           >
                             <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
                             <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
@@ -1176,13 +1190,7 @@ const handleDeleteEducation = (id: string) => {
                           </div>
                         )}
                       </div>
-                      <div className="flex justify-end gap-2 pt-6 border-t mt-6">
-                        <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
-                        <Button type="submit" disabled={!selectedFile || isResumePending}>
-                          {isResumePending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                          Save Resume
-                        </Button>
-                      </div>
+                       {resumeState.error && <Alert variant="destructive"><AlertDescription>{resumeState.error}</AlertDescription></Alert>}
                     </section>
                   </form>
                 )}
@@ -1414,7 +1422,7 @@ const handleDeleteEducation = (id: string) => {
                             <Input id="socials.linkedin" name="socials.linkedin" defaultValue={profile.socials?.linkedin ?? ''} placeholder="https://linkedin.com/in/..." className="pl-9" />
                           </div>
                         </div>
-                        <div className="grid gap-2">
+                         <div className="grid gap-2">
                           <Label htmlFor="socials.naukri">Naukri.com</Label>
                           <div className="relative">
                             <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -1435,7 +1443,7 @@ const handleDeleteEducation = (id: string) => {
                             <Input id="socials.indeed" name="socials.indeed" defaultValue={profile.socials?.indeed ?? ''} placeholder="https://profile.indeed.com/..." className="pl-9" />
                           </div>
                         </div>
-                        <div className="grid gap-2 md:col-span-2">
+                          <div className="grid gap-2 md:col-span-2">
                           <Label htmlFor="portfolio">Portfolio</Label>
                           <div className="relative">
                             <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />

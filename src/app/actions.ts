@@ -16,7 +16,7 @@ import { streamText } from 'genkit';
 import type { CareerChatInput } from "@/ai/flows/career-chat-flow-types";
 import { generateAiInterview } from '@/ai/flows/generate-ai-interview-flow';
 import type { GenerateAiInterviewInput } from '@/ai/flows/generate-ai-interview-flow-types';
-import { regenerateQuestion, refineTone, addFollowUps, regenerateFollowUps, regenerateIntro, regenerateOutro } from '@/ai/flows/edit-ai-interview-flow';
+import { regenerateQuestion, refineTone, addFollowUps, regenerateFollowUps, regenerateIntro, regenerateOutro } from '@/aiflows/edit-ai-interview-flow';
 import type { RegenerateQuestionInput, RefineToneInput, AddFollowUpsInput, RegenerateFollowUpsInput, RegenerateIntroInput, RegenerateOutroInput } from '@/ai/flows/edit-ai-interview-flow-types';
 import { generateAiQuestions } from '@/ai/flows/generate-ai-questions-flow';
 import type { GenerateAiQuestionsInput, GenerateAiQuestionsOutput } from '@/ai/flows/generate-ai-questions-flow-types';
@@ -673,7 +673,7 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
         if (key === 'userId' || key === 'role' || key.startsWith('$ACTION')) continue;
 
         // Skip empty values unless it's a field we want to clear
-        if (value === '' && !['profileSummary', 'phone', 'address'].includes(key)) continue;
+        if (value === '' && !['profileSummary', 'phone', 'address', 'resumeFile'].includes(key)) continue;
 
         if (key.includes('.')) {
             // Handle nested objects like socials and address
@@ -690,6 +690,24 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
             }
         } else if (key === 'dob-day' || key === 'dob-month' || key === 'dob-year') {
             // Handled below
+        } else if (key === 'resumeFile') {
+            const resumeFile = value as File;
+            const MAX_RESUME_SIZE = 750 * 1024; // 750KB
+
+            if (resumeFile && resumeFile.size > 0) {
+                if (resumeFile.size > MAX_RESUME_SIZE) {
+                    return { error: `Resume file size should not exceed ${MAX_RESUME_SIZE / 1024}KB.` };
+                }
+                const resumeDataUri = await fileToDataURI(resumeFile);
+                await setDoc(doc(db, `users/${userId}/uploads/resume`), {
+                    data: resumeDataUri,
+                    name: resumeFile.name,
+                    size: resumeFile.size,
+                    type: resumeFile.type,
+                    updatedAt: serverTimestamp(),
+                });
+                dataToUpdate.hasResume = true;
+            }
         } else {
             dataToUpdate[key] = value;
         }
@@ -712,25 +730,6 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
             console.error('Could not parse education JSON:', e);
         }
     }
-
-    const resumeFile = formData.get('resumeFile') as File | null;
-    const MAX_RESUME_SIZE = 750 * 1024; // 750KB
-
-    if (resumeFile && resumeFile.size > 0) {
-        if (resumeFile.size > MAX_RESUME_SIZE) {
-            return { error: `Resume file size should not exceed ${MAX_RESUME_SIZE / 1024}KB.` };
-        }
-        const resumeDataUri = await fileToDataURI(resumeFile);
-        await setDoc(doc(db, `users/${userId}/uploads/resume`), {
-            data: resumeDataUri,
-            name: resumeFile.name,
-            size: resumeFile.size,
-            type: resumeFile.type,
-            updatedAt: serverTimestamp(),
-        });
-        dataToUpdate.hasResume = true;
-    }
-
 
     const dobDay = formData.get('dob-day');
     const dobMonth = formData.get('dob-month');
