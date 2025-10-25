@@ -11,13 +11,18 @@ import type { CompanySize, Socials, UserProfile, Resume } from '@/lib/types';
 import { MobileSearch } from '@/components/mobile-search';
 import { ProfileDisplayCard } from './_components/profile-display-card';
 import { UpdateProfileCard } from './_components/update-profile-card';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 export default function ProfilePage() {
   const { session, loading: sessionLoading, updateSession } = useSession();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
   
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const isEditing = searchParams.get('edit') === 'true';
+
   useEffect(() => {
     if (session?.uid) {
         const userDocRef = doc(db, 'users', session.uid);
@@ -98,6 +103,20 @@ export default function ProfilePage() {
     }
   }, [session, sessionLoading]);
   
+  const handleSetEditing = (editing: boolean) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (editing) {
+      params.set('edit', 'true');
+      if (!params.has('editTab')) {
+        params.set('editTab', 'profile-details');
+      }
+    } else {
+      params.delete('edit');
+      params.delete('editTab');
+    }
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+  
   const handleSave = (updatedProfile: Partial<UserProfile>) => {
     if (userProfile) {
         // When updating, if keySkills is a string, convert it back to an array
@@ -123,7 +142,7 @@ export default function ProfilePage() {
         
         updateSession(sessionUpdate);
     }
-    setIsEditing(false);
+    handleSetEditing(false);
   }
 
   const handleAvatarUpdate = (newUrl: string | null) => {
@@ -192,13 +211,13 @@ export default function ProfilePage() {
                     <UpdateProfileCard
                         profile={userProfile}
                         onSave={handleSave}
-                        onCancel={() => setIsEditing(false)}
+                        onCancel={() => handleSetEditing(false)}
                         onAvatarChange={handleAvatarUpdate}
                     />
                  ) : (
                     <ProfileDisplayCard
                         profile={userProfile}
-                        onEdit={() => setIsEditing(true)}
+                        onEdit={() => handleSetEditing(true)}
                     />
                  )}
             </div>

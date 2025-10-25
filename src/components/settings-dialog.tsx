@@ -876,21 +876,13 @@ const PlatformSettings = () => {
 }
 
 export function SettingsDialog({ open, onOpenChange, initialTab = 'Account' }: SettingsDialogProps) {
-    const [activeTab, setActiveTab] = useState(initialTab);
-    const { session } = useSession();
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
-
-    useEffect(() => {
-        if(open) {
-            const currentTab = searchParams.get('tab') || initialTab;
-            setActiveTab(currentTab);
-        }
-    }, [open, initialTab, searchParams]);
+    const activeTab = searchParams.get('tab') || initialTab;
+    const { session } = useSession();
 
     const handleTabChange = (tabName: string) => {
-        setActiveTab(tabName);
         const params = new URLSearchParams(searchParams.toString());
         params.set('tab', tabName);
         router.replace(`${pathname}?${params.toString()}`, { scroll: false });

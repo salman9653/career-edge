@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { skillsData, type Skill } from '@/lib/skills-data';
 import { Checkbox } from '@/components/ui/checkbox';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 const Twitter = (props: React.SVGProps<SVGSVGElement>) => (
     <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24" {...props}>
@@ -170,7 +171,17 @@ export function UpdateProfileCard({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resumeInputRef = useRef<HTMLInputElement>(null);
   const [isAvatarPending, startAvatarTransition] = useTransition();
-  const [activeSection, setActiveSection] = useState('profile-details');
+
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const activeSection = searchParams.get('editTab') || 'profile-details';
+
+  const setActiveSection = (section: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('editTab', section);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
   
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -386,7 +397,7 @@ export function UpdateProfileCard({
         if (mimeType.includes('openxmlformats')) return 'docx';
         return 'doc';
     }
-    if (mimeType.startsWith('image')) return mimeType.split('/')[1]?.toLowerCase() || 'image';
+    if (fileType.startsWith('image')) return mimeType.split('/')[1]?.toLowerCase() || 'image';
     return mimeType;
   }
 
@@ -528,23 +539,7 @@ export function UpdateProfileCard({
                                         </div>
                                         <div className="grid gap-2">
                                           <Label htmlFor="phone">Phone Number</Label>
-                                          <div className="flex items-center rounded-md border border-input focus-within:border-b-ring focus-within:border-b-2 transition-colors">
-                                            <Select defaultValue="+91">
-                                              <SelectTrigger className="w-24 border-0 rounded-r-none focus-visible:ring-0 focus-visible:ring-offset-0">
-                                                <SelectValue />
-                                              </SelectTrigger>
-                                              <SelectContent>
-                                                <SelectItem value="+91">+91 (IN)</SelectItem>
-                                              </SelectContent>
-                                            </Select>
-                                            <Input
-                                              id="phone"
-                                              name="phone"
-                                              defaultValue={profile.phone ?? ''}
-                                              type="tel"
-                                              className="border-0 rounded-l-none focus-visible:ring-0 focus-visible:ring-offset-0"
-                                            />
-                                          </div>
+                                          <Input id="phone" name="phone" defaultValue={profile.phone ?? ''} type="tel" />
                                         </div>
                                         <div className="grid gap-2">
                                             <Label htmlFor="address">City / Town</Label>
