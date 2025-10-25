@@ -1,5 +1,4 @@
 
-
 import type { LucideIcon } from 'lucide-react';
 
 export interface NavItem {
@@ -256,10 +255,16 @@ export interface Employment {
     id: string;
     designation: string;
     company: string;
+    employmentType: string;
     isCurrent: boolean;
     startDate: string;
     endDate: string | null;
-    responsibilities: string;
+    jobProfile: string;
+    ctc: {
+        amount: number;
+        currency: 'INR' | 'USD';
+    };
+    skillsUsed: string[];
 }
 
 export interface UserProfile {
