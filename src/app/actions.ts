@@ -666,72 +666,46 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
     return { error: 'User not authenticated.' };
   }
 
-  const role = formData.get('role') as string;
   const dataToUpdate: { [key: string]: any } = {};
 
-  const directFields = [
-    'name', 'phone', 'address', 'profileSummary',
-    'jobTitle', 'currentCompany', 'workStatus', 'experience', 'noticePeriod', 'currentSalary',
-    'gender', 'maritalStatus', 'portfolio'
-  ];
+  // Dynamically iterate over formData to build the update object
+  for (const [key, value] of formData.entries()) {
+    if (key === 'userId' || key === 'role' || key.startsWith('$ACTION')) continue;
 
-  directFields.forEach(field => {
-    if (formData.has(field)) {
-      dataToUpdate[field] = formData.get(field);
+    // Skip empty values unless it's a field we want to clear
+    if (value === '' && !['profileSummary', 'phone', 'address'].includes(key)) continue;
+
+    if (key.includes('.')) {
+        // Handle nested objects like socials and address
+        dataToUpdate[key] = value;
+    } else if (key === 'keySkills') {
+        dataToUpdate.keySkills = (value as string).split(',').map(s => s.trim()).filter(s => s);
+    } else if (key === 'languages' || key === 'employment') {
+        try {
+            dataToUpdate[key] = JSON.parse(value as string);
+        } catch (e) {
+            console.error(`Error parsing JSON for ${key}:`, e);
+        }
+    } else if (key === 'dob-day' || key === 'dob-month' || key === 'dob-year') {
+        // Handled below
+    } else {
+        dataToUpdate[key] = value;
     }
-  });
-  
-  // Handling nested socials object
-  const socialsFields = ['github', 'twitter', 'linkedin', 'naukri', 'glassdoor', 'indeed'];
-  socialsFields.forEach(field => {
-      const formKey = `socials.${field}`;
-      if (formData.has(formKey)) {
-          dataToUpdate[formKey] = formData.get(formKey);
-      }
-  });
+  }
 
   const dobDay = formData.get('dob-day');
   const dobMonth = formData.get('dob-month');
   const dobYear = formData.get('dob-year');
 
   if (dobDay && dobMonth && dobYear) {
-    dataToUpdate['dob'] = new Date(`${dobYear}-${dobMonth}-${day}`).toISOString();
-  }
-  
-  const permanentAddress = {
-      address: formData.get('permanentAddress.address'),
-      city: formData.get('permanentAddress.city'),
-      state: formData.get('permanentAddress.state'),
-      country: formData.get('permanentAddress.country'),
-      pincode: formData.get('permanentAddress.pincode'),
-  };
-  dataToUpdate['permanentAddress'] = permanentAddress;
-
-  if (formData.has('keySkills')) {
-    const keySkills = formData.get('keySkills') as string;
-    dataToUpdate.keySkills = keySkills ? keySkills.split(',').map(s => s.trim()).filter(s => s) : [];
+    dataToUpdate['dob'] = new Date(`${dobYear}-${dobMonth}-${dobDay}`).toISOString();
   }
 
-  if (formData.has('languages')) {
-    try {
-      const languagesString = formData.get('languages') as string;
-      dataToUpdate.languages = languagesString ? JSON.parse(languagesString) : [];
-    } catch (e) {
-      console.error("Error parsing languages JSON:", e);
-      // handle error, maybe return an error message
-    }
+  if (Object.keys(dataToUpdate).length === 0 && !formData.has('resumeFile')) {
+      return { success: 'No changes to save.' };
   }
 
-   if (formData.has('employment')) {
-    try {
-      const employmentString = formData.get('employment') as string;
-      dataToUpdate.employment = employmentString ? JSON.parse(employmentString) : [];
-    } catch (e) {
-      console.error("Error parsing employment JSON:", e);
-    }
-  }
-
-  const resumeFile = formData.get('resumeFile') as File;
+  const resumeFile = formData.get('resumeFile') as File | null;
   const MAX_RESUME_SIZE = 750 * 1024; // 750KB
 
   if (resumeFile && resumeFile.size > 0) {
@@ -751,7 +725,9 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
 
   try {
     const userRef = doc(db, 'users', userId);
-    await updateDoc(userRef, dataToUpdate);
+    if(Object.keys(dataToUpdate).length > 0) {
+        await updateDoc(userRef, dataToUpdate);
+    }
     revalidatePath('/dashboard/profile');
     return { success: 'Profile updated successfully.' };
   } catch (error: any) {

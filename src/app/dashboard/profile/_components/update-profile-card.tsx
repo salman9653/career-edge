@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useActionState, useEffect, useRef, useState, useTransition, type DragEvent } from 'react';
 import { useFormStatus } from 'react-dom';
@@ -460,7 +461,7 @@ export function UpdateProfileCard({
 
   return (
     <div className="flex gap-6 h-full w-full">
-        <Card className="p-4 w-[250px] self-start">
+        <Card className="p-4 w-[250px] self-start sticky top-20">
             <nav className="grid gap-1 text-sm">
                 {navItems.map(item => (
                     <Button 
@@ -476,9 +477,9 @@ export function UpdateProfileCard({
         </Card>
         
         <form action={formAction} ref={formRef} className="flex-1 flex flex-col min-h-0">
-            <Card className="h-full flex flex-col">
-                <div className="flex-1 overflow-hidden">
-                    <ScrollArea className="h-full">
+            <div className="flex-1 overflow-hidden">
+                <ScrollArea className="h-full">
+                    <Card className="h-full">
                         <CardContent className="p-6">
                             <input type="hidden" name="userId" value={session?.uid} />
                             <input type="hidden" name="role" value={profile.role} />
@@ -998,14 +999,14 @@ export function UpdateProfileCard({
                             )}
 
                             {state?.error && <Alert variant="destructive" className="mt-2"><AlertDescription>{state.error}</AlertDescription></Alert>}
+                             <div className="flex justify-end gap-2 pt-6 border-t mt-6">
+                                <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
+                                <SubmitButton />
+                            </div>
                         </CardContent>
-                    </ScrollArea>
-                </div>
-                    <div className="flex justify-end gap-2 p-6 border-t">
-                            <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
-                            <SubmitButton />
-                    </div>
-            </Card>
+                    </Card>
+                </ScrollArea>
+            </div>
         </form>
     </div>
   );

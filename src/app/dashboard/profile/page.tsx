@@ -119,30 +119,16 @@ export default function ProfilePage() {
   
   const handleSave = (updatedProfile: Partial<UserProfile>) => {
     if (userProfile) {
-        // When updating, if keySkills is a string, convert it back to an array
-        const processedProfile = { ...updatedProfile };
-        if (typeof processedProfile.keySkills === 'string') {
-            processedProfile.keySkills = processedProfile.keySkills.split(',').filter(s => s);
-        }
-
-        const newProfile = { ...userProfile, ...processedProfile };
+        const newProfile = { ...userProfile, ...updatedProfile };
         setUserProfile(newProfile);
         
-        const sessionUpdate: Partial<UserProfile> = { ...processedProfile };
+        const sessionUpdate: Partial<UserSession> = { ...updatedProfile };
         if (updatedProfile.name) {
             sessionUpdate.displayName = updatedProfile.name;
         }
-        
-        // Consolidate social links for session update
-        const updatedSocials = {
-            ...userProfile.socials,
-            ...updatedProfile.socials,
-        };
-        sessionUpdate.socials = updatedSocials;
-        
+
         updateSession(sessionUpdate);
     }
-    handleSetEditing(false);
   }
 
   const handleAvatarUpdate = (newUrl: string | null) => {
