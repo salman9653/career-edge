@@ -433,16 +433,16 @@ export function UpdateProfileCard({
                                         </div>
                                         <div className="grid gap-2">
                                             <Label htmlFor="phone">Phone Number</Label>
-                                            <div className="flex focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 rounded-md">
+                                            <div className="flex rounded-md border border-input focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
                                                 <Select defaultValue="+91">
-                                                    <SelectTrigger className="w-24 rounded-r-none border-r-0 focus-visible:ring-0 focus-visible:ring-offset-0">
+                                                    <SelectTrigger className="w-24 rounded-r-none border-r-0 border-y-0 border-l-0">
                                                         <SelectValue />
                                                     </SelectTrigger>
                                                     <SelectContent>
                                                         <SelectItem value="+91">+91 (IN)</SelectItem>
                                                     </SelectContent>
                                                 </Select>
-                                                <Input id="phone" name="phone" defaultValue={profile.phone ?? ''} type="tel" className="rounded-l-none" />
+                                                <Input id="phone" name="phone" defaultValue={profile.phone ?? ''} type="tel" className="rounded-l-none border-0" />
                                             </div>
                                         </div>
                                         <div className="grid gap-2">
@@ -750,18 +750,18 @@ export function UpdateProfileCard({
                                     </Select>
                                 </div>
                                 <div className="grid gap-2">
-                                     <Label>Date of Birth</Label>
-                                      <div className="flex rounded-md border border-input focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
+                                    <Label>Date of Birth</Label>
+                                    <div className="flex rounded-md border border-input focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
                                         <Select name="dob-day" defaultValue={dob ? String(dob.getDate()) : undefined}>
-                                            <SelectTrigger className="w-24 border-0 rounded-r-none focus-visible:ring-0 focus-visible:ring-offset-0"><SelectValue placeholder="Day" /></SelectTrigger>
+                                            <SelectTrigger className="w-24 border-0 rounded-r-none"><SelectValue placeholder="Day" /></SelectTrigger>
                                             <SelectContent>{Array.from({ length: 31 }, (_, i) => i + 1).map(day => <SelectItem key={day} value={String(day)}>{day}</SelectItem>)}</SelectContent>
                                         </Select>
                                         <Select name="dob-month" defaultValue={dob ? String(dob.getMonth() + 1) : undefined}>
-                                            <SelectTrigger className="flex-1 border-y-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0"><SelectValue placeholder="Month" /></SelectTrigger>
+                                            <SelectTrigger className="flex-1 border-y-0 rounded-none"><SelectValue placeholder="Month" /></SelectTrigger>
                                             <SelectContent>{Array.from({ length: 12 }, (_, i) => i + 1).map(month => <SelectItem key={month} value={String(month)}>{format(new Date(2000, month - 1), 'MMMM')}</SelectItem>)}</SelectContent>
                                         </Select>
                                         <Select name="dob-year" defaultValue={dob ? String(dob.getFullYear()) : undefined}>
-                                            <SelectTrigger className="w-32 border-l-0 rounded-l-none focus-visible:ring-0 focus-visible:ring-offset-0"><SelectValue placeholder="Year" /></SelectTrigger>
+                                            <SelectTrigger className="w-32 border-0 rounded-l-none"><SelectValue placeholder="Year" /></SelectTrigger>
                                             <SelectContent>{Array.from({ length: 70 }, (_, i) => new Date().getFullYear() - 18 - i).map(year => <SelectItem key={year} value={String(year)}>{year}</SelectItem>)}</SelectContent>
                                         </Select>
                                     </div>
