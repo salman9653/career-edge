@@ -671,7 +671,7 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
   const fields = [
     'name', 'phone', 'address', 'profileSummary',
     'jobTitle', 'currentCompany', 'workStatus', 'experience', 'noticePeriod', 'currentSalary',
-    'gender', 'maritalStatus', 'dob',
+    'gender', 'maritalStatus',
     'linkedin', 'naukri'
   ];
 
@@ -680,6 +680,14 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
       dataToUpdate[field] = formData.get(field);
     }
   });
+
+  const dobDay = formData.get('dob-day') as string;
+  const dobMonth = formData.get('dob-month') as string;
+  const dobYear = formData.get('dob-year') as string;
+  if (dobDay && dobMonth && dobYear) {
+    const dob = new Date(parseInt(dobYear), parseInt(dobMonth) - 1, parseInt(dobDay));
+    dataToUpdate['dob'] = dob.toISOString();
+  }
 
   const permanentAddress = {
       address: formData.get('permanentAddress.address'),

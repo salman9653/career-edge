@@ -1,3 +1,4 @@
+
 'use client';
 import { useActionState, useEffect, useRef, useState, useTransition, type DragEvent } from 'react';
 import { useFormStatus } from 'react-dom';
@@ -98,11 +99,23 @@ export function UpdateProfileCard({
   const [suggestedSkills, setSuggestedSkills] = useState<Skill[]>([]);
   const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
 
-  const [dob, setDob] = useState<Date | undefined>(profile.dob ? new Date(profile.dob) : undefined);
+  const [dobDay, setDobDay] = useState<string>('');
+  const [dobMonth, setDobMonth] = useState<string>('');
+  const [dobYear, setDobYear] = useState<string>('');
+  
   const [languages, setLanguages] = useState<LanguageProficiency[]>(profile.languages || []);
   
   const isPending = isAvatarPending || isResumePending;
   
+  useEffect(() => {
+    if (profile.dob) {
+      const date = new Date(profile.dob);
+      setDobDay(String(date.getDate()));
+      setDobMonth(String(date.getMonth() + 1));
+      setDobYear(String(date.getFullYear()));
+    }
+  }, [profile.dob]);
+
   useEffect(() => {
     if (state.success) {
       toast({
@@ -118,13 +131,20 @@ export function UpdateProfileCard({
                 if (!newProfile[parent]) newProfile[parent] = {};
                 // @ts-ignore
                 newProfile[parent][child] = value;
-            } else if (key !== 'keySkills' && key !== 'languages') {
+            } else if (!['keySkills', 'languages', 'dob-day', 'dob-month', 'dob-year'].includes(key)) {
                 // @ts-ignore
                 newProfile[key] = value;
             }
         }
       newProfile.keySkills = skills;
       newProfile.languages = languages;
+
+      const day = formData.get('dob-day');
+      const month = formData.get('dob-month');
+      const year = formData.get('dob-year');
+      if (day && month && year) {
+        newProfile.dob = new Date(`${year}-${month}-${day}`).toISOString();
+      }
 
       onSave(newProfile);
     }
@@ -290,7 +310,7 @@ export function UpdateProfileCard({
         if (mimeType.includes('openxmlformats')) return 'docx';
         return 'doc';
     }
-    if (mimeType.startsWith('image')) return mimeType.split('/')[1]?.toLowerCase() || 'image';
+    if (fileType.startsWith('image')) return mimeType.split('/')[1]?.toLowerCase() || 'image';
     return mimeType;
   }
 
@@ -665,32 +685,33 @@ export function UpdateProfileCard({
                                     </Select>
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="dob">Date of Birth</Label>
-                                    <Popover>
-                                        <PopoverTrigger asChild>
-                                            <Button
-                                            variant={"outline"}
-                                            className={cn(
-                                                "justify-start text-left font-normal",
-                                                !dob && "text-muted-foreground"
-                                            )}
-                                            >
-                                            <CalendarIcon className="mr-2 h-4 w-4" />
-                                            {dob ? format(dob, "PPP") : <span>Pick a date</span>}
-                                            </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0">
-                                            <Calendar
-                                                mode="single"
-                                                // captionLayout="dropdown-nav"
-                                                selected={dob}
-                                                onSelect={setDob}
-                                                defaultMonth={dob || new Date()}
-                                                initialFocus
-                                            />
-                                        </PopoverContent>
-                                    </Popover>
-                                    <Input id="dob" name="dob" type="hidden" defaultValue={dob?.toISOString() ?? ''} />
+                                    <Label>Date of Birth</Label>
+                                     <div className="flex gap-2">
+                                        <Select name="dob-day" value={dobDay} onValueChange={setDobDay}>
+                                            <SelectTrigger><SelectValue placeholder="Day" /></SelectTrigger>
+                                            <SelectContent>
+                                                {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
+                                                    <SelectItem key={day} value={String(day)}>{day}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <Select name="dob-month" value={dobMonth} onValueChange={setDobMonth}>
+                                            <SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger>
+                                            <SelectContent>
+                                                {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
+                                                    <SelectItem key={month} value={String(month)}>{format(new Date(0, month - 1), 'MMMM')}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <Select name="dob-year" value={dobYear} onValueChange={setDobYear}>
+                                            <SelectTrigger><SelectValue placeholder="Year" /></SelectTrigger>
+                                            <SelectContent>
+                                                {Array.from({ length: 70 }, (_, i) => new Date().getFullYear() - 18 - i).map(year => (
+                                                    <SelectItem key={year} value={String(year)}>{year}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                 </div>
                                 </div>
                                 <div className="space-y-2">
@@ -711,7 +732,7 @@ export function UpdateProfileCard({
                                 <div className="space-y-4 pt-4">
                                   <Label className="font-semibold text-lg">Language Proficiency</Label>
                                   {languages.map((lang, index) => (
-                                    <div key={index} className="p-4 border rounded-lg bg-muted/50 space-y-4">
+                                    <div key={index} className="p-4 border rounded-lg space-y-4">
                                       <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                           <Label>Language</Label>
