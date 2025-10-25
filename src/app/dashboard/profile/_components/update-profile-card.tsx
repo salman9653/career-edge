@@ -37,7 +37,7 @@ import {
 import { skillsData, type Skill } from '@/lib/skills-data';
 import { Checkbox } from '@/components/ui/checkbox';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Switch } from '../..//../ui/switch';
+import { Switch } from '@/components/ui/switch';
 
 const Twitter = (props: React.SVGProps<SVGSVGElement>) => (
     <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24" {...props}>
@@ -80,7 +80,7 @@ const EmploymentForm = ({ employment, onSave, onCancel }: { employment: Employme
     const [designation, setDesignation] = useState(employment?.designation || '');
     const [company, setCompany] = useState(employment?.company || '');
     const [employmentType, setEmploymentType] = useState(employment?.employmentType || '');
-    const [ctcAmount, setCtcAmount] = useState(employment?.ctc?.amount || '');
+    const [ctcAmount, setCtcAmount] = useState(employment?.ctc?.amount?.toString() || '');
     const [ctcCurrency, setCtcCurrency] = useState<'INR' | 'USD'>(employment?.ctc?.currency || 'INR');
     const [skillsUsed, setSkillsUsed] = useState(employment?.skillsUsed?.join(', ') || '');
     const [jobProfile, setJobProfile] = useState(employment?.jobProfile || '');
@@ -252,8 +252,7 @@ export function UpdateProfileCard({
   const [personalDetailsState, personalDetailsAction] = useActionState(updateUserProfileAction, initialState);
   const [keySkillsState, keySkillsAction] = useActionState(updateUserProfileAction, initialState);
   const [employmentState, employmentAction] = useActionState(updateUserProfileAction, initialState);
-  const [isEmploymentPending, startEmploymentTransition] = useTransition();
-
+  
   useFormFeedback(profileDetailsState, 'Profile Details');
   useFormFeedback(careerProfileState, 'Career Profile');
   useFormFeedback(onlineProfilesState, 'Online Profiles');
@@ -543,7 +542,6 @@ export function UpdateProfileCard({
   };
 
   return (
-    <>
       <div className="flex gap-6 h-full w-full">
         <Card className="p-4 w-[250px] self-start sticky top-20">
           <nav className="grid gap-1 text-sm">
