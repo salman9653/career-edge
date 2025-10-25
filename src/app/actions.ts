@@ -16,7 +16,7 @@ import { streamText } from 'genkit';
 import type { CareerChatInput } from "@/ai/flows/career-chat-flow-types";
 import { generateAiInterview } from '@/ai/flows/generate-ai-interview-flow';
 import type { GenerateAiInterviewInput } from '@/ai/flows/generate-ai-interview-flow-types';
-import { regenerateQuestion, refineTone, addFollowUps, regenerateFollowUps, regenerateIntro, regenerateOutro } from '@/aiflows/edit-ai-interview-flow';
+import { regenerateQuestion, refineTone, addFollowUps, regenerateFollowUps, regenerateIntro, regenerateOutro } from '@/ai/flows/edit-ai-interview-flow';
 import type { RegenerateQuestionInput, RefineToneInput, AddFollowUpsInput, RegenerateFollowUpsInput, RegenerateIntroInput, RegenerateOutroInput } from '@/ai/flows/edit-ai-interview-flow-types';
 import { generateAiQuestions } from '@/ai/flows/generate-ai-questions-flow';
 import type { GenerateAiQuestionsInput, GenerateAiQuestionsOutput } from '@/ai/flows/generate-ai-questions-flow-types';
