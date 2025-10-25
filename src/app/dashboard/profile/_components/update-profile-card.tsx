@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useActionState, useEffect, useRef, useState, useTransition, type DragEvent } from 'react';
 import { useFormStatus } from 'react-dom';
@@ -498,13 +499,15 @@ export function UpdateProfileCard({
   const [personalDetailsState, personalDetailsAction] = useActionState(updateUserProfileAction, initialState);
   const [keySkillsState, keySkillsAction] = useActionState(updateUserProfileAction, initialState);
   const [employmentState, employmentAction] = useActionState(updateUserProfileAction, initialState);
+  const [educationState, educationAction] = useActionState(updateUserProfileAction, initialState);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isAvatarPending, startAvatarTransition] = useTransition();
+  const [isEmploymentPending, startEmploymentTransition] = useTransition();
+  const [isDeleteEmploymentPending, startDeleteEmploymentTransition] = useTransition();
 
-  const [employmentIsPending, startEmploymentTransition] = useTransition();
-  const [educationIsPending, startEducationTransition] = useTransition();
-
+  const [isEducationPending, startEducationTransition] = useTransition();
+  const [isDeleteEducationPending, startDeleteEducationTransition] = useTransition();
 
   const router = useRouter();
   const pathname = usePathname();
@@ -535,26 +538,40 @@ export function UpdateProfileCard({
   const [editingEmployment, setEditingEmployment] = useState<Employment | null>(null);
   const [deleteEmploymentId, setDeleteEmploymentId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isEmploymentPending, startDeleteTransition] = useTransition();
 
   const [educationRecords, setEducationRecords] = useState<Education[]>(profile.education || []);
   const [isAddingEducation, setIsAddingEducation] = useState(false);
   const [editingEducation, setEditingEducation] = useState<Education | null>(null);
+  const [deleteEducationId, setDeleteEducationId] = useState<string | null>(null);
+  const [isEducationDeleteDialogOpen, setIsEducationDeleteDialogOpen] = useState(false);
   
+  useEffect(() => {
+    if (employmentState.success) {
+        toast({ title: 'Success', description: 'Employment history updated.' });
+        setIsAddingEmployment(false);
+        setEditingEmployment(null);
+    } else if (employmentState.error) {
+        toast({ variant: 'destructive', title: 'Error', description: employmentState.error });
+    }
+  }, [employmentState, toast]);
+  
+  useEffect(() => {
+    if (educationState.success) {
+        toast({ title: 'Success', description: 'Education history updated.' });
+        setIsAddingEducation(false);
+        setEditingEducation(null);
+    } else if (educationState.error) {
+        toast({ variant: 'destructive', title: 'Error', description: educationState.error });
+    }
+}, [educationState, toast]);
+
   useEffect(() => {
     setEmployments(profile.employment || []);
   }, [profile.employment]);
 
-  useEffect(() => {
-      if (employmentState.success) {
-          toast({ title: 'Success', description: 'Employment history updated.' });
-          setIsAddingEmployment(false);
-          setEditingEmployment(null);
-      } else if (employmentState.error) {
-          toast({ variant: 'destructive', title: 'Error', description: employmentState.error });
-      }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [employmentState]);
+   useEffect(() => {
+    setEducationRecords(profile.education || []);
+  }, [profile.education]);
 
   // Logic for skill suggestions
   useEffect(() => {
@@ -784,7 +801,7 @@ export function UpdateProfileCard({
   };
 
   const handleDeleteEmployment = (id: string) => {
-      startDeleteTransition(() => {
+      startDeleteEmploymentTransition(() => {
           const newEmployments = employments.filter(emp => emp.id !== id);
           const formData = new FormData();
           formData.append('userId', session!.uid);
@@ -804,6 +821,45 @@ export function UpdateProfileCard({
     }
     setIsDeleteDialogOpen(false);
     setDeleteEmploymentId(null);
+  };
+
+  const handleSaveEducation = (education: Education) => {
+    startEducationTransition(() => {
+        const newEducationRecords = [...educationRecords];
+        const index = newEducationRecords.findIndex(e => e.id === education.id);
+        if (index > -1) {
+            newEducationRecords[index] = education;
+        } else {
+            newEducationRecords.push(education);
+        }
+        const formData = new FormData();
+        formData.append('userId', session!.uid);
+        formData.append('education', JSON.stringify(newEducationRecords));
+        educationAction(formData);
+    });
+};
+
+const handleDeleteEducation = (id: string) => {
+    startDeleteEducationTransition(() => {
+        const newEducationRecords = educationRecords.filter(edu => edu.id !== id);
+        const formData = new FormData();
+        formData.append('userId', session!.uid);
+        formData.append('education', JSON.stringify(newEducationRecords));
+        educationAction(formData);
+    });
+};
+
+  const openEducationDeleteDialog = (id: string) => {
+      setDeleteEducationId(id);
+      setIsEducationDeleteDialogOpen(true);
+  };
+  
+  const confirmEducationDelete = () => {
+    if (deleteEducationId) {
+      handleDeleteEducation(deleteEducationId);
+    }
+    setIsEducationDeleteDialogOpen(false);
+    setDeleteEducationId(null);
   };
 
   const calculateDuration = (startDate: string, endDate: string | null, isCurrent: boolean) => {
@@ -842,8 +898,29 @@ export function UpdateProfileCard({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setDeleteEmploymentId(null)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} disabled={isEmploymentPending} className="bg-destructive hover:bg-destructive/90">
-              {isEmploymentPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Delete'}
+            <AlertDialogAction onClick={confirmDelete} disabled={isDeleteEmploymentPending} className="bg-destructive hover:bg-destructive/90">
+              {isDeleteEmploymentPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog open={isEducationDeleteDialogOpen} onOpenChange={setIsEducationDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+             <div className="flex justify-center">
+                <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center mb-2">
+                    <AlertTriangle className="h-6 w-6 text-destructive"/>
+                </div>
+            </div>
+            <AlertDialogTitle className="text-center">Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              This will permanently delete this education record.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteEducationId(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmEducationDelete} disabled={isDeleteEducationPending} className="bg-destructive hover:bg-destructive/90">
+              {isDeleteEducationPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1246,7 +1323,7 @@ export function UpdateProfileCard({
                         <>
                           {educationRecords.map(edu => (
                             editingEducation?.id === edu.id ? (
-                              <EducationForm key={edu.id} education={editingEducation} onSave={() => {}} onCancel={() => setEditingEducation(null)} />
+                              <EducationForm key={edu.id} education={editingEducation} onSave={handleSaveEducation} onCancel={() => setEditingEducation(null)} />
                             ) : (
                               <Card key={edu.id} className="p-4">
                                 {/* Display logic for education record */}
@@ -1257,13 +1334,13 @@ export function UpdateProfileCard({
                                   </div>
                                   <div className="flex gap-2">
                                     <Button variant="ghost" size="icon" onClick={() => setEditingEducation(edu)}><Edit className="h-4 w-4" /></Button>
-                                    <Button variant="ghost" size="icon" onClick={() => {}}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                    <Button variant="ghost" size="icon" onClick={() => openEducationDeleteDialog(edu.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                                   </div>
                                 </div>
                               </Card>
                             )
                           ))}
-                          {isAddingEducation && <EducationForm education={null} onSave={() => {}} onCancel={() => setIsAddingEducation(false)} />}
+                          {isAddingEducation && <EducationForm education={null} onSave={handleSaveEducation} onCancel={() => setIsAddingEducation(false)} />}
                           {!isAddingEducation && !editingEducation && educationRecords.length > 0 && (
                             <Button type="button" variant="outline" onClick={() => setIsAddingEducation(true)}>
                               <Plus className="mr-2 h-4 w-4" />

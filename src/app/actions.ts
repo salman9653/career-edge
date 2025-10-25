@@ -678,7 +678,7 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
         if (key.includes('.')) {
             // Handle nested objects like socials and address
             dataToUpdate[key] = value;
-        } else if (key === 'keySkills' || key === 'employment' || key === 'languages') {
+        } else if (key === 'keySkills' || key === 'employment' || key === 'education' || key === 'languages') {
             try {
                 const parsedValue = JSON.parse(value as string);
                 if (Array.isArray(parsedValue)) {
@@ -692,6 +692,24 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
             // Handled below
         } else {
             dataToUpdate[key] = value;
+        }
+    }
+    
+    const employmentValue = formData.get('employment');
+    if (typeof employmentValue === 'string') {
+        try {
+            dataToUpdate['employment'] = JSON.parse(employmentValue);
+        } catch (e) {
+            console.error('Could not parse employment JSON:', e);
+        }
+    }
+    
+    const educationValue = formData.get('education');
+    if (typeof educationValue === 'string') {
+        try {
+            dataToUpdate['education'] = JSON.parse(educationValue);
+        } catch (e) {
+            console.error('Could not parse education JSON:', e);
         }
     }
 
