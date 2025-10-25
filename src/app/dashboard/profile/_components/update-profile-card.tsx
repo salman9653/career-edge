@@ -682,9 +682,7 @@ export function UpdateProfileCard({
                                         <PopoverContent className="w-auto p-0">
                                             <Calendar
                                                 mode="single"
-                                                captionLayout="dropdown-nav"
-                                                fromYear={1950}
-                                                toYear={new Date().getFullYear() - 10}
+                                                captionLayout="dropdown"
                                                 selected={dob}
                                                 onSelect={setDob}
                                                 defaultMonth={dob || new Date()}
