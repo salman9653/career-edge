@@ -1,5 +1,4 @@
 
-
 'use client';
 import { useActionState, useEffect, useRef, useState, useTransition, type DragEvent } from 'react';
 import { useFormStatus } from 'react-dom';
@@ -64,7 +63,7 @@ const getInitials = (name: string) => {
     if (!name) return '';
     const names = name.split(' ');
     if (names.length > 1) {
-        return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+        return `${'names[0][0]'}${names[names.length - 1][0]}`.toUpperCase();
     }
     return name.substring(0, 2).toUpperCase();
 }
@@ -502,7 +501,9 @@ export function UpdateProfileCard({
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isAvatarPending, startAvatarTransition] = useTransition();
+
   const [employmentIsPending, startEmploymentTransition] = useTransition();
+  const [educationIsPending, startEducationTransition] = useTransition();
 
 
   const router = useRouter();
@@ -534,20 +535,25 @@ export function UpdateProfileCard({
   const [editingEmployment, setEditingEmployment] = useState<Employment | null>(null);
   const [deleteEmploymentId, setDeleteEmploymentId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+  const [educationRecords, setEducationRecords] = useState<Education[]>(profile.education || []);
+  const [isAddingEducation, setIsAddingEducation] = useState(false);
+  const [editingEducation, setEditingEducation] = useState<Education | null>(null);
   
   useEffect(() => {
     setEmployments(profile.employment || []);
   }, [profile.employment]);
-  
+
   useEffect(() => {
-    if (employmentState.success) {
-      toast({ title: 'Success', description: 'Employment history updated.' });
-      setIsAddingEmployment(false);
-      setEditingEmployment(null);
-    } else if (employmentState.error) {
-        toast({ variant: 'destructive', title: 'Error', description: employmentState.error });
-    }
-  }, [employmentState, toast]);
+      if (employmentState.success) {
+          toast({ title: 'Success', description: 'Employment history updated.' });
+          setIsAddingEmployment(false);
+          setEditingEmployment(null);
+      } else if (employmentState.error) {
+          toast({ variant: 'destructive', title: 'Error', description: employmentState.error });
+      }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [employmentState]);
 
   // Logic for skill suggestions
   useEffect(() => {
@@ -1225,15 +1231,52 @@ export function UpdateProfileCard({
 
                 {activeSection === 'education' && (
                   <section className="space-y-6">
-                     <div>
-                        <h3 className="text-lg font-semibold">Education</h3>
-                        <p className="text-sm text-muted-foreground">Details like course, university, and more, help recruiters identify your educational background.</p>
-                      </div>
-                      <div className="text-center py-12 border-2 border-dashed rounded-lg">
-                            <FolderKanban className="mx-auto h-12 w-12 text-muted-foreground" />
-                            <h3 className="mt-4 text-lg font-semibold">Under Construction</h3>
-                            <p className="text-sm text-muted-foreground">The form for the "Education" section will be here.</p>
+                    <div>
+                      <h3 className="text-lg font-semibold">Education</h3>
+                      <p className="text-sm text-muted-foreground">Details like course, university, and more, help recruiters identify your educational background.</p>
+                    </div>
+                     <div className="space-y-4">
+                       {educationRecords.length === 0 && !isAddingEducation && !editingEducation ? (
+                        <div className="text-center py-12 border-2 border-dashed rounded-lg flex flex-col items-center justify-center">
+                          <Briefcase className="mx-auto h-12 w-12 text-muted-foreground" />
+                          <h3 className="mt-4 text-lg font-semibold">No Education Yet</h3>
+                          <p className="mt-1 text-sm text-muted-foreground">Add your educational qualifications.</p>
+                          <Button className="mt-6" variant="secondary" type="button" onClick={() => setIsAddingEducation(true)}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Add Education
+                          </Button>
                         </div>
+                      ) : (
+                        <>
+                          {educationRecords.map(edu => (
+                            editingEducation?.id === edu.id ? (
+                              <EducationForm key={edu.id} education={editingEducation} onSave={() => {}} onCancel={() => setEditingEducation(null)} />
+                            ) : (
+                              <Card key={edu.id} className="p-4">
+                                {/* Display logic for education record */}
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <p className="font-semibold">{edu.level}</p>
+                                    <p className="text-sm text-muted-foreground">{edu.university || edu.board}</p>
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <Button variant="ghost" size="icon" onClick={() => setEditingEducation(edu)}><Edit className="h-4 w-4" /></Button>
+                                    <Button variant="ghost" size="icon" onClick={() => {}}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                  </div>
+                                </div>
+                              </Card>
+                            )
+                          ))}
+                          {isAddingEducation && <EducationForm education={null} onSave={() => {}} onCancel={() => setIsAddingEducation(false)} />}
+                          {!isAddingEducation && !editingEducation && educationRecords.length > 0 && (
+                            <Button type="button" variant="outline" onClick={() => setIsAddingEducation(true)}>
+                              <Plus className="mr-2 h-4 w-4" />
+                              Add Another Education
+                            </Button>
+                          )}
+                        </>
+                       )}
+                    </div>
                   </section>
                 )}
 
