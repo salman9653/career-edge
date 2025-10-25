@@ -159,7 +159,7 @@ const EmploymentForm = ({ employment, onSave, onCancel }: { employment: Employme
     const [endDate, setEndDate] = useState<Date | undefined>(employment?.endDate ? new Date(employment.endDate) : undefined);
     const [isPending, startTransition] = useTransition();
 
-    const JOB_PROFILE_MAX_LENGTH = 1000;
+    const JOB_PROFILE_MAX_LENGTH = 4000;
 
     const handleSave = () => {
         if (!startDate) return;
@@ -214,7 +214,7 @@ const EmploymentForm = ({ employment, onSave, onCancel }: { employment: Employme
                         <Label htmlFor="ctcAmount">CTC (LPA)</Label>
                         <div className="flex items-center border border-input rounded-md focus-within:ring-1 focus-within:ring-ring">
                            <Select value={ctcCurrency} onValueChange={(value: 'INR' | 'USD') => setCtcCurrency(value)}>
-                             <SelectTrigger className="w-[100px] border-0 rounded-r-none focus:ring-0">
+                             <SelectTrigger className="w-[120px] border-0 rounded-r-none focus:ring-0">
                                <SelectValue />
                              </SelectTrigger>
                              <SelectContent>
@@ -651,275 +651,274 @@ export function UpdateProfileCard({
   
 
   return (
-      <>
-        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-            <AlertDialogContent>
-            <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                This will permanently delete this employment record.
-                </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-                <AlertDialogCancel onClick={() => setDeleteEmploymentId(null)}>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={confirmDelete} disabled={employmentIsPending} className="bg-destructive hover:bg-destructive/90">
-                {employmentIsPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Delete'}
-                </AlertDialogAction>
-            </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
+    <>
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this employment record.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteEmploymentId(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} disabled={employmentIsPending} className="bg-destructive hover:bg-destructive/90">
+              {employmentIsPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <div className="flex gap-6 h-full w-full">
+        <Card className="p-4 w-[250px] self-start sticky top-20">
+          <nav className="grid gap-1 text-sm">
+            {navItems.map((item) => (
+              <Button
+                key={item.id}
+                variant={activeSection === item.id ? 'default' : 'ghost'}
+                className="justify-start"
+                onClick={() => setActiveSection(item.id)}
+              >
+                {item.label}
+              </Button>
+            ))}
+          </nav>
+        </Card>
 
-       <div className="flex gap-6 h-full w-full">
-            <Card className="p-4 w-[250px] self-start sticky top-20">
-            <nav className="grid gap-1 text-sm">
-                {navItems.map((item) => (
-                <Button
-                    key={item.id}
-                    variant={activeSection === item.id ? 'default' : 'ghost'}
-                    className="justify-start"
-                    onClick={() => setActiveSection(item.id)}
-                >
-                    {item.label}
-                </Button>
-                ))}
-            </nav>
-            </Card>
-
-            <div className="flex-1 flex flex-col min-h-0">
-            <ScrollArea className="h-full pr-4 custom-scrollbar">
-                <Card className="h-full">
-                <CardContent className="p-6">
-                    {activeSection === 'profile-details' && (
-                    <form action={profileDetailsAction}>
-                        <input type="hidden" name="userId" value={session?.uid} />
-                        <section className="space-y-6">
-                        <div>
-                            <h3 className="text-lg font-semibold">Profile Details</h3>
-                            <p className="text-sm text-muted-foreground">Your personal and contact information.</p>
-                        </div>
-                        <div className="flex items-center gap-6">
-                            <div className="relative">
-                            <Avatar className="h-24 w-24">
-                                <AvatarImage src={profile.displayImageUrl ?? undefined} />
-                                <AvatarFallback className="text-3xl bg-dash-primary text-dash-primary-foreground">{getInitials(profile.name)}</AvatarFallback>
-                            </Avatar>
-                            {isAvatarPending && (
-                                <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
-                                <Loader2 className="h-8 w-8 animate-spin text-white" />
-                                </div>
-                            )}
+        <div className="flex-1 flex flex-col min-h-0">
+          <ScrollArea className="h-full pr-4 custom-scrollbar">
+            <Card className="h-full">
+              <CardContent className="p-6">
+                {activeSection === 'profile-details' && (
+                  <form action={profileDetailsAction}>
+                    <input type="hidden" name="userId" value={session?.uid} />
+                    <section className="space-y-6">
+                      <div>
+                        <h3 className="text-lg font-semibold">Profile Details</h3>
+                        <p className="text-sm text-muted-foreground">Your personal and contact information.</p>
+                      </div>
+                      <div className="flex items-center gap-6">
+                        <div className="relative">
+                          <Avatar className="h-24 w-24">
+                            <AvatarImage src={profile.displayImageUrl ?? undefined} />
+                            <AvatarFallback className="text-3xl bg-dash-primary text-dash-primary-foreground">{getInitials(profile.name)}</AvatarFallback>
+                          </Avatar>
+                          {isAvatarPending && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
+                              <Loader2 className="h-8 w-8 animate-spin text-white" />
                             </div>
-                            <div className="flex flex-wrap gap-2">
-                            <input
-                                type="file"
-                                ref={fileInputRef}
-                                onChange={handleFileChange}
-                                className="hidden"
-                                accept="image/png, image/jpeg, image/gif"
-                            />
-                            <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isAvatarPending}>
-                                <Edit className="mr-2 h-4 w-4" /> {profile.displayImageUrl ? 'Change' : 'Add'} Picture
+                          )}
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            className="hidden"
+                            accept="image/png, image/jpeg, image/gif"
+                          />
+                          <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isAvatarPending}>
+                            <Edit className="mr-2 h-4 w-4" /> {profile.displayImageUrl ? 'Change' : 'Add'} Picture
+                          </Button>
+                          {profile.displayImageUrl && (
+                            <Button type="button" variant="destructive" size="sm" onClick={handleRemoveAvatar} disabled={isAvatarPending}>
+                              <Trash2 className="mr-2 h-4 w-4" /> Remove
                             </Button>
-                            {profile.displayImageUrl && (
-                                <Button type="button" variant="destructive" size="sm" onClick={handleRemoveAvatar} disabled={isAvatarPending}>
-                                <Trash2 className="mr-2 h-4 w-4" /> Remove
-                                </Button>
-                            )}
-                            </div>
+                          )}
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="grid gap-2">
-                            <Label htmlFor="name">Name</Label>
-                            <Input id="name" name="name" defaultValue={profile.name ?? ''} required />
-                            </div>
-                            <div className="grid gap-2">
-                            <Label htmlFor="phone">Phone Number</Label>
-                            <Input id="phone" name="phone" defaultValue={profile.phone ?? ''} type="tel" />
-                            </div>
-                            <div className="grid gap-2">
-                            <Label htmlFor="address">City / Town</Label>
-                            <Input id="address" name="address" defaultValue={profile.address ?? ''} />
-                            </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="name">Name</Label>
+                          <Input id="name" name="name" defaultValue={profile.name ?? ''} required />
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="profileSummary">Profile Summary</Label>
-                            <Textarea name="profileSummary" id="profileSummary" defaultValue={profile.profileSummary ?? ''} placeholder="A brief summary about your professional background..." className="min-h-32" />
+                        <div className="grid gap-2">
+                          <Label htmlFor="phone">Phone Number</Label>
+                          <Input id="phone" name="phone" defaultValue={profile.phone ?? ''} type="tel" />
                         </div>
-                        <div className="flex justify-end gap-2 pt-6 border-t mt-6">
-                            <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
-                            <SubmitButton />
+                        <div className="grid gap-2">
+                          <Label htmlFor="address">City / Town</Label>
+                          <Input id="address" name="address" defaultValue={profile.address ?? ''} />
                         </div>
-                        </section>
-                    </form>
-                    )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="profileSummary">Profile Summary</Label>
+                        <Textarea name="profileSummary" id="profileSummary" defaultValue={profile.profileSummary ?? ''} placeholder="A brief summary about your professional background..." className="min-h-32" />
+                      </div>
+                      <div className="flex justify-end gap-2 pt-6 border-t mt-6">
+                        <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
+                        <SubmitButton />
+                      </div>
+                    </section>
+                  </form>
+                )}
 
-                    {activeSection === 'career-profile' && (
-                    <form action={careerProfileAction}>
-                        <input type="hidden" name="userId" value={session?.uid} />
-                        <section className="space-y-6">
-                        <div>
-                            <h3 className="text-lg font-semibold">Career Profile</h3>
-                            <p className="text-sm text-muted-foreground">Your current professional status.</p>
+                {activeSection === 'career-profile' && (
+                  <form action={careerProfileAction}>
+                    <input type="hidden" name="userId" value={session?.uid} />
+                    <section className="space-y-6">
+                      <div>
+                        <h3 className="text-lg font-semibold">Career Profile</h3>
+                        <p className="text-sm text-muted-foreground">Your current professional status.</p>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="jobTitle">Current Job Title</Label>
+                          <Input id="jobTitle" name="jobTitle" defaultValue={profile.jobTitle ?? ''} placeholder="e.g. Software Engineer" />
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="grid gap-2">
-                            <Label htmlFor="jobTitle">Current Job Title</Label>
-                            <Input id="jobTitle" name="jobTitle" defaultValue={profile.jobTitle ?? ''} placeholder="e.g. Software Engineer" />
-                            </div>
-                            <div className="grid gap-2">
-                            <Label htmlFor="currentCompany">Current Company</Label>
-                            <Input id="currentCompany" name="currentCompany" defaultValue={profile.currentCompany ?? ''} placeholder="e.g. Innovate Inc." />
-                            </div>
-                            <div className="grid gap-2">
-                            <Label htmlFor="workStatus">Work Status</Label>
-                            <Select name="workStatus" defaultValue={profile.workStatus ?? ''}>
-                                <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                                <SelectContent>
-                                <SelectItem value="fresher">Fresher</SelectItem>
-                                <SelectItem value="experienced">Experienced</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            </div>
-                            <div className="grid gap-2">
-                            <Label htmlFor="experience">Total Years of Experience</Label>
-                            <Input id="experience" name="experience" type="number" defaultValue={profile.experience ?? ''} />
-                            </div>
-                            <div className="grid gap-2">
-                            <Label htmlFor="noticePeriod">Notice Period</Label>
-                            <Select name="noticePeriod" defaultValue={profile.noticePeriod ?? ''}>
-                                <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                                <SelectContent>
-                                <SelectItem value="Immediate">Immediate</SelectItem>
-                                <SelectItem value="15 Days">15 Days</SelectItem>
-                                <SelectItem value="1 Month">1 Month</SelectItem>
-                                <SelectItem value="2 Months">2 Months</SelectItem>
-                                <SelectItem value="3 Months">3 Months</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            </div>
-                            <div className="grid gap-2">
-                            <Label htmlFor="currentSalary">Current Salary (LPA)</Label>
-                            <Input id="currentSalary" name="currentSalary" defaultValue={profile.currentSalary ?? ''} placeholder="e.g. 12.5" />
-                            </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="currentCompany">Current Company</Label>
+                          <Input id="currentCompany" name="currentCompany" defaultValue={profile.currentCompany ?? ''} placeholder="e.g. Innovate Inc." />
                         </div>
-                        <div className="flex justify-end gap-2 pt-6 border-t mt-6">
-                            <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
-                            <SubmitButton />
+                        <div className="grid gap-2">
+                          <Label htmlFor="workStatus">Work Status</Label>
+                          <Select name="workStatus" defaultValue={profile.workStatus ?? ''}>
+                            <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="fresher">Fresher</SelectItem>
+                              <SelectItem value="experienced">Experienced</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
-                        </section>
-                    </form>
+                        <div className="grid gap-2">
+                          <Label htmlFor="experience">Total Years of Experience</Label>
+                          <Input id="experience" name="experience" type="number" defaultValue={profile.experience ?? ''} />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="noticePeriod">Notice Period</Label>
+                          <Select name="noticePeriod" defaultValue={profile.noticePeriod ?? ''}>
+                            <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Immediate">Immediate</SelectItem>
+                              <SelectItem value="15 Days">15 Days</SelectItem>
+                              <SelectItem value="1 Month">1 Month</SelectItem>
+                              <SelectItem value="2 Months">2 Months</SelectItem>
+                              <SelectItem value="3 Months">3 Months</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="currentSalary">Current Salary (LPA)</Label>
+                          <Input id="currentSalary" name="currentSalary" defaultValue={profile.currentSalary ?? ''} placeholder="e.g. 12.5" />
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2 pt-6 border-t mt-6">
+                        <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
+                        <SubmitButton />
+                      </div>
+                    </section>
+                  </form>
                 )}
 
                 {activeSection === 'resume' && (
-                    <form action={updateUserProfileAction}>
-                        <input type="hidden" name="userId" value={session?.uid} />
-                        <section className="space-y-6">
-                        <div>
-                            <h3 className="text-lg font-semibold">Resume</h3>
-                            <p className="text-sm text-muted-foreground">Upload your latest resume. This will be used for AI analysis.</p>
-                        </div>
-                        <div className="space-y-2">
-                            <input
-                            type="file"
-                            id="resume-file-input"
-                            className="hidden"
-                            onChange={handleResumeFileChange}
-                            accept=".pdf,.doc,.docx"
-                            disabled={isResumePending}
-                            name="resumeFile"
-                            />
-                            {profile.hasResume && !selectedFile ? (
-                            <Card className="relative flex flex-col items-center justify-center p-6 text-center">
-                                <motion.button
-                                type="button"
-                                onHoverStart={() => setIsDownloadHovered(true)}
-                                onHoverEnd={() => setIsDownloadHovered(false)}
-                                onClick={handleResumeDownload}
-                                disabled={!profile.resume?.data}
-                                className="absolute top-4 right-4 flex items-center justify-center overflow-hidden rounded-full bg-secondary text-secondary-foreground"
-                                style={{ height: '2.5rem' }}
-                                >
-                                <motion.div
-                                    animate={{ width: isDownloadHovered ? 'auto' : '2.5rem' }}
-                                    transition={{ duration: 0.3, ease: 'easeInOut' }}
-                                    className="flex items-center justify-center h-full px-3"
-                                >
-                                    <Download className="h-5 w-5 flex-shrink-0" />
-                                    <AnimatePresence>
-                                    {isDownloadHovered && (
-                                        <motion.span
-                                        initial={{ opacity: 0, x: -10 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: -10 }}
-                                        transition={{ duration: 0.2, delay: 0.1 }}
-                                        className="ml-2 whitespace-nowrap"
-                                        >
-                                        Download
-                                        </motion.span>
-                                    )}
-                                    </AnimatePresence>
-                                </motion.div>
-                                </motion.button>
-
-                                <div className="flex justify-center">{getFileIcon(profile.resume?.type)}</div>
-                                <p className="font-semibold mt-4">{profile.resume?.name}</p>
-                                <p className="text-xs text-muted-foreground">
-                                Type: {getSimplifiedFileType(profile.resume?.type)} &bull; Size: {formatFileSize(profile.resume?.size)}
-                                </p>
-                                {profile.resume?.updatedAt && (
-                                <p className="text-xs text-muted-foreground mt-2">
-                                    Last updated: {formatDistanceToNow(profile.resume.updatedAt.toDate(), { addSuffix: true })}
-                                </p>
-                                )}
-                                <div className="flex gap-2 mt-6">
-                                <Button type="button" variant="secondary" size="sm" onClick={handleResumeButtonClick} disabled={isResumePending}><RefreshCw className="mr-2 h-4 w-4" />Update</Button>
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                    <Button type="button" variant="destructive" size="sm" disabled={isResumePending}><Trash2 className="mr-2 h-4 w-4" />Delete</Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                    <AlertDialogHeader><AlertDialogTitle>Are you sure?</AlertDialogTitle><AlertDialogDescription>This will permanently delete your uploaded resume.</AlertDialogDescription></AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={handleRemoveResume} disabled={isResumePending} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
-                                    </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                                </div>
-                            </Card>
-                            ) : selectedFile ? (
-                            <Card className="relative flex flex-col items-center justify-center p-6 text-center">
-                                <div className="flex justify-center">{getFileIcon(selectedFile.type)}</div>
-                                <p className="font-semibold mt-4 text-sm">{selectedFile.name}</p>
-                                <p className="text-xs text-muted-foreground">Type: {getSimplifiedFileType(selectedFile.type)} &bull; Size: {formatFileSize(selectedFile.size)}</p>
-                                <div className="flex gap-2 mt-6">
-                                <Button type="button" variant="secondary" size="sm" onClick={handleResumeButtonClick}><RefreshCw className="mr-2 h-4 w-4" />Change</Button>
-                                <Button type="button" variant="destructive" size="sm" onClick={() => setSelectedFile(null)}><X className="mr-2 h-4 w-4" />Remove</Button>
-                                </div>
-                            </Card>
-                            ) : (
-                            <div
-                                className={cn("relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 transition-colors", isDragging && "border-dash-primary bg-dash-primary/10")}
-                                onDrop={handleDrop}
-                                onDragOver={handleResumeDragOver}
-                                onDragLeave={handleResumeDragLeave}
-                                onClick={handleResumeButtonClick}
+                  <form action={updateUserProfileAction}>
+                    <input type="hidden" name="userId" value={session?.uid} />
+                    <section className="space-y-6">
+                      <div>
+                        <h3 className="text-lg font-semibold">Resume</h3>
+                        <p className="text-sm text-muted-foreground">Upload your latest resume. This will be used for AI analysis.</p>
+                      </div>
+                      <div className="space-y-2">
+                        <input
+                          type="file"
+                          id="resume-file-input"
+                          className="hidden"
+                          onChange={handleResumeFileChange}
+                          accept=".pdf,.doc,.docx"
+                          disabled={isResumePending}
+                          name="resumeFile"
+                        />
+                        {profile.hasResume && !selectedFile ? (
+                          <Card className="relative flex flex-col items-center justify-center p-6 text-center">
+                            <motion.button
+                              type="button"
+                              onHoverStart={() => setIsDownloadHovered(true)}
+                              onHoverEnd={() => setIsDownloadHovered(false)}
+                              onClick={handleResumeDownload}
+                              disabled={!profile.resume?.data}
+                              className="absolute top-4 right-4 flex items-center justify-center overflow-hidden rounded-full bg-secondary text-secondary-foreground"
+                              style={{ height: '2.5rem' }}
                             >
-                                <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
-                                <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                                <p className="text-xs text-muted-foreground">PDF, DOC, or DOCX (MAX. 750KB)</p>
-                            </div>
+                              <motion.div
+                                animate={{ width: isDownloadHovered ? 'auto' : '2.5rem' }}
+                                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                                className="flex items-center justify-center h-full px-3"
+                              >
+                                <Download className="h-5 w-5 flex-shrink-0" />
+                                <AnimatePresence>
+                                  {isDownloadHovered && (
+                                    <motion.span
+                                      initial={{ opacity: 0, x: -10 }}
+                                      animate={{ opacity: 1, x: 0 }}
+                                      exit={{ opacity: 0, x: -10 }}
+                                      transition={{ duration: 0.2, delay: 0.1 }}
+                                      className="ml-2 whitespace-nowrap"
+                                    >
+                                      Download
+                                    </motion.span>
+                                  )}
+                                </AnimatePresence>
+                              </motion.div>
+                            </motion.button>
+
+                            <div className="flex justify-center">{getFileIcon(profile.resume?.type)}</div>
+                            <p className="font-semibold mt-4">{profile.resume?.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              Type: {getSimplifiedFileType(profile.resume?.type)} &bull; Size: {formatFileSize(profile.resume?.size)}
+                            </p>
+                            {profile.resume?.updatedAt && (
+                              <p className="text-xs text-muted-foreground mt-2">
+                                Last updated: {formatDistanceToNow(profile.resume.updatedAt.toDate(), { addSuffix: true })}
+                              </p>
                             )}
-                        </div>
-                        <div className="flex justify-end gap-2 pt-6 border-t mt-6">
-                            <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
-                            <Button type="submit" disabled={!selectedFile || isResumePending}>
-                            {isResumePending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Save Resume
-                            </Button>
-                        </div>
-                        </section>
-                    </form>
+                            <div className="flex gap-2 mt-6">
+                              <Button type="button" variant="secondary" size="sm" onClick={handleResumeButtonClick} disabled={isResumePending}><RefreshCw className="mr-2 h-4 w-4" />Update</Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button type="button" variant="destructive" size="sm" disabled={isResumePending}><Trash2 className="mr-2 h-4 w-4" />Delete</Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader><AlertDialogTitle>Are you sure?</AlertDialogTitle><AlertDialogDescription>This will permanently delete your uploaded resume.</AlertDialogDescription></AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleRemoveResume} disabled={isResumePending} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          </Card>
+                        ) : selectedFile ? (
+                          <Card className="relative flex flex-col items-center justify-center p-6 text-center">
+                            <div className="flex justify-center">{getFileIcon(selectedFile.type)}</div>
+                            <p className="font-semibold mt-4 text-sm">{selectedFile.name}</p>
+                            <p className="text-xs text-muted-foreground">Type: {getSimplifiedFileType(selectedFile.type)} &bull; Size: {formatFileSize(selectedFile.size)}</p>
+                            <div className="flex gap-2 mt-6">
+                              <Button type="button" variant="secondary" size="sm" onClick={handleResumeButtonClick}><RefreshCw className="mr-2 h-4 w-4" />Change</Button>
+                              <Button type="button" variant="destructive" size="sm" onClick={() => setSelectedFile(null)}><X className="mr-2 h-4 w-4" />Remove</Button>
+                            </div>
+                          </Card>
+                        ) : (
+                          <div
+                            className={cn("relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 transition-colors", isDragging && "border-dash-primary bg-dash-primary/10")}
+                            onDrop={handleDrop}
+                            onDragOver={handleResumeDragOver}
+                            onDragLeave={handleResumeDragLeave}
+                            onClick={handleResumeButtonClick}
+                          >
+                            <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
+                            <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                            <p className="text-xs text-muted-foreground">PDF, DOC, or DOCX (MAX. 750KB)</p>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex justify-end gap-2 pt-6 border-t mt-6">
+                        <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
+                        <Button type="submit" disabled={!selectedFile || isResumePending}>
+                          {isResumePending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                          Save Resume
+                        </Button>
+                      </div>
+                    </section>
+                  </form>
                 )}
 
                 {activeSection === 'key-skills' && (
