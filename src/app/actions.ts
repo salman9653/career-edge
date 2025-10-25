@@ -673,7 +673,8 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
     'name', 'phone', 'address', 'profileSummary',
     'jobTitle', 'currentCompany', 'workStatus', 'experience', 'noticePeriod', 'currentSalary',
     'gender', 'maritalStatus',
-    'portfolio', 'linkedin', 'naukri', 'github'
+    'portfolio', 'linkedin', 'naukri', 'github',
+    'socials.twitter'
   ];
 
   fields.forEach(field => {

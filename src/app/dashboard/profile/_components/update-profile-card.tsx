@@ -39,6 +39,13 @@ import {
 import { skillsData, type Skill } from '@/lib/skills-data';
 import { Checkbox } from '@/components/ui/checkbox';
 
+const Twitter = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24" {...props}>
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+);
+
+
 const initialState = {
   error: null,
   success: null,
@@ -432,10 +439,6 @@ export function UpdateProfileCard({
                                             <Label htmlFor="address">City / Town</Label>
                                             <Input id="address" name="address" defaultValue={profile.address ?? ''} />
                                         </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="portfolio">Portfolio URL</Label>
-                                            <Input id="portfolio" name="portfolio" type="url" defaultValue={profile.portfolio ?? ''} placeholder="https://yourportfolio.com" />
-                                        </div>
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="profileSummary">Profile Summary</Label>
@@ -667,6 +670,13 @@ export function UpdateProfileCard({
                                             <div className="relative">
                                                 <Github className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                                 <Input id="github" name="github" defaultValue={profile.github ?? ''} placeholder="https://github.com/..." className="pl-9" />
+                                            </div>
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="twitter">Twitter / X</Label>
+                                            <div className="relative">
+                                                <Twitter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                <Input id="twitter" name="socials.twitter" defaultValue={profile.socials?.twitter ?? ''} placeholder="https://x.com/..." className="pl-9" />
                                             </div>
                                         </div>
                                         <div className="grid gap-2">
