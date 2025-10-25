@@ -80,6 +80,7 @@ export default function ProfilePage() {
                     portfolio: data.portfolio,
                     linkedin: data.linkedin,
                     naukri: data.naukri,
+                    github: data.github,
                     gender: data.gender,
                     maritalStatus: data.maritalStatus,
                     dob: data.dob,

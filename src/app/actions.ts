@@ -673,7 +673,7 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
     'name', 'phone', 'address', 'profileSummary',
     'jobTitle', 'currentCompany', 'workStatus', 'experience', 'noticePeriod', 'currentSalary',
     'gender', 'maritalStatus',
-    'portfolio', 'linkedin', 'naukri'
+    'portfolio', 'linkedin', 'naukri', 'github'
   ];
 
   fields.forEach(field => {
@@ -682,9 +682,13 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
     }
   });
 
-  const dob = formData.get('dob') as string;
-  if (dob) {
-    dataToUpdate['dob'] = dob;
+  const dobDay = formData.get('dob-day') as string;
+  const dobMonth = formData.get('dob-month') as string;
+  const dobYear = formData.get('dob-year') as string;
+  if (dobDay && dobMonth && dobYear) {
+    dataToUpdate['dob'] = new Date(`${dobYear}-${dobMonth}-${dobDay}`).toISOString();
+  } else if (formData.get('dob')) { // fallback for old calendar picker
+      dataToUpdate['dob'] = formData.get('dob');
   }
   
   const permanentAddress = {

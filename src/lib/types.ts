@@ -291,11 +291,10 @@ export interface UserProfile {
     portfolio?: string;
     linkedin?: string;
     naukri?: string;
+    github?: string;
     gender?: string;
     maritalStatus?: string;
     dob?: string;
     permanentAddress?: string;
     languages?: string[];
 }
-
-  
