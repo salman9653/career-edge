@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { allBenefits } from '@/lib/benefits';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import type { UserProfile } from '../page';
+import { Github } from 'lucide-react';
 
 interface ProfileDisplayCardProps {
     profile: UserProfile;
@@ -113,6 +114,55 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                     </div>
                 </div>
                 )}
+                 <div className="space-y-4 pt-4 border-t">
+                    <h3 className="font-semibold text-lg">Online Profiles</h3>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {profile.linkedin && (
+                            <div className="flex items-start gap-3 text-sm">
+                                <Linkedin className="h-5 w-5 text-muted-foreground mt-1 shrink-0" />
+                                <div>
+                                    <p className="text-muted-foreground">LinkedIn</p>
+                                    <Link href={getWebsiteUrl(profile.linkedin)} target="_blank" rel="noopener noreferrer" className="font-medium text-dash-primary hover:underline break-all">
+                                        {profile.linkedin}
+                                    </Link>
+                                </div>
+                            </div>
+                        )}
+                         {profile.github && (
+                            <div className="flex items-start gap-3 text-sm">
+                                <Github className="h-5 w-5 text-muted-foreground mt-1 shrink-0" />
+                                <div>
+                                    <p className="text-muted-foreground">GitHub</p>
+                                    <Link href={getWebsiteUrl(profile.github)} target="_blank" rel="noopener noreferrer" className="font-medium text-dash-primary hover:underline break-all">
+                                        {profile.github}
+                                    </Link>
+                                </div>
+                            </div>
+                        )}
+                        {profile.naukri && (
+                            <div className="flex items-start gap-3 text-sm">
+                                <Briefcase className="h-5 w-5 text-muted-foreground mt-1 shrink-0" />
+                                <div>
+                                    <p className="text-muted-foreground">Naukri.com</p>
+                                    <Link href={getWebsiteUrl(profile.naukri)} target="_blank" rel="noopener noreferrer" className="font-medium text-dash-primary hover:underline break-all">
+                                        {profile.naukri}
+                                    </Link>
+                                </div>
+                            </div>
+                        )}
+                          {profile.portfolio && (
+                            <div className="flex items-start gap-3 text-sm">
+                                <Globe className="h-5 w-5 text-muted-foreground mt-1 shrink-0" />
+                                <div>
+                                    <p className="text-muted-foreground">Portfolio</p>
+                                    <Link href={getWebsiteUrl(profile.portfolio)} target="_blank" rel="noopener noreferrer" className="font-medium text-dash-primary hover:underline break-all">
+                                        {profile.portfolio}
+                                    </Link>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
                 </>
             )}
 

@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload, FileText, X, Plus, CalendarIcon, UploadCloud, Download, RefreshCw } from 'lucide-react';
+import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload, FileText, X, Plus, CalendarIcon, UploadCloud, Download, RefreshCw, Github } from 'lucide-react';
 import { FaFilePdf, FaFileWord, FaFileImage } from 'react-icons/fa';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -648,6 +648,45 @@ export function UpdateProfileCard({
                                 </section>
                             )}
                             
+                            {activeSection === 'online-profiles' && (
+                                <section className="space-y-6">
+                                    <div>
+                                        <h3 className="text-lg font-semibold">Online Profiles</h3>
+                                        <p className="text-sm text-muted-foreground">Add links to your professional profiles.</p>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="linkedin">LinkedIn</Label>
+                                            <div className="relative">
+                                                <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                <Input id="linkedin" name="linkedin" defaultValue={profile.linkedin ?? ''} placeholder="https://linkedin.com/in/..." className="pl-9" />
+                                            </div>
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="github">GitHub</Label>
+                                            <div className="relative">
+                                                <Github className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                <Input id="github" name="github" defaultValue={profile.github ?? ''} placeholder="https://github.com/..." className="pl-9" />
+                                            </div>
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="naukri">Naukri.com</Label>
+                                            <div className="relative">
+                                                <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                <Input id="naukri" name="naukri" defaultValue={profile.naukri ?? ''} placeholder="https://naukri.com/mnjuser/..." className="pl-9" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            )}
+
+                            {(activeSection === 'employment' || activeSection === 'education' || activeSection === 'projects') && (
+                                <div className="text-center py-12">
+                                    <h3 className="text-lg font-semibold">Under Construction</h3>
+                                    <p className="text-sm text-muted-foreground">The form for the &quot;{navItems.find(i => i.id === activeSection)?.label}&quot; section will be here.</p>
+                                </div>
+                            )}
+                            
                             {activeSection === 'personal-details' && (
                             <section className="space-y-6">
                                 <div>
@@ -776,13 +815,6 @@ export function UpdateProfileCard({
                             </section>
                             )}
 
-                            {(activeSection === 'employment' || activeSection === 'education' || activeSection === 'projects' || activeSection === 'online-profiles') && (
-                                <div className="text-center py-12">
-                                    <h3 className="text-lg font-semibold">Under Construction</h3>
-                                    <p className="text-sm text-muted-foreground">The form for the &quot;{navItems.find(i => i.id === activeSection)?.label}&quot; section will be here.</p>
-                                </div>
-                            )}
-                            
                             {state?.error && <Alert variant="destructive" className="mt-2"><AlertDescription>{state.error}</AlertDescription></Alert>}
                         </CardContent>
                     </ScrollArea>

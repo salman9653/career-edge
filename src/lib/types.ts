@@ -151,6 +151,7 @@ export interface Socials {
     twitter?: string;
     naukri?: string;
     glassdoor?: string;
+    github?: string;
 }
 
 export interface CompanyDetails {
