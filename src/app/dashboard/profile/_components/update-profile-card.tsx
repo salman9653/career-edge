@@ -398,7 +398,7 @@ export function UpdateProfileCard({
         if (mimeType.includes('openxmlformats')) return 'docx';
         return 'doc';
     }
-    if (fileType.startsWith('image')) return mimeType.split('/')[1]?.toLowerCase() || 'image';
+    if (mimeType.startsWith('image')) return mimeType.split('/')[1]?.toLowerCase() || 'image';
     return mimeType;
   }
 
@@ -476,131 +476,131 @@ export function UpdateProfileCard({
             </nav>
         </Card>
         
-        <form action={formAction} ref={formRef} className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 flex flex-col min-h-0">
             <div className="flex-1 overflow-hidden">
                 <ScrollArea className="h-full">
                     <Card className="h-full">
                         <CardContent className="p-6">
-                            <input type="hidden" name="userId" value={session?.uid} />
-                            <input type="hidden" name="role" value={profile.role} />
                             
-                            <input 
-                                type="file" 
-                                ref={resumeInputRef}
-                                className="hidden" 
-                                onChange={handleResumeFileChange}
-                                accept=".pdf,.doc,.docx"
-                            />
-                            
-                            <input type="hidden" name="keySkills" value={skills.join(',')} />
-                            <input type="hidden" name="languages" value={JSON.stringify(languages)} />
-                            <input type="hidden" name="employment" value={JSON.stringify(employments)} />
-
                             {activeSection === 'profile-details' && (
-                                <section className="space-y-6">
-                                    <div>
-                                        <h3 className="text-lg font-semibold">Profile Details</h3>
-                                        <p className="text-sm text-muted-foreground">Your personal and contact information.</p>
-                                    </div>
-                                    <div className="flex items-center gap-6">
-                                        <div className="relative">
-                                            <Avatar className="h-24 w-24">
-                                                <AvatarImage src={profile.displayImageUrl ?? undefined} />
-                                                <AvatarFallback className="text-3xl bg-dash-primary text-dash-primary-foreground">{getInitials(profile.name)}</AvatarFallback>
-                                            </Avatar>
-                                            {isAvatarPending && (
-                                                <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
-                                                    <Loader2 className="h-8 w-8 animate-spin text-white" />
-                                                </div>
-                                            )}
+                                <form action={formAction}>
+                                    <input type="hidden" name="userId" value={session?.uid} />
+                                    <section className="space-y-6">
+                                        <div>
+                                            <h3 className="text-lg font-semibold">Profile Details</h3>
+                                            <p className="text-sm text-muted-foreground">Your personal and contact information.</p>
                                         </div>
-                                        <div className="flex flex-wrap gap-2">
-                                            <input
-                                                type="file"
-                                                ref={fileInputRef}
-                                                onChange={handleFileChange}
-                                                className="hidden"
-                                                accept="image/png, image/jpeg, image/gif"
-                                            />
-                                            <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isAvatarPending}>
-                                                <Edit className="mr-2 h-4 w-4" /> {profile.displayImageUrl ? 'Change' : 'Add'} Picture
-                                            </Button>
-                                            {profile.displayImageUrl && (
-                                                <Button type="button" variant="destructive" size="sm" onClick={handleRemoveAvatar} disabled={isAvatarPending}>
-                                                    <Trash2 className="mr-2 h-4 w-4" /> Remove
+                                        <div className="flex items-center gap-6">
+                                            <div className="relative">
+                                                <Avatar className="h-24 w-24">
+                                                    <AvatarImage src={profile.displayImageUrl ?? undefined} />
+                                                    <AvatarFallback className="text-3xl bg-dash-primary text-dash-primary-foreground">{getInitials(profile.name)}</AvatarFallback>
+                                                </Avatar>
+                                                {isAvatarPending && (
+                                                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
+                                                        <Loader2 className="h-8 w-8 animate-spin text-white" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                <input
+                                                    type="file"
+                                                    ref={fileInputRef}
+                                                    onChange={handleFileChange}
+                                                    className="hidden"
+                                                    accept="image/png, image/jpeg, image/gif"
+                                                />
+                                                <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isAvatarPending}>
+                                                    <Edit className="mr-2 h-4 w-4" /> {profile.displayImageUrl ? 'Change' : 'Add'} Picture
                                                 </Button>
-                                            )}
+                                                {profile.displayImageUrl && (
+                                                    <Button type="button" variant="destructive" size="sm" onClick={handleRemoveAvatar} disabled={isAvatarPending}>
+                                                        <Trash2 className="mr-2 h-4 w-4" /> Remove
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="name">Name</Label>
-                                            <Input id="name" name="name" defaultValue={profile.name ?? ''} required />
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="name">Name</Label>
+                                                <Input id="name" name="name" defaultValue={profile.name ?? ''} required />
+                                            </div>
+                                            <div className="grid gap-2">
+                                              <Label htmlFor="phone">Phone Number</Label>
+                                              <Input id="phone" name="phone" defaultValue={profile.phone ?? ''} type="tel" />
+                                            </div>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="address">City / Town</Label>
+                                                <Input id="address" name="address" defaultValue={profile.address ?? ''} />
+                                            </div>
                                         </div>
-                                        <div className="grid gap-2">
-                                          <Label htmlFor="phone">Phone Number</Label>
-                                          <Input id="phone" name="phone" defaultValue={profile.phone ?? ''} type="tel" />
+                                        <div className="space-y-2">
+                                            <Label htmlFor="profileSummary">Profile Summary</Label>
+                                            <Textarea name="profileSummary" id="profileSummary" defaultValue={profile.profileSummary ?? ''} placeholder="A brief summary about your professional background..." className="min-h-32"/>
                                         </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="address">City / Town</Label>
-                                            <Input id="address" name="address" defaultValue={profile.address ?? ''} />
+                                        <div className="flex justify-end gap-2 pt-6 border-t mt-6">
+                                            <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
+                                            <SubmitButton />
                                         </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="profileSummary">Profile Summary</Label>
-                                        <Textarea name="profileSummary" id="profileSummary" defaultValue={profile.profileSummary ?? ''} placeholder="A brief summary about your professional background..." className="min-h-32"/>
-                                    </div>
-                                </section>
+                                    </section>
+                                </form>
                             )}
                             
                             {activeSection === 'career-profile' && (
-                            <section className="space-y-6">
-                                <div>
-                                <h3 className="text-lg font-semibold">Career Profile</h3>
-                                <p className="text-sm text-muted-foreground">Your current professional status.</p>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="grid gap-2">
-                                    <Label htmlFor="jobTitle">Current Job Title</Label>
-                                    <Input id="jobTitle" name="jobTitle" defaultValue={profile.jobTitle ?? ''} placeholder="e.g. Software Engineer"/>
+                            <form action={formAction}>
+                                <input type="hidden" name="userId" value={session?.uid} />
+                                <section className="space-y-6">
+                                    <div>
+                                    <h3 className="text-lg font-semibold">Career Profile</h3>
+                                    <p className="text-sm text-muted-foreground">Your current professional status.</p>
                                     </div>
-                                    <div className="grid gap-2">
-                                    <Label htmlFor="currentCompany">Current Company</Label>
-                                    <Input id="currentCompany" name="currentCompany" defaultValue={profile.currentCompany ?? ''} placeholder="e.g. Innovate Inc."/>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="grid gap-2">
+                                        <Label htmlFor="jobTitle">Current Job Title</Label>
+                                        <Input id="jobTitle" name="jobTitle" defaultValue={profile.jobTitle ?? ''} placeholder="e.g. Software Engineer"/>
+                                        </div>
+                                        <div className="grid gap-2">
+                                        <Label htmlFor="currentCompany">Current Company</Label>
+                                        <Input id="currentCompany" name="currentCompany" defaultValue={profile.currentCompany ?? ''} placeholder="e.g. Innovate Inc."/>
+                                        </div>
+                                        <div className="grid gap-2">
+                                        <Label htmlFor="workStatus">Work Status</Label>
+                                        <Select name="workStatus" defaultValue={profile.workStatus ?? ''}>
+                                            <SelectTrigger><SelectValue placeholder="Select..."/></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="fresher">Fresher</SelectItem>
+                                                <SelectItem value="experienced">Experienced</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        </div>
+                                        <div className="grid gap-2">
+                                        <Label htmlFor="experience">Total Years of Experience</Label>
+                                        <Input id="experience" name="experience" type="number" defaultValue={profile.experience ?? ''} />
+                                        </div>
+                                        <div className="grid gap-2">
+                                        <Label htmlFor="noticePeriod">Notice Period</Label>
+                                        <Select name="noticePeriod" defaultValue={profile.noticePeriod ?? ''}>
+                                            <SelectTrigger><SelectValue placeholder="Select..."/></SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="Immediate">Immediate</SelectItem>
+                                                <SelectItem value="15 Days">15 Days</SelectItem>
+                                                <SelectItem value="1 Month">1 Month</SelectItem>
+                                                <SelectItem value="2 Months">2 Months</SelectItem>
+                                                <SelectItem value="3 Months">3 Months</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        </div>
+                                        <div className="grid gap-2">
+                                        <Label htmlFor="currentSalary">Current Salary (LPA)</Label>
+                                        <Input id="currentSalary" name="currentSalary" defaultValue={profile.currentSalary ?? ''} placeholder="e.g. 12.5"/>
+                                        </div>
                                     </div>
-                                    <div className="grid gap-2">
-                                    <Label htmlFor="workStatus">Work Status</Label>
-                                    <Select name="workStatus" defaultValue={profile.workStatus ?? ''}>
-                                        <SelectTrigger><SelectValue placeholder="Select..."/></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="fresher">Fresher</SelectItem>
-                                            <SelectItem value="experienced">Experienced</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <div className="flex justify-end gap-2 pt-6 border-t mt-6">
+                                        <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
+                                        <SubmitButton />
                                     </div>
-                                    <div className="grid gap-2">
-                                    <Label htmlFor="experience">Total Years of Experience</Label>
-                                    <Input id="experience" name="experience" type="number" defaultValue={profile.experience ?? ''} />
-                                    </div>
-                                    <div className="grid gap-2">
-                                    <Label htmlFor="noticePeriod">Notice Period</Label>
-                                    <Select name="noticePeriod" defaultValue={profile.noticePeriod ?? ''}>
-                                        <SelectTrigger><SelectValue placeholder="Select..."/></SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="Immediate">Immediate</SelectItem>
-                                            <SelectItem value="15 Days">15 Days</SelectItem>
-                                            <SelectItem value="1 Month">1 Month</SelectItem>
-                                            <SelectItem value="2 Months">2 Months</SelectItem>
-                                            <SelectItem value="3 Months">3 Months</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    </div>
-                                    <div className="grid gap-2">
-                                    <Label htmlFor="currentSalary">Current Salary (LPA)</Label>
-                                    <Input id="currentSalary" name="currentSalary" defaultValue={profile.currentSalary ?? ''} placeholder="e.g. 12.5"/>
-                                    </div>
-                                </div>
-                            </section>
+                                </section>
+                            </form>
                             )}
 
                              {activeSection === 'resume' && (
@@ -610,6 +610,14 @@ export function UpdateProfileCard({
                                         <p className="text-sm text-muted-foreground">Upload your latest resume. This will be used for AI analysis.</p>
                                     </div>
                                     <div className="space-y-2">
+                                        <input 
+                                            type="file" 
+                                            ref={resumeInputRef}
+                                            className="hidden" 
+                                            name="resumeFile"
+                                            onChange={handleResumeFileChange}
+                                            accept=".pdf,.doc,.docx"
+                                        />
                                         {profile.hasResume && !selectedFile ? (
                                             <Card className="relative flex flex-col items-center justify-center p-6 text-center">
                                                 <motion.button
@@ -693,121 +701,148 @@ export function UpdateProfileCard({
                                             </div>
                                         )}
                                     </div>
+                                    <form action={formAction}>
+                                      <input type="hidden" name="userId" value={session?.uid} />
+                                      {selectedFile && <input type="file" name="resumeFile" className="hidden" value={''} />}
+                                      <div className="flex justify-end gap-2 pt-6 border-t mt-6">
+                                        <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
+                                        <Button type="submit" disabled={!selectedFile || isResumePending}>
+                                          {isResumePending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                          Save Resume
+                                        </Button>
+                                      </div>
+                                    </form>
                                 </section>
                             )}
 
                             {activeSection === 'key-skills' && (
-                                <section className="space-y-6">
-                                    <div>
-                                        <h3 className="text-lg font-semibold">Key Skills</h3>
-                                        <p className="text-sm text-muted-foreground">Add skills that best define your expertise.</p>
-                                    </div>
-                                    <div className="space-y-4">
-                                        <div className="space-y-2">
-                                            <Label>Your skills</Label>
-                                            <div className="min-h-[80px] p-2 flex flex-wrap gap-2">
-                                                {skills.map((skill: string) => (
-                                                    <Badge key={skill} variant="secondary" className="flex items-center gap-1 text-base py-1">
-                                                        {skill}
-                                                        <button type="button" onClick={() => handleRemoveSkill(skill)} className="rounded-full hover:bg-black/20 p-0.5">
-                                                            <X className="h-3 w-3" />
-                                                        </button>
-                                                    </Badge>
-                                                ))}
+                                <form action={formAction}>
+                                    <input type="hidden" name="userId" value={session?.uid} />
+                                    <input type="hidden" name="keySkills" value={skills.join(',')} />
+                                    <section className="space-y-6">
+                                        <div>
+                                            <h3 className="text-lg font-semibold">Key Skills</h3>
+                                            <p className="text-sm text-muted-foreground">Add skills that best define your expertise.</p>
+                                        </div>
+                                        <div className="space-y-4">
+                                            <div className="space-y-2">
+                                                <Label>Your skills</Label>
+                                                <div className="min-h-[80px] p-2 flex flex-wrap gap-2">
+                                                    {skills.map((skill: string) => (
+                                                        <Badge key={skill} variant="secondary" className="flex items-center gap-1 text-base py-1">
+                                                            {skill}
+                                                            <button type="button" onClick={() => handleRemoveSkill(skill)} className="rounded-full hover:bg-black/20 p-0.5">
+                                                                <X className="h-3 w-3" />
+                                                            </button>
+                                                        </Badge>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <div className="relative">
+                                                <Input
+                                                    value={skillInput}
+                                                    onChange={(e) => setSkillInput(e.target.value)}
+                                                    onKeyDown={handleSkillKeyDown}
+                                                    onFocus={() => setIsAutocompleteOpen(true)}
+                                                    onBlur={() => setTimeout(() => setIsAutocompleteOpen(false), 150)}
+                                                    placeholder="Add skills and press Enter"
+                                                />
+                                                {isAutocompleteOpen && skillInput && autocompleteSkills.length > 0 && (
+                                                    <Card className="absolute z-10 w-full mt-1 max-h-60 overflow-y-auto">
+                                                        <CardContent className="p-2">
+                                                            {autocompleteSkills.map(skill => (
+                                                                <Button
+                                                                    key={skill.id}
+                                                                    type="button"
+                                                                    variant="ghost"
+                                                                    className="w-full justify-start"
+                                                                    onMouseDown={() => handleAddSkill(skill.name)}
+                                                                >
+                                                                    {skill.name}
+                                                                </Button>
+                                                            ))}
+                                                        </CardContent>
+                                                    </Card>
+                                                )}
+                                            </div>
+                                            <div className="space-y-2 pt-4">
+                                            <Label>Or you can select from the suggested set of skills</Label>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {suggestedSkills.map(skill => (
+                                                        <Button key={skill.id} type="button" variant="outline" size="sm" onClick={() => handleAddSkill(skill.name)}>
+                                                            {skill.name} <Plus className="ml-1 h-4 w-4" />
+                                                        </Button>
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="relative">
-                                            <Input
-                                                value={skillInput}
-                                                onChange={(e) => setSkillInput(e.target.value)}
-                                                onKeyDown={handleSkillKeyDown}
-                                                onFocus={() => setIsAutocompleteOpen(true)}
-                                                onBlur={() => setTimeout(() => setIsAutocompleteOpen(false), 150)}
-                                                placeholder="Add skills and press Enter"
-                                            />
-                                            {isAutocompleteOpen && skillInput && autocompleteSkills.length > 0 && (
-                                                <Card className="absolute z-10 w-full mt-1 max-h-60 overflow-y-auto">
-                                                    <CardContent className="p-2">
-                                                        {autocompleteSkills.map(skill => (
-                                                            <Button
-                                                                key={skill.id}
-                                                                type="button"
-                                                                variant="ghost"
-                                                                className="w-full justify-start"
-                                                                onMouseDown={() => handleAddSkill(skill.name)}
-                                                            >
-                                                                {skill.name}
-                                                            </Button>
-                                                        ))}
-                                                    </CardContent>
-                                                </Card>
-                                            )}
+                                         <div className="flex justify-end gap-2 pt-6 border-t mt-6">
+                                            <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
+                                            <SubmitButton />
                                         </div>
-                                        <div className="space-y-2 pt-4">
-                                        <Label>Or you can select from the suggested set of skills</Label>
-                                            <div className="flex flex-wrap gap-2">
-                                                {suggestedSkills.map(skill => (
-                                                    <Button key={skill.id} type="button" variant="outline" size="sm" onClick={() => handleAddSkill(skill.name)}>
-                                                        {skill.name} <Plus className="ml-1 h-4 w-4" />
-                                                    </Button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </section>
+                                    </section>
+                                </form>
                             )}
 
                              {activeSection === 'employment' && (
-                                <section className="space-y-6">
-                                    <div>
-                                        <h3 className="text-lg font-semibold">Employment History</h3>
-                                        <p className="text-sm text-muted-foreground">Detail your professional experience.</p>
-                                    </div>
-                                    <div className="space-y-4">
-                                        {employments.length === 0 && !isAddingEmployment && !editingEmployment ? (
-                                            <div className="text-center py-12 border-2 border-dashed rounded-lg flex flex-col items-center justify-center">
-                                                <Briefcase className="mx-auto h-12 w-12 text-muted-foreground" />
-                                                <h3 className="mt-4 text-lg font-semibold">No Employment Yet</h3>
-                                                <p className="mt-1 text-sm text-muted-foreground">You haven't created any work experience yet, Add your work experience.</p>
-                                                <Button className="mt-6" variant="secondary" type="button" onClick={() => setIsAddingEmployment(true)}>
-                                                    <Plus className="mr-2 h-4 w-4" />
-                                                    Add Employment
-                                                </Button>
-                                            </div>
-                                        ) : (
-                                            <>
-                                                {employments.map(emp => (
-                                                    editingEmployment?.id === emp.id ? (
-                                                        <EmploymentForm key={emp.id} employment={editingEmployment} onSave={handleSaveEmployment} onCancel={() => setEditingEmployment(null)} />
-                                                    ) : (
-                                                        <Card key={emp.id} className="p-4">
-                                                            <div className="flex justify-between items-start">
-                                                                <div>
-                                                                    <p className="font-semibold">{emp.designation}</p>
-                                                                    <p className="text-sm text-muted-foreground">{emp.company}</p>
-                                                                    <p className="text-xs text-muted-foreground mt-1">
-                                                                        {format(new Date(emp.startDate), 'MMM yyyy')} - {emp.isCurrent ? 'Present' : emp.endDate ? format(new Date(emp.endDate), 'MMM yyyy') : ''}
-                                                                    </p>
-                                                                </div>
-                                                                <div className="flex gap-2">
-                                                                    <Button variant="ghost" size="icon" onClick={() => setEditingEmployment(emp)}><Edit className="h-4 w-4" /></Button>
-                                                                    <Button variant="ghost" size="icon" onClick={() => handleDeleteEmployment(emp.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                                                                </div>
-                                                            </div>
-                                                        </Card>
-                                                    )
-                                                ))}
-                                                {isAddingEmployment && <EmploymentForm employment={null} onSave={handleSaveEmployment} onCancel={() => setIsAddingEmployment(false)} />}
-                                                {!isAddingEmployment && !editingEmployment && (
-                                                    <Button type="button" variant="outline" onClick={() => setIsAddingEmployment(true)}>
+                                <form action={formAction}>
+                                    <input type="hidden" name="userId" value={session?.uid} />
+                                    <input type="hidden" name="employment" value={JSON.stringify(employments)} />
+                                    <section className="space-y-6">
+                                        <div>
+                                            <h3 className="text-lg font-semibold">Employment History</h3>
+                                            <p className="text-sm text-muted-foreground">Detail your professional experience.</p>
+                                        </div>
+                                        <div className="space-y-4">
+                                            {employments.length === 0 && !isAddingEmployment && !editingEmployment ? (
+                                                <div className="text-center py-12 border-2 border-dashed rounded-lg flex flex-col items-center justify-center">
+                                                    <Briefcase className="mx-auto h-12 w-12 text-muted-foreground" />
+                                                    <h3 className="mt-4 text-lg font-semibold">No Employment Yet</h3>
+                                                    <p className="mt-1 text-sm text-muted-foreground">You haven't created any work experience yet, Add your work experience.</p>
+                                                    <Button className="mt-6" variant="secondary" type="button" onClick={() => setIsAddingEmployment(true)}>
                                                         <Plus className="mr-2 h-4 w-4" />
-                                                        Add Another Employment
+                                                        Add Employment
                                                     </Button>
-                                                )}
-                                            </>
-                                        )}
-                                    </div>
-                                </section>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    {employments.map(emp => (
+                                                        editingEmployment?.id === emp.id ? (
+                                                            <EmploymentForm key={emp.id} employment={editingEmployment} onSave={handleSaveEmployment} onCancel={() => setEditingEmployment(null)} />
+                                                        ) : (
+                                                            <Card key={emp.id} className="p-4">
+                                                                <div className="flex justify-between items-start">
+                                                                    <div>
+                                                                        <p className="font-semibold">{emp.designation}</p>
+                                                                        <p className="text-sm text-muted-foreground">{emp.company}</p>
+                                                                        <p className="text-xs text-muted-foreground mt-1">
+                                                                            {format(new Date(emp.startDate), 'MMM yyyy')} - {emp.isCurrent ? 'Present' : emp.endDate ? format(new Date(emp.endDate), 'MMM yyyy') : ''}
+                                                                        </p>
+                                                                    </div>
+                                                                    <div className="flex gap-2">
+                                                                        <Button variant="ghost" size="icon" onClick={() => setEditingEmployment(emp)}><Edit className="h-4 w-4" /></Button>
+                                                                        <Button variant="ghost" size="icon" onClick={() => handleDeleteEmployment(emp.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                                                    </div>
+                                                                </div>
+                                                            </Card>
+                                                        )
+                                                    ))}
+                                                    {isAddingEmployment && <EmploymentForm employment={null} onSave={handleSaveEmployment} onCancel={() => setIsAddingEmployment(false)} />}
+                                                    {!isAddingEmployment && !editingEmployment && (
+                                                        <Button type="button" variant="outline" onClick={() => setIsAddingEmployment(true)}>
+                                                            <Plus className="mr-2 h-4 w-4" />
+                                                            Add Another Employment
+                                                        </Button>
+                                                    )}
+                                                </>
+                                            )}
+                                        </div>
+                                        <div className="flex justify-end gap-2 pt-6 border-t mt-6">
+                                            <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
+                                            <SubmitButton />
+                                        </div>
+                                    </section>
+                                </form>
                             )}
                             
                             {(activeSection === 'education' || activeSection === 'projects') && (
@@ -819,127 +854,136 @@ export function UpdateProfileCard({
                             )}
                             
                             {activeSection === 'online-profiles' && (
-                                <section className="space-y-6">
-                                    <div>
-                                        <h3 className="text-lg font-semibold">Online Profiles</h3>
-                                        <p className="text-sm text-muted-foreground">Add links to your professional profiles.</p>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="socials.github">GitHub</Label>
-                                            <div className="relative">
-                                                <Github className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                                <Input id="socials.github" name="socials.github" defaultValue={profile.socials?.github ?? ''} placeholder="https://github.com/..." className="pl-9" />
+                                <form action={formAction}>
+                                    <input type="hidden" name="userId" value={session?.uid} />
+                                    <section className="space-y-6">
+                                        <div>
+                                            <h3 className="text-lg font-semibold">Online Profiles</h3>
+                                            <p className="text-sm text-muted-foreground">Add links to your professional profiles.</p>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="socials.github">GitHub</Label>
+                                                <div className="relative">
+                                                    <Github className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                    <Input id="socials.github" name="socials.github" defaultValue={profile.socials?.github ?? ''} placeholder="https://github.com/..." className="pl-9" />
+                                                </div>
+                                            </div>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="socials.twitter">Twitter / X</Label>
+                                                <div className="relative">
+                                                    <Twitter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                    <Input id="socials.twitter" name="socials.twitter" defaultValue={profile.socials?.twitter ?? ''} placeholder="https://x.com/..." className="pl-9" />
+                                                </div>
+                                            </div>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="socials.linkedin">LinkedIn</Label>
+                                                <div className="relative">
+                                                    <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                    <Input id="socials.linkedin" name="socials.linkedin" defaultValue={profile.socials?.linkedin ?? ''} placeholder="https://linkedin.com/in/..." className="pl-9" />
+                                                </div>
+                                            </div>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="socials.naukri">Naukri.com</Label>
+                                                <div className="relative">
+                                                    <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                    <Input id="socials.naukri" name="socials.naukri" defaultValue={profile.socials?.naukri ?? ''} placeholder="https://naukri.com/mnjuser/..." className="pl-9" />
+                                                </div>
+                                            </div>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="socials.glassdoor">Glassdoor</Label>
+                                                <div className="relative">
+                                                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                    <Input id="socials.glassdoor" name="socials.glassdoor" defaultValue={profile.socials?.glassdoor ?? ''} placeholder="https://glassdoor.co.in/..." className="pl-9" />
+                                                </div>
+                                            </div>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="socials.indeed">Indeed</Label>
+                                                <div className="relative">
+                                                    <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                    <Input id="socials.indeed" name="socials.indeed" defaultValue={profile.socials?.indeed ?? ''} placeholder="https://profile.indeed.com/..." className="pl-9" />
+                                                </div>
+                                            </div>
+                                            <div className="grid gap-2 md:col-span-2">
+                                                <Label htmlFor="portfolio">Portfolio</Label>
+                                                <div className="relative">
+                                                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                    <Input id="portfolio" name="portfolio" defaultValue={profile.portfolio ?? ''} placeholder="https://your-portfolio.com" className="pl-9" />
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="socials.twitter">Twitter / X</Label>
-                                            <div className="relative">
-                                                <Twitter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                                <Input id="socials.twitter" name="socials.twitter" defaultValue={profile.socials?.twitter ?? ''} placeholder="https://x.com/..." className="pl-9" />
-                                            </div>
+                                        <div className="flex justify-end gap-2 pt-6 border-t mt-6">
+                                            <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
+                                            <SubmitButton />
                                         </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="socials.linkedin">LinkedIn</Label>
-                                            <div className="relative">
-                                                <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                                <Input id="socials.linkedin" name="socials.linkedin" defaultValue={profile.socials?.linkedin ?? ''} placeholder="https://linkedin.com/in/..." className="pl-9" />
-                                            </div>
-                                        </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="socials.naukri">Naukri.com</Label>
-                                            <div className="relative">
-                                                <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                                <Input id="socials.naukri" name="socials.naukri" defaultValue={profile.socials?.naukri ?? ''} placeholder="https://naukri.com/mnjuser/..." className="pl-9" />
-                                            </div>
-                                        </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="socials.glassdoor">Glassdoor</Label>
-                                            <div className="relative">
-                                                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                                <Input id="socials.glassdoor" name="socials.glassdoor" defaultValue={profile.socials?.glassdoor ?? ''} placeholder="https://glassdoor.co.in/..." className="pl-9" />
-                                            </div>
-                                        </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="socials.indeed">Indeed</Label>
-                                            <div className="relative">
-                                                <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                                <Input id="socials.indeed" name="socials.indeed" defaultValue={profile.socials?.indeed ?? ''} placeholder="https://profile.indeed.com/..." className="pl-9" />
-                                            </div>
-                                        </div>
-                                        <div className="grid gap-2 md:col-span-2">
-                                            <Label htmlFor="portfolio">Portfolio</Label>
-                                            <div className="relative">
-                                                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                                <Input id="portfolio" name="portfolio" defaultValue={profile.portfolio ?? ''} placeholder="https://your-portfolio.com" className="pl-9" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </section>
+                                    </section>
+                                </form>
                             )}
                             
                             {activeSection === 'personal-details' && (
-                            <section className="space-y-6">
-                                <div>
-                                <h3 className="text-lg font-semibold">Personal Details</h3>
-                                <p className="text-sm text-muted-foreground">This information helps us personalize your experience.</p>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="grid gap-2">
-                                    <Label htmlFor="gender">Gender</Label>
-                                    <Select name="gender" defaultValue={profile.gender ?? ''}>
-                                    <SelectTrigger><SelectValue placeholder="Select..."/></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="Male">Male</SelectItem>
-                                        <SelectItem value="Female">Female</SelectItem>
-                                        <SelectItem value="Other">Other</SelectItem>
-                                    </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label htmlFor="maritalStatus">Marital Status</Label>
-                                    <Select name="maritalStatus" defaultValue={profile.maritalStatus ?? ''}>
-                                    <SelectTrigger><SelectValue placeholder="Select..."/></SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="Single">Single</SelectItem>
-                                        <SelectItem value="Married">Married</SelectItem>
-                                    </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label>Date of Birth</Label>
-                                    <div className="flex rounded-md border border-input focus-within:border-b-ring focus-within:border-b-2 transition-colors">
-                                        <Select name="dob-day" defaultValue={dob ? String(dob.getDate()) : undefined}>
-                                            <SelectTrigger className="w-24 border-0 rounded-r-none focus:ring-0 focus-visible:ring-0">
-                                                <SelectValue placeholder="Day" />
-                                            </SelectTrigger>
-                                            <SelectContent>{Array.from({ length: 31 }, (_, i) => i + 1).map(day => <SelectItem key={day} value={String(day)}>{day}</SelectItem>)}</SelectContent>
-                                        </Select>
-                                        <Select name="dob-month" defaultValue={dob ? String(dob.getMonth() + 1) : undefined}>
-                                            <SelectTrigger className="flex-1 border-y-0 rounded-none focus:ring-0 focus-visible:ring-0"><SelectValue placeholder="Month" /></SelectTrigger>
-                                            <SelectContent>{Array.from({ length: 12 }, (_, i) => i + 1).map(month => <SelectItem key={month} value={String(month)}>{format(new Date(2000, month - 1), 'MMMM')}</SelectItem>)}</SelectContent>
-                                        </Select>
-                                        <Select name="dob-year" defaultValue={dob ? String(dob.getFullYear()) : undefined}>
-                                            <SelectTrigger className="w-32 border-0 rounded-l-none focus:ring-0 focus-visible:ring-0"><SelectValue placeholder="Year" /></SelectTrigger>
-                                            <SelectContent>{Array.from({ length: 70 }, (_, i) => new Date().getFullYear() - 18 - i).map(year => <SelectItem key={year} value={String(year)}>{year}</SelectItem>)}</SelectContent>
+                            <form action={formAction}>
+                                <input type="hidden" name="userId" value={session?.uid} />
+                                <section className="space-y-6">
+                                    <div>
+                                    <h3 className="text-lg font-semibold">Personal Details</h3>
+                                    <p className="text-sm text-muted-foreground">This information helps us personalize your experience.</p>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="gender">Gender</Label>
+                                        <Select name="gender" defaultValue={profile.gender ?? ''}>
+                                        <SelectTrigger><SelectValue placeholder="Select..."/></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Male">Male</SelectItem>
+                                            <SelectItem value="Female">Female</SelectItem>
+                                            <SelectItem value="Other">Other</SelectItem>
+                                        </SelectContent>
                                         </Select>
                                     </div>
-                                </div>
-                                </div>
-                                <div className="space-y-2">
-                                  <Label>Permanent Address</Label>
-                                    <div className="space-y-4">
-                                        <Textarea name="permanentAddress.address" placeholder="Street Address" defaultValue={profile.permanentAddress?.address ?? ''}/>
-                                        <div className="grid grid-cols-2 gap-4">
-                                        <Input name="permanentAddress.city" placeholder="City" defaultValue={profile.permanentAddress?.city ?? ''}/>
-                                        <Input name="permanentAddress.state" placeholder="State" defaultValue={profile.permanentAddress?.state ?? ''}/>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                        <Input name="permanentAddress.country" placeholder="Country" defaultValue={profile.permanentAddress?.country ?? ''}/>
-                                        <Input name="permanentAddress.pincode" placeholder="Pin Code" defaultValue={profile.permanentAddress?.pincode ?? ''}/>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="maritalStatus">Marital Status</Label>
+                                        <Select name="maritalStatus" defaultValue={profile.maritalStatus ?? ''}>
+                                        <SelectTrigger><SelectValue placeholder="Select..."/></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Single">Single</SelectItem>
+                                            <SelectItem value="Married">Married</SelectItem>
+                                        </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label>Date of Birth</Label>
+                                        <div className="flex rounded-md border border-input focus-within:border-b-ring focus-within:border-b-2 transition-colors">
+                                            <Select name="dob-day" defaultValue={dob ? String(dob.getDate()) : undefined}>
+                                                <SelectTrigger className="w-24 border-0 rounded-r-none focus:ring-0 focus-visible:ring-0">
+                                                    <SelectValue placeholder="Day" />
+                                                </SelectTrigger>
+                                                <SelectContent>{Array.from({ length: 31 }, (_, i) => i + 1).map(day => <SelectItem key={day} value={String(day)}>{day}</SelectItem>)}</SelectContent>
+                                            </Select>
+                                            <Select name="dob-month" defaultValue={dob ? String(dob.getMonth() + 1) : undefined}>
+                                                <SelectTrigger className="flex-1 border-y-0 rounded-none focus:ring-0 focus-visible:ring-0"><SelectValue placeholder="Month" /></SelectTrigger>
+                                                <SelectContent>{Array.from({ length: 12 }, (_, i) => i + 1).map(month => <SelectItem key={month} value={String(month)}>{format(new Date(2000, month - 1), 'MMMM')}</SelectItem>)}</SelectContent>
+                                            </Select>
+                                            <Select name="dob-year" defaultValue={dob ? String(dob.getFullYear()) : undefined}>
+                                                <SelectTrigger className="w-32 border-0 rounded-l-none focus:ring-0 focus-visible:ring-0"><SelectValue placeholder="Year" /></SelectTrigger>
+                                                <SelectContent>{Array.from({ length: 70 }, (_, i) => new Date().getFullYear() - 18 - i).map(year => <SelectItem key={year} value={String(year)}>{year}</SelectItem>)}</SelectContent>
+                                            </Select>
                                         </div>
                                     </div>
-                                </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label>Permanent Address</Label>
+                                        <div className="space-y-4">
+                                            <Textarea name="permanentAddress.address" placeholder="Street Address" defaultValue={profile.permanentAddress?.address ?? ''}/>
+                                            <div className="grid grid-cols-2 gap-4">
+                                            <Input name="permanentAddress.city" placeholder="City" defaultValue={profile.permanentAddress?.city ?? ''}/>
+                                            <Input name="permanentAddress.state" placeholder="State" defaultValue={profile.permanentAddress?.state ?? ''}/>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                            <Input name="permanentAddress.country" placeholder="Country" defaultValue={profile.permanentAddress?.country ?? ''}/>
+                                            <Input name="permanentAddress.pincode" placeholder="Pin Code" defaultValue={profile.permanentAddress?.pincode ?? ''}/>
+                                            </div>
+                                        </div>
+                                    </div>
 
                                 <div className="space-y-4 pt-4">
                                   <Label className="font-semibold text-lg">Language Proficiency</Label>
@@ -1006,7 +1050,6 @@ export function UpdateProfileCard({
                     </Card>
                 </ScrollArea>
             </div>
-        </form>
-    </div>
+        </div>
   );
 }
