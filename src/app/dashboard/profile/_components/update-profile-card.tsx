@@ -47,7 +47,7 @@ const Twitter = (props: React.SVGProps<SVGSVGElement>) => (
 
 const initialState = {
   error: null,
-  success: null,
+  success: false,
 };
 
 function SubmitButton() {
@@ -117,11 +117,11 @@ const EmploymentForm = ({ employment, onSave, onCancel }: { employment: Employme
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="grid gap-2">
                         <Label htmlFor="designation">Designation</Label>
-                        <Input id="designation" value={designation} onChange={e => setDesignation(e.target.value)} />
+                        <Input id="designation" value={designation} onChange={e => setDesignation(e.target.value)} placeholder="e.g. Software Engineer"/>
                     </div>
                     <div className="grid gap-2">
                         <Label htmlFor="company">Company</Label>
-                        <Input id="company" value={company} onChange={e => setCompany(e.target.value)} />
+                        <Input id="company" value={company} onChange={e => setCompany(e.target.value)} placeholder="e.g. Google" />
                     </div>
                 </div>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -140,9 +140,9 @@ const EmploymentForm = ({ employment, onSave, onCancel }: { employment: Employme
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="ctcAmount">CTC (LPA)</Label>
-                        <div className="flex items-center border border-input rounded-md focus-within:border-ring">
+                        <div className="flex items-center border border-input rounded-md focus-within:ring-1 focus-within:ring-ring">
                            <Select value={ctcCurrency} onValueChange={(value: 'INR' | 'USD') => setCtcCurrency(value)}>
-                             <SelectTrigger className="w-24 border-0 rounded-r-none focus:ring-0">
+                             <SelectTrigger className="w-[100px] border-0 rounded-r-none focus:ring-0">
                                <SelectValue />
                              </SelectTrigger>
                              <SelectContent>
@@ -164,11 +164,11 @@ const EmploymentForm = ({ employment, onSave, onCancel }: { employment: Employme
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="jobProfile">Job Profile</Label>
-                    <Textarea id="jobProfile" value={jobProfile} onChange={e => setJobProfile(e.target.value)} className="min-h-32" />
+                    <Textarea id="jobProfile" value={jobProfile} onChange={e => setJobProfile(e.target.value)} className="min-h-32" placeholder="Describe your responsibilities and achievements in this role." />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="skillsUsed">Skills Used (comma-separated)</Label>
-                    <Input id="skillsUsed" value={skillsUsed} onChange={e => setSkillsUsed(e.target.value)} />
+                    <Input id="skillsUsed" value={skillsUsed} onChange={e => setSkillsUsed(e.target.value)} placeholder="e.g. React, Node.js, Project Management" />
                 </div>
                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
@@ -289,6 +289,9 @@ export function UpdateProfileCard({
   const [employments, setEmployments] = useState<Employment[]>(profile.employment || []);
   const [isAddingEmployment, setIsAddingEmployment] = useState(false);
   const [editingEmployment, setEditingEmployment] = useState<Employment | null>(null);
+  const [deleteEmploymentId, setDeleteEmploymentId] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [employmentIsPending, startEmploymentTransition] = useTransition();
   
   useEffect(() => {
     setEmployments(profile.employment || []);
@@ -515,8 +518,6 @@ export function UpdateProfileCard({
     setLanguages(languages.filter((_, i) => i !== index));
   };
   
-  const [isEmploymentPending, startEmploymentTransition] = useTransition();
-
   const handleSaveEmployment = (employment: Employment) => {
     startEmploymentTransition(() => {
       const newEmployments = [...employments];
@@ -538,14 +539,51 @@ export function UpdateProfileCard({
           const newEmployments = employments.filter(emp => emp.id !== id);
           const formData = new FormData();
           formData.append('userId', session!.uid);
-          formData.append('employment', JSON.stringify(newEmployments));
+          
+          if (newEmployments.length > 0) {
+            formData.append('employment', JSON.stringify(newEmployments));
+          } else {
+            formData.append('employment', '[]'); // Explicitly send empty array
+          }
+
           employmentAction(formData);
       });
   };
 
+  const openDeleteDialog = (id: string) => {
+    setDeleteEmploymentId(id);
+    setIsDeleteDialogOpen(true);
+  };
+  
+  const confirmDelete = () => {
+    if (deleteEmploymentId) {
+      handleDeleteEmployment(deleteEmploymentId);
+    }
+    setIsDeleteDialogOpen(false);
+    setDeleteEmploymentId(null);
+  };
+  
+
   return (
       <>
-        <div className="flex gap-6 h-full w-full">
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                This will permanently delete this employment record.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setDeleteEmploymentId(null)}>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={confirmDelete} disabled={employmentIsPending} className="bg-destructive hover:bg-destructive/90">
+                {employmentIsPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Delete'}
+                </AlertDialogAction>
+            </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+
+       <div className="flex gap-6 h-full w-full">
             <Card className="p-4 w-[250px] self-start sticky top-20">
             <nav className="grid gap-1 text-sm">
                 {navItems.map((item) => (
@@ -702,6 +740,7 @@ export function UpdateProfileCard({
                             onChange={handleResumeFileChange}
                             accept=".pdf,.doc,.docx"
                             disabled={isResumePending}
+                            name="resumeFile"
                             />
                             {profile.hasResume && !selectedFile ? (
                             <Card className="relative flex flex-col items-center justify-center p-6 text-center">
@@ -900,23 +939,7 @@ export function UpdateProfileCard({
                                   </div>
                                   <div className="flex gap-2">
                                     <Button variant="ghost" size="icon" onClick={() => setEditingEmployment(emp)}><Edit className="h-4 w-4" /></Button>
-                                    <AlertDialog>
-                                      <AlertDialogTrigger asChild>
-                                        <Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                                      </AlertDialogTrigger>
-                                      <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                          <AlertDialogDescription>
-                                            This will permanently delete this employment record.
-                                          </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                          <AlertDialogAction onClick={() => handleDeleteEmployment(emp.id)} disabled={isEmploymentPending} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
-                                        </AlertDialogFooter>
-                                      </AlertDialogContent>
-                                    </AlertDialog>
+                                    <Button variant="ghost" size="icon" onClick={() => openDeleteDialog(emp.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                                   </div>
                                 </div>
                               </Card>
