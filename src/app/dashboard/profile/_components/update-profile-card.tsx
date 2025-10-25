@@ -530,7 +530,7 @@ export function UpdateProfileCard({
                                           <Label htmlFor="phone">Phone Number</Label>
                                           <div className="flex items-center rounded-md border border-input focus-within:border-b-ring focus-within:border-b-2 transition-colors">
                                             <Select defaultValue="+91">
-                                              <SelectTrigger className="w-24 border-0 rounded-r-none focus:ring-0">
+                                              <SelectTrigger className="w-24 border-0 rounded-r-none focus-visible:ring-0 focus-visible:ring-offset-0">
                                                 <SelectValue />
                                               </SelectTrigger>
                                               <SelectContent>
@@ -542,7 +542,7 @@ export function UpdateProfileCard({
                                               name="phone"
                                               defaultValue={profile.phone ?? ''}
                                               type="tel"
-                                              className="border-0 rounded-l-none focus-visible:ring-0"
+                                              className="border-0 rounded-l-none focus-visible:ring-0 focus-visible:ring-offset-0"
                                             />
                                           </div>
                                         </div>
@@ -774,7 +774,7 @@ export function UpdateProfileCard({
                                                 <Briefcase className="mx-auto h-12 w-12 text-muted-foreground" />
                                                 <h3 className="mt-4 text-lg font-semibold">No Employment Yet</h3>
                                                 <p className="mt-1 text-sm text-muted-foreground">You haven't created any work experience yet, Add your work experience.</p>
-                                                <Button className="mt-6" variant="default" type="button" onClick={() => setIsAddingEmployment(true)}>
+                                                <Button className="mt-6" variant="secondary" type="button" onClick={() => setIsAddingEmployment(true)}>
                                                     <Plus className="mr-2 h-4 w-4" />
                                                     Add Employment
                                                 </Button>
@@ -915,7 +915,9 @@ export function UpdateProfileCard({
                                     <Label>Date of Birth</Label>
                                     <div className="flex rounded-md border border-input focus-within:border-b-ring focus-within:border-b-2 transition-colors">
                                         <Select name="dob-day" defaultValue={dob ? String(dob.getDate()) : undefined}>
-                                            <SelectTrigger className="w-24 border-0 rounded-r-none focus:ring-0 focus-visible:ring-0"><SelectValue placeholder="Day" /></SelectTrigger>
+                                            <SelectTrigger className="w-24 border-0 rounded-r-none focus:ring-0 focus-visible:ring-0">
+                                                <SelectValue placeholder="Day" />
+                                            </SelectTrigger>
                                             <SelectContent>{Array.from({ length: 31 }, (_, i) => i + 1).map(day => <SelectItem key={day} value={String(day)}>{day}</SelectItem>)}</SelectContent>
                                         </Select>
                                         <Select name="dob-month" defaultValue={dob ? String(dob.getMonth() + 1) : undefined}>
