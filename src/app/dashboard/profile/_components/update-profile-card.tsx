@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload, FileText, X, Plus, CalendarIcon, UploadCloud, Download, RefreshCw, Github, FolderKanban } from 'lucide-react';
+import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload, FileText, X, Plus, CalendarIcon, UploadCloud, Download, RefreshCw, Github, FolderKanban, AlertTriangle } from 'lucide-react';
 import { FaFilePdf, FaFileWord, FaFileImage } from 'react-icons/fa';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -82,7 +82,7 @@ const EmploymentForm = ({ employment, onSave, onCancel }: { employment: Employme
     const [startDate, setStartDate] = useState<Date | undefined>(employment?.startDate ? new Date(employment.startDate) : undefined);
     const [endDate, setEndDate] = useState<Date | undefined>(employment?.endDate ? new Date(employment.endDate) : undefined);
     const [responsibilities, setResponsibilities] = useState(employment?.responsibilities || '');
-    const { pending } = useFormStatus();
+    const [isPending, startTransition] = useTransition();
 
 
     const handleSave = () => {
@@ -95,7 +95,9 @@ const EmploymentForm = ({ employment, onSave, onCancel }: { employment: Employme
             endDate: isCurrent ? null : endDate!.toISOString(),
             responsibilities
         };
-        onSave(newEmployment);
+        startTransition(() => {
+          onSave(newEmployment);
+        });
     };
 
     return (
@@ -146,9 +148,9 @@ const EmploymentForm = ({ employment, onSave, onCancel }: { employment: Employme
                     <Textarea id="responsibilities" value={responsibilities} onChange={e => setResponsibilities(e.target.value)} className="min-h-32" />
                 </div>
                 <div className="flex justify-end gap-2">
-                    <Button variant="ghost" onClick={onCancel} disabled={pending}>Cancel</Button>
-                    <Button onClick={handleSave} disabled={pending}>
-                        {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    <Button variant="ghost" onClick={onCancel} disabled={isPending}>Cancel</Button>
+                    <Button onClick={handleSave} disabled={isPending}>
+                        {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Save
                     </Button>
                 </div>
@@ -167,24 +169,20 @@ const useFormFeedback = (state: any) => {
           description: state.success,
         });
       }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [state.success, toast]);
 };
 
 export function UpdateProfileCard({ 
     profile,
-    onSave, 
     onCancel,
     onAvatarChange
 }: { 
     profile: UserProfile,
-    onSave: (updatedProfile: any) => void, 
     onCancel: () => void ,
     onAvatarChange: (url: string | null) => void
 }) {
   const { session, updateSession } = useSession();
   const { toast } = useToast();
-  const [isPending, startTransition] = useTransition();
   
   const [profileDetailsState, profileDetailsAction] = useActionState(updateUserProfileAction, initialState);
   const [careerProfileState, careerProfileAction] = useActionState(updateUserProfileAction, initialState);
@@ -454,20 +452,18 @@ export function UpdateProfileCard({
   };
 
   const handleSaveEmployment = (employment: Employment) => {
-    const newEmployments = [...employments];
-    if (editingEmployment) {
-        const index = newEmployments.findIndex(e => e.id === editingEmployment.id);
-        if (index > -1) newEmployments[index] = employment;
-    } else {
-        newEmployments.push(employment);
-    }
-
-    const formData = new FormData();
-    formData.append('userId', session!.uid);
-    formData.append('employment', JSON.stringify(newEmployments));
-    
     startTransition(() => {
-        employmentAction(formData);
+      const newEmployments = [...employments];
+      if (editingEmployment) {
+          const index = newEmployments.findIndex(e => e.id === editingEmployment.id);
+          if (index > -1) newEmployments[index] = employment;
+      } else {
+          newEmployments.push(employment);
+      }
+      const formData = new FormData();
+      formData.append('userId', session!.uid);
+      formData.append('employment', JSON.stringify(newEmployments));
+      employmentAction(formData);
     });
   };
 
@@ -641,7 +637,6 @@ export function UpdateProfileCard({
                                           className="hidden" 
                                           onChange={handleResumeFileChange}
                                           accept=".pdf,.doc,.docx"
-                                          disabled={isPending}
                                       />
                                       {profile.hasResume && !selectedFile ? (
                                           <Card className="relative flex flex-col items-center justify-center p-6 text-center">
@@ -708,17 +703,17 @@ export function UpdateProfileCard({
                                               <p className="font-semibold mt-4 text-sm">{selectedFile.name}</p>
                                               <p className="text-xs text-muted-foreground">Type: {getSimplifiedFileType(selectedFile.type)} &bull; Size: {formatFileSize(selectedFile.size)}</p>
                                               <div className="flex gap-2 mt-6">
-                                                  <Button type="button" variant="secondary" size="sm" onClick={handleResumeButtonClick} disabled={isPending}><RefreshCw className="mr-2 h-4 w-4"/>Change</Button>
-                                                  <Button type="button" variant="destructive" size="sm" disabled={isPending} onClick={() => setSelectedFile(null)}><X className="mr-2 h-4 w-4"/>Remove</Button>
+                                                  <Button type="button" variant="secondary" size="sm" onClick={handleResumeButtonClick}><RefreshCw className="mr-2 h-4 w-4"/>Change</Button>
+                                                  <Button type="button" variant="destructive" size="sm" onClick={() => setSelectedFile(null)}><X className="mr-2 h-4 w-4"/>Remove</Button>
                                               </div>
                                           </Card>
                                       ) : (
                                           <div
                                               className={cn("relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 transition-colors", isDragging && "border-dash-primary bg-dash-primary/10")}
-                                              onDrop={isPending ? undefined : handleDrop}
-                                              onDragOver={isPending ? undefined : handleResumeDragOver}
-                                              onDragLeave={isPending ? undefined : handleResumeDragLeave}
-                                              onClick={isPending ? undefined : handleResumeButtonClick}
+                                              onDrop={handleDrop}
+                                              onDragOver={handleResumeDragOver}
+                                              onDragLeave={handleResumeDragLeave}
+                                              onClick={handleResumeButtonClick}
                                           >
                                               <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
                                               <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
@@ -840,7 +835,23 @@ export function UpdateProfileCard({
                                                                 </div>
                                                                 <div className="flex gap-2">
                                                                     <Button variant="ghost" size="icon" onClick={() => setEditingEmployment(emp)}><Edit className="h-4 w-4" /></Button>
-                                                                    <Button variant="ghost" size="icon" onClick={() => handleDeleteEmployment(emp.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                                                    <AlertDialog>
+                                                                        <AlertDialogTrigger asChild>
+                                                                            <Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                                                        </AlertDialogTrigger>
+                                                                        <AlertDialogContent>
+                                                                            <AlertDialogHeader>
+                                                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                                                <AlertDialogDescription>
+                                                                                    This will permanently delete this employment record.
+                                                                                </AlertDialogDescription>
+                                                                            </AlertDialogHeader>
+                                                                            <AlertDialogFooter>
+                                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                                <AlertDialogAction onClick={() => handleDeleteEmployment(emp.id)} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                                                                            </AlertDialogFooter>
+                                                                        </AlertDialogContent>
+                                                                    </AlertDialog>
                                                                 </div>
                                                             </div>
                                                         </Card>

@@ -670,7 +670,7 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
 
     // Dynamically iterate over formData to build the update object
     for (const [key, value] of formData.entries()) {
-        if (key === 'userId' || key === 'role' || key.startsWith('$ACTION') || key === 'resumeFile') continue;
+        if (key === 'userId' || key === 'role' || key.startsWith('$ACTION')) continue;
 
         // Skip empty values unless it's a field we want to clear
         if (value === '' && !['profileSummary', 'phone', 'address'].includes(key)) continue;
@@ -681,7 +681,7 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
         } else if (key === 'keySkills' || key === 'employment' || key === 'languages') {
             try {
                 const parsedValue = JSON.parse(value as string);
-                if ((Array.isArray(parsedValue) && parsedValue.length > 0) || !Array.isArray(parsedValue)) {
+                if (Array.isArray(parsedValue)) {
                     dataToUpdate[key] = parsedValue;
                 }
             } catch (e) {
@@ -693,14 +693,6 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
         } else {
             dataToUpdate[key] = value;
         }
-    }
-
-    const dobDay = formData.get('dob-day');
-    const dobMonth = formData.get('dob-month');
-    const dobYear = formData.get('dob-year');
-
-    if (dobDay && dobMonth && dobYear) {
-        dataToUpdate['dob'] = new Date(`${dobYear}-${dobMonth}-${dobDay}`).toISOString();
     }
 
     const resumeFile = formData.get('resumeFile') as File | null;
@@ -721,6 +713,15 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
         dataToUpdate.hasResume = true;
     }
 
+
+    const dobDay = formData.get('dob-day');
+    const dobMonth = formData.get('dob-month');
+    const dobYear = formData.get('dob-year');
+
+    if (dobDay && dobMonth && dobYear) {
+        dataToUpdate['dob'] = new Date(`${dobYear}-${dobMonth}-${dobDay}`).toISOString();
+    }
+    
     if (Object.keys(dataToUpdate).length === 0) {
         return { success: 'No changes to save.' };
     }
