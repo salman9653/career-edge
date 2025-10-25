@@ -527,8 +527,24 @@ export function UpdateProfileCard({
                                             <Input id="name" name="name" defaultValue={profile.name ?? ''} required />
                                         </div>
                                         <div className="grid gap-2">
-                                            <Label htmlFor="phone">Phone Number</Label>
-                                            <Input id="phone" name="phone" defaultValue={profile.phone ?? ''} type="tel" />
+                                          <Label htmlFor="phone">Phone Number</Label>
+                                          <div className="flex items-center rounded-md border border-input focus-within:border-b-ring focus-within:border-b-2 transition-colors">
+                                            <Select defaultValue="+91">
+                                              <SelectTrigger className="w-24 border-0 rounded-r-none focus:ring-0">
+                                                <SelectValue />
+                                              </SelectTrigger>
+                                              <SelectContent>
+                                                <SelectItem value="+91">+91 (IN)</SelectItem>
+                                              </SelectContent>
+                                            </Select>
+                                            <Input
+                                              id="phone"
+                                              name="phone"
+                                              defaultValue={profile.phone ?? ''}
+                                              type="tel"
+                                              className="border-0 rounded-l-none focus-visible:ring-0"
+                                            />
+                                          </div>
                                         </div>
                                         <div className="grid gap-2">
                                             <Label htmlFor="address">City / Town</Label>
@@ -758,7 +774,7 @@ export function UpdateProfileCard({
                                                 <Briefcase className="mx-auto h-12 w-12 text-muted-foreground" />
                                                 <h3 className="mt-4 text-lg font-semibold">No Employment Yet</h3>
                                                 <p className="mt-1 text-sm text-muted-foreground">You haven't created any work experience yet, Add your work experience.</p>
-                                                <Button className="mt-6" type="button" onClick={() => setIsAddingEmployment(true)}>
+                                                <Button className="mt-6" variant="default" type="button" onClick={() => setIsAddingEmployment(true)}>
                                                     <Plus className="mr-2 h-4 w-4" />
                                                     Add Employment
                                                 </Button>
@@ -897,17 +913,17 @@ export function UpdateProfileCard({
                                 </div>
                                 <div className="grid gap-2">
                                     <Label>Date of Birth</Label>
-                                    <div className="flex rounded-md border border-input transition-colors focus-within:border-b-ring focus-within:border-b-2">
+                                    <div className="flex rounded-md border border-input focus-within:border-b-ring focus-within:border-b-2 transition-colors">
                                         <Select name="dob-day" defaultValue={dob ? String(dob.getDate()) : undefined}>
-                                            <SelectTrigger className="w-24 border-0 rounded-r-none focus:ring-0"><SelectValue placeholder="Day" /></SelectTrigger>
+                                            <SelectTrigger className="w-24 border-0 rounded-r-none focus:ring-0 focus-visible:ring-0"><SelectValue placeholder="Day" /></SelectTrigger>
                                             <SelectContent>{Array.from({ length: 31 }, (_, i) => i + 1).map(day => <SelectItem key={day} value={String(day)}>{day}</SelectItem>)}</SelectContent>
                                         </Select>
                                         <Select name="dob-month" defaultValue={dob ? String(dob.getMonth() + 1) : undefined}>
-                                            <SelectTrigger className="flex-1 border-y-0 rounded-none focus:ring-0"><SelectValue placeholder="Month" /></SelectTrigger>
+                                            <SelectTrigger className="flex-1 border-y-0 rounded-none focus:ring-0 focus-visible:ring-0"><SelectValue placeholder="Month" /></SelectTrigger>
                                             <SelectContent>{Array.from({ length: 12 }, (_, i) => i + 1).map(month => <SelectItem key={month} value={String(month)}>{format(new Date(2000, month - 1), 'MMMM')}</SelectItem>)}</SelectContent>
                                         </Select>
                                         <Select name="dob-year" defaultValue={dob ? String(dob.getFullYear()) : undefined}>
-                                            <SelectTrigger className="w-32 border-0 rounded-l-none focus:ring-0"><SelectValue placeholder="Year" /></SelectTrigger>
+                                            <SelectTrigger className="w-32 border-0 rounded-l-none focus:ring-0 focus-visible:ring-0"><SelectValue placeholder="Year" /></SelectTrigger>
                                             <SelectContent>{Array.from({ length: 70 }, (_, i) => new Date().getFullYear() - 18 - i).map(year => <SelectItem key={year} value={String(year)}>{year}</SelectItem>)}</SelectContent>
                                         </Select>
                                     </div>
