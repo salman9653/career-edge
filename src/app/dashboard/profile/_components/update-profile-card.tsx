@@ -215,7 +215,7 @@ const EmploymentForm = ({ employment, onSave, onCancel }: { employment: Employme
                         <div className="flex items-center border border-input rounded-md focus-within:ring-1 focus-within:ring-ring">
                            <Select value={ctcCurrency} onValueChange={(value: 'INR' | 'USD') => setCtcCurrency(value)}>
                              <SelectTrigger className="w-[120px] border-0 rounded-r-none focus:ring-0">
-                               <SelectValue />
+                               <SelectValue placeholder="Currency" />
                              </SelectTrigger>
                              <SelectContent>
                                <SelectItem value="INR">₹ (INR)</SelectItem>
@@ -317,7 +317,7 @@ const useFormFeedback = (state: any, name: string) => {
             description: state.error,
         });
       }
-    }, [state, toast, name]);
+    }, [state.success, state.error, toast, name]);
 };
 
 export function UpdateProfileCard({ 
@@ -347,6 +347,8 @@ export function UpdateProfileCard({
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isAvatarPending, startAvatarTransition] = useTransition();
+  const [employmentIsPending, startEmploymentTransition] = useTransition();
+
 
   const router = useRouter();
   const pathname = usePathname();
@@ -377,7 +379,6 @@ export function UpdateProfileCard({
   const [editingEmployment, setEditingEmployment] = useState<Employment | null>(null);
   const [deleteEmploymentId, setDeleteEmploymentId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [employmentIsPending, startEmploymentTransition] = useTransition();
   
   useEffect(() => {
     setEmployments(profile.employment || []);
@@ -625,7 +626,7 @@ export function UpdateProfileCard({
           const newEmployments = employments.filter(emp => emp.id !== id);
           const formData = new FormData();
           formData.append('userId', session!.uid);
-          formData.append('employment', JSON.stringify(newEmployments)); 
+          formData.append('employment', JSON.stringify(newEmployments));
           employmentAction(formData);
       });
   };
@@ -1034,7 +1035,7 @@ export function UpdateProfileCard({
                                 <div className="flex justify-between items-start">
                                   <div>
                                     <p className="font-semibold">{emp.designation}</p>
-                                    <p className="text-sm text-muted-foreground">{emp.company} | {emp.employmentType}</p>
+                                    <p className="text-sm text-muted-foreground">{emp.company} &middot; {emp.employmentType}</p>
                                     <p className="text-xs text-muted-foreground mt-1">
                                       {format(new Date(emp.startDate), 'MMM yyyy')} - {emp.isCurrent ? 'Present' : emp.endDate ? format(new Date(emp.endDate), 'MMM yyyy') : 'N/A'}
                                       <span className="mx-2 text-gray-400">•</span>
@@ -1267,3 +1268,5 @@ export function UpdateProfileCard({
     </>
   );
 }
+
+    
