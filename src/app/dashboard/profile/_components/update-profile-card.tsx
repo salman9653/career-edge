@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow, differenceInMonths } from 'date-fns';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   AlertDialog,
@@ -607,9 +607,9 @@ export function UpdateProfileCard({
   const handleSaveEmployment = (employment: Employment) => {
     startEmploymentTransition(() => {
       const newEmployments = [...employments];
-      if (editingEmployment) {
-          const index = newEmployments.findIndex(e => e.id === editingEmployment.id);
-          if (index > -1) newEmployments[index] = employment;
+      const index = newEmployments.findIndex(e => e.id === employment.id);
+      if (index > -1) {
+          newEmployments[index] = employment;
       } else {
           newEmployments.push(employment);
       }
@@ -625,13 +625,7 @@ export function UpdateProfileCard({
           const newEmployments = employments.filter(emp => emp.id !== id);
           const formData = new FormData();
           formData.append('userId', session!.uid);
-          
-          if (newEmployments.length > 0) {
-            formData.append('employment', JSON.stringify(newEmployments));
-          } else {
-            formData.append('employment', JSON.stringify([])); 
-          }
-
+          formData.append('employment', JSON.stringify(newEmployments)); 
           employmentAction(formData);
       });
   };
@@ -648,6 +642,24 @@ export function UpdateProfileCard({
     setIsDeleteDialogOpen(false);
     setDeleteEmploymentId(null);
   };
+
+  const calculateDuration = (startDate: string, endDate: string | null, isCurrent: boolean) => {
+    const start = new Date(startDate);
+    const end = isCurrent ? new Date() : endDate ? new Date(endDate) : new Date();
+    const months = differenceInMonths(end, start);
+    const years = Math.floor(months / 12);
+    const remainingMonths = months % 12;
+    
+    if (years === 0 && remainingMonths === 0) return "Less than a month";
+    
+    let result = '';
+    if (years > 0) result += `${years} year${years > 1 ? 's' : ''}`;
+    if (remainingMonths > 0) {
+        if (years > 0) result += ', ';
+        result += `${remainingMonths} month${remainingMonths > 1 ? 's' : ''}`;
+    }
+    return result;
+  };
   
 
   return (
@@ -655,8 +667,13 @@ export function UpdateProfileCard({
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
+             <div className="flex justify-center">
+                <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center mb-2">
+                    <AlertTriangle className="h-6 w-6 text-destructive"/>
+                </div>
+            </div>
+            <AlertDialogTitle className="text-center">Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
               This will permanently delete this employment record.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -1017,9 +1034,11 @@ export function UpdateProfileCard({
                                 <div className="flex justify-between items-start">
                                   <div>
                                     <p className="font-semibold">{emp.designation}</p>
-                                    <p className="text-sm text-muted-foreground">{emp.company}</p>
+                                    <p className="text-sm text-muted-foreground">{emp.company} | {emp.employmentType}</p>
                                     <p className="text-xs text-muted-foreground mt-1">
-                                      {format(new Date(emp.startDate), 'MMM yyyy')} - {emp.isCurrent ? 'Present' : emp.endDate ? format(new Date(emp.endDate), 'MMM yyyy') : ''}
+                                      {format(new Date(emp.startDate), 'MMM yyyy')} - {emp.isCurrent ? 'Present' : emp.endDate ? format(new Date(emp.endDate), 'MMM yyyy') : 'N/A'}
+                                      <span className="mx-2 text-gray-400">•</span>
+                                      {calculateDuration(emp.startDate, emp.endDate, emp.isCurrent)}
                                     </p>
                                   </div>
                                   <div className="flex gap-2">
