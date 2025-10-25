@@ -82,6 +82,8 @@ const EmploymentForm = ({ employment, onSave, onCancel }: { employment: Employme
     const [startDate, setStartDate] = useState<Date | undefined>(employment?.startDate ? new Date(employment.startDate) : undefined);
     const [endDate, setEndDate] = useState<Date | undefined>(employment?.endDate ? new Date(employment.endDate) : undefined);
     const [responsibilities, setResponsibilities] = useState(employment?.responsibilities || '');
+    const { pending } = useFormStatus();
+
 
     const handleSave = () => {
         const newEmployment: Employment = {
@@ -144,15 +146,18 @@ const EmploymentForm = ({ employment, onSave, onCancel }: { employment: Employme
                     <Textarea id="responsibilities" value={responsibilities} onChange={e => setResponsibilities(e.target.value)} className="min-h-32" />
                 </div>
                 <div className="flex justify-end gap-2">
-                    <Button variant="ghost" onClick={onCancel}>Cancel</Button>
-                    <Button onClick={handleSave}>Save</Button>
+                    <Button variant="ghost" onClick={onCancel} disabled={pending}>Cancel</Button>
+                    <Button onClick={handleSave} disabled={pending}>
+                        {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Save
+                    </Button>
                 </div>
             </CardContent>
         </Card>
     );
 };
 
-const useFormFeedback = (state: any, onSave: (data: any) => void, formRef: React.RefObject<HTMLFormElement>) => {
+const useFormFeedback = (state: any, onSave: (data: any) => void) => {
     const { toast } = useToast();
   
     useEffect(() => {
@@ -161,24 +166,11 @@ const useFormFeedback = (state: any, onSave: (data: any) => void, formRef: React
           title: 'Success',
           description: state.success,
         });
-        if(formRef.current) {
-            const formData = new FormData(formRef.current);
-            const updatedData: { [key: string]: any } = {};
-      
-            for (const [key, value] of formData.entries()) {
-              if (key.includes('.')) {
-                  const [parent, child] = key.split('.');
-                  if (!updatedData[parent]) updatedData[parent] = {};
-                  updatedData[parent][child] = value;
-              } else {
-                  updatedData[key] = value;
-              }
-            }
-            onSave(updatedData);
-        }
+        
+        onSave({});
       }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [state]);
+    }, [state.success, toast]);
 };
 
 export function UpdateProfileCard({ 
@@ -194,6 +186,7 @@ export function UpdateProfileCard({
 }) {
   const { session, updateSession } = useSession();
   const { toast } = useToast();
+  const [isPending, startTransition] = useTransition();
   
   const [profileDetailsState, profileDetailsAction] = useActionState(updateUserProfileAction, initialState);
   const [careerProfileState, careerProfileAction] = useActionState(updateUserProfileAction, initialState);
@@ -202,20 +195,20 @@ export function UpdateProfileCard({
   const [keySkillsState, keySkillsAction] = useActionState(updateUserProfileAction, initialState);
   const [employmentState, employmentAction] = useActionState(updateUserProfileAction, initialState);
 
-  const profileDetailsFormRef = useRef<HTMLFormElement>(null);
-  const careerProfileFormRef = useRef<HTMLFormElement>(null);
-  const onlineProfilesFormRef = useRef<HTMLFormElement>(null);
-  const personalDetailsFormRef = useRef<HTMLFormElement>(null);
-  const keySkillsFormRef = useRef<HTMLFormElement>(null);
-  const employmentFormRef = useRef<HTMLFormElement>(null);
+  useFormFeedback(profileDetailsState, onSave);
+  useFormFeedback(careerProfileState, onSave);
+  useFormFeedback(onlineProfilesState, onSave);
+  useFormFeedback(personalDetailsState, onSave);
+  useFormFeedback(keySkillsState, onSave);
+  useEffect(() => {
+    if (employmentState.success) {
+      toast({ title: 'Success', description: employmentState.success });
+      setIsAddingEmployment(false);
+      setEditingEmployment(null);
+      onSave({}); // Trigger data refresh
+    }
+  }, [employmentState, toast, onSave]);
 
-  useFormFeedback(profileDetailsState, onSave, profileDetailsFormRef);
-  useFormFeedback(careerProfileState, onSave, careerProfileFormRef);
-  useFormFeedback(onlineProfilesState, onSave, onlineProfilesFormRef);
-  useFormFeedback(personalDetailsState, onSave, personalDetailsFormRef);
-  useFormFeedback(keySkillsState, onSave, keySkillsFormRef);
-  useFormFeedback(employmentState, onSave, employmentFormRef);
-  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isAvatarPending, startAvatarTransition] = useTransition();
 
@@ -247,7 +240,9 @@ export function UpdateProfileCard({
   const [isAddingEmployment, setIsAddingEmployment] = useState(false);
   const [editingEmployment, setEditingEmployment] = useState<Employment | null>(null);
   
-  const isPending = isAvatarPending || isResumePending;
+  useEffect(() => {
+    setEmployments(profile.employment || []);
+  }, [profile.employment]);
   
   // Logic for skill suggestions
   useEffect(() => {
@@ -413,6 +408,7 @@ export function UpdateProfileCard({
         if (mimeType.includes('openxmlformats')) return 'docx';
         return 'doc';
     }
+    const fileType = mimeType;
     if (fileType.startsWith('image')) return mimeType.split('/')[1]?.toLowerCase() || 'image';
     return mimeType;
   }
@@ -467,7 +463,6 @@ export function UpdateProfileCard({
     } else {
         newEmployments.push(employment);
     }
-    setEmployments(newEmployments);
 
     const formData = new FormData();
     formData.append('userId', session!.uid);
@@ -476,14 +471,10 @@ export function UpdateProfileCard({
     startTransition(() => {
         employmentAction(formData);
     });
-
-    setIsAddingEmployment(false);
-    setEditingEmployment(null);
   };
 
   const handleDeleteEmployment = (id: string) => {
       const newEmployments = employments.filter(emp => emp.id !== id);
-      setEmployments(newEmployments);
       const formData = new FormData();
       formData.append('userId', session!.uid);
       formData.append('employment', JSON.stringify(newEmployments));
@@ -516,7 +507,7 @@ export function UpdateProfileCard({
                       <CardContent className="p-6">
                           
                           {activeSection === 'profile-details' && (
-                              <form action={profileDetailsAction} ref={profileDetailsFormRef}>
+                              <form action={profileDetailsAction}>
                                   <input type="hidden" name="userId" value={session?.uid} />
                                   <section className="space-y-6">
                                       <div>
@@ -580,7 +571,7 @@ export function UpdateProfileCard({
                           )}
                           
                           {activeSection === 'career-profile' && (
-                          <form action={careerProfileAction} ref={careerProfileFormRef}>
+                          <form action={careerProfileAction}>
                               <input type="hidden" name="userId" value={session?.uid} />
                               <section className="space-y-6">
                                   <div>
@@ -648,6 +639,7 @@ export function UpdateProfileCard({
                                       <input 
                                           type="file" 
                                           id="resume-file-input"
+                                          name="resumeFile"
                                           className="hidden" 
                                           onChange={handleResumeFileChange}
                                           accept=".pdf,.doc,.docx"
@@ -736,13 +728,6 @@ export function UpdateProfileCard({
                                           </div>
                                       )}
                                   </div>
-                                  <input type="file" name="resumeFile" className="hidden" ref={selectedFile ? (node) => {
-                                      if (node) {
-                                          const dataTransfer = new DataTransfer();
-                                          dataTransfer.items.add(selectedFile);
-                                          node.files = dataTransfer.files;
-                                      }
-                                  } : null} />
                                   <div className="flex justify-end gap-2 pt-6 border-t mt-6">
                                     <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
                                     <Button type="submit" disabled={!selectedFile || isResumePending}>
@@ -755,7 +740,7 @@ export function UpdateProfileCard({
                           )}
 
                           {activeSection === 'key-skills' && (
-                              <form action={keySkillsAction} ref={keySkillsFormRef}>
+                              <form action={keySkillsAction}>
                                   <input type="hidden" name="userId" value={session?.uid} />
                                   <input type="hidden" name="keySkills" value={JSON.stringify(skills)} />
                                   <section className="space-y-6">
@@ -888,7 +873,7 @@ export function UpdateProfileCard({
                           )}
                           
                           {activeSection === 'online-profiles' && (
-                              <form action={onlineProfilesAction} ref={onlineProfilesFormRef}>
+                              <form action={onlineProfilesAction}>
                                   <input type="hidden" name="userId" value={session?.uid} />
                                   <section className="space-y-6">
                                       <div>
@@ -955,7 +940,7 @@ export function UpdateProfileCard({
                           )}
                           
                           {activeSection === 'personal-details' && (
-                          <form action={personalDetailsAction} ref={personalDetailsFormRef}>
+                          <form action={personalDetailsAction}>
                               <input type="hidden" name="userId" value={session?.uid} />
                               <input type="hidden" name="languages" value={JSON.stringify(languages)} />
                               <section className="space-y-6">
