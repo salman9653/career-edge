@@ -44,7 +44,6 @@ const Twitter = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
 );
 
-
 const initialState = {
   error: null,
   success: null,
@@ -153,9 +152,8 @@ const EmploymentForm = ({ employment, onSave, onCancel }: { employment: Employme
     );
 };
 
-const useFormFeedback = (state: any, onSave: (data: any) => void) => {
+const useFormFeedback = (state: any, onSave: (data: any) => void, formRef: React.RefObject<HTMLFormElement>) => {
     const { toast } = useToast();
-    const formRef = useRef<HTMLFormElement>(null);
   
     useEffect(() => {
       if (state.success) {
@@ -163,23 +161,23 @@ const useFormFeedback = (state: any, onSave: (data: any) => void) => {
           title: 'Success',
           description: state.success,
         });
-        const formData = new FormData(formRef.current!);
-        const updatedData: { [key: string]: any } = {};
-  
-        for (const [key, value] of formData.entries()) {
-          if (key.includes('.')) {
-              const [parent, child] = key.split('.');
-              if (!updatedData[parent]) updatedData[parent] = {};
-              updatedData[parent][child] = value;
-          } else {
-              updatedData[key] = value;
-          }
+        if(formRef.current) {
+            const formData = new FormData(formRef.current);
+            const updatedData: { [key: string]: any } = {};
+      
+            for (const [key, value] of formData.entries()) {
+              if (key.includes('.')) {
+                  const [parent, child] = key.split('.');
+                  if (!updatedData[parent]) updatedData[parent] = {};
+                  updatedData[parent][child] = value;
+              } else {
+                  updatedData[key] = value;
+              }
+            }
+            onSave(updatedData);
         }
-        onSave(updatedData);
       }
-    }, [state.success, toast, onSave]);
-  
-    return formRef;
+    }, [state.success, toast, onSave, formRef]);
 };
 
 export function UpdateProfileCard({ 
@@ -202,14 +200,21 @@ export function UpdateProfileCard({
   const [personalDetailsState, personalDetailsAction] = useActionState(updateUserProfileAction, initialState);
   const [keySkillsState, keySkillsAction] = useActionState(updateUserProfileAction, initialState);
   const [employmentState, employmentAction] = useActionState(updateUserProfileAction, initialState);
-  
-  const profileDetailsFormRef = useFormFeedback(profileDetailsState, onSave);
-  const careerProfileFormRef = useFormFeedback(careerProfileState, onSave);
-  const onlineProfilesFormRef = useFormFeedback(onlineProfilesState, onSave);
-  const personalDetailsFormRef = useFormFeedback(personalDetailsState, onSave);
-  const keySkillsFormRef = useFormFeedback(keySkillsState, onSave);
-  const employmentFormRef = useFormFeedback(employmentState, onSave);
 
+  const profileDetailsFormRef = useRef<HTMLFormElement>(null);
+  const careerProfileFormRef = useRef<HTMLFormElement>(null);
+  const onlineProfilesFormRef = useRef<HTMLFormElement>(null);
+  const personalDetailsFormRef = useRef<HTMLFormElement>(null);
+  const keySkillsFormRef = useRef<HTMLFormElement>(null);
+  const employmentFormRef = useRef<HTMLFormElement>(null);
+
+  useFormFeedback(profileDetailsState, onSave, profileDetailsFormRef);
+  useFormFeedback(careerProfileState, onSave, careerProfileFormRef);
+  useFormFeedback(onlineProfilesState, onSave, onlineProfilesFormRef);
+  useFormFeedback(personalDetailsState, onSave, personalDetailsFormRef);
+  useFormFeedback(keySkillsState, onSave, keySkillsFormRef);
+  useFormFeedback(employmentState, onSave, employmentFormRef);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isAvatarPending, startAvatarTransition] = useTransition();
 
@@ -407,7 +412,7 @@ export function UpdateProfileCard({
         if (mimeType.includes('openxmlformats')) return 'docx';
         return 'doc';
     }
-    if (mimeType.startsWith('image')) return mimeType.split('/')[1]?.toLowerCase() || 'image';
+    if (fileType.startsWith('image')) return mimeType.split('/')[1]?.toLowerCase() || 'image';
     return mimeType;
   }
 
@@ -1057,6 +1062,7 @@ export function UpdateProfileCard({
                   </ScrollArea>
               </div>
           </div>
-      </>
+      </div>
+    </>
   );
 }
