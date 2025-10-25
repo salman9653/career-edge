@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useActionState, useEffect, useRef, useState, useTransition, type DragEvent } from 'react';
 import { useFormStatus } from 'react-dom';
@@ -76,6 +77,75 @@ interface LanguageProficiency {
     canSpeak: boolean;
 }
 
+const toWords = (num: number, currency: 'INR' | 'USD') => {
+    if (!num) return '';
+    const isIndian = currency === 'INR';
+    const units = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
+    const teens = ["", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
+    const tens = ["", "ten", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"];
+
+    const convertLessThanThousand = (n: number) => {
+        if (n === 0) return "";
+        let result = "";
+        if (n >= 100) {
+            result += units[Math.floor(n / 100)] + " hundred ";
+            n %= 100;
+        }
+        if (n >= 11 && n <= 19) {
+            result += teens[n - 10];
+        } else if (n >= 10) {
+            result += tens[Math.floor(n / 10)] + " ";
+            n %= 10;
+        }
+        if (n >= 1 && n <= 9) {
+            result += units[n];
+        }
+        return result.trim();
+    };
+
+    const convert = (n: number) => {
+        if (n === 0) return "zero";
+        
+        const numStr = n.toString();
+        const [integerPart, decimalPart] = numStr.split('.');
+
+        let integer = Number(integerPart);
+        let result = "";
+
+        if (isIndian) {
+            if (integer >= 10000000) {
+                result += convertLessThanThousand(Math.floor(integer / 10000000)) + " crore ";
+                integer %= 10000000;
+            }
+            if (integer >= 100000) {
+                result += convertLessThanThousand(Math.floor(integer / 100000)) + " lakh ";
+                integer %= 100000;
+            }
+        } else { // International numbering system
+            if (integer >= 1000000000) {
+                result += convertLessThanThousand(Math.floor(integer / 1000000000)) + " billion ";
+                integer %= 1000000000;
+            }
+            if (integer >= 1000000) {
+                result += convertLessThanThousand(Math.floor(integer / 1000000)) + " million ";
+                integer %= 1000000;
+            }
+        }
+        if (integer >= 1000) {
+            result += convertLessThanThousand(Math.floor(integer / 1000)) + " thousand ";
+            integer %= 1000;
+        }
+        if (integer > 0) {
+            result += convertLessThanThousand(integer);
+        }
+        
+        let currencyName = currency === 'INR' ? 'rupees' : 'dollars';
+        return result.trim().replace(/\s+/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) + ` ${currencyName}`;
+    }
+
+    return convert(num);
+};
+
 const EmploymentForm = ({ employment, onSave, onCancel }: { employment: Employment | null, onSave: (employment: Employment) => void, onCancel: () => void }) => {
     const [designation, setDesignation] = useState(employment?.designation || '');
     const [company, setCompany] = useState(employment?.company || '');
@@ -88,6 +158,8 @@ const EmploymentForm = ({ employment, onSave, onCancel }: { employment: Employme
     const [startDate, setStartDate] = useState<Date | undefined>(employment?.startDate ? new Date(employment.startDate) : undefined);
     const [endDate, setEndDate] = useState<Date | undefined>(employment?.endDate ? new Date(employment.endDate) : undefined);
     const [isPending, startTransition] = useTransition();
+
+    const JOB_PROFILE_MAX_LENGTH = 1000;
 
     const handleSave = () => {
         if (!startDate) return;
@@ -160,11 +232,25 @@ const EmploymentForm = ({ employment, onSave, onCancel }: { employment: Employme
                                className="border-0 rounded-l-none focus-visible:ring-0"
                            />
                         </div>
+                        {ctcAmount && <p className="text-xs text-green-600 dark:text-green-400 mt-1">{toWords(parseFloat(ctcAmount) * 100000, ctcCurrency)}</p>}
                     </div>
                 </div>
-                 <div className="space-y-2">
+                <div className="space-y-2">
                     <Label htmlFor="jobProfile">Job Profile</Label>
-                    <Textarea id="jobProfile" value={jobProfile} onChange={e => setJobProfile(e.target.value)} className="min-h-32" placeholder="Describe your responsibilities and achievements in this role." />
+                    <Textarea 
+                      id="jobProfile" 
+                      value={jobProfile} 
+                      onChange={e => setJobProfile(e.target.value)} 
+                      className="min-h-32" 
+                      placeholder="Describe your responsibilities and achievements in this role."
+                      maxLength={JOB_PROFILE_MAX_LENGTH}
+                    />
+                    <p className={cn(
+                      "text-xs text-right",
+                      jobProfile.length > JOB_PROFILE_MAX_LENGTH ? "text-destructive" : "text-muted-foreground"
+                    )}>
+                      {JOB_PROFILE_MAX_LENGTH - jobProfile.length} characters remaining
+                    </p>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="skillsUsed">Skills Used (comma-separated)</Label>
@@ -543,7 +629,7 @@ export function UpdateProfileCard({
           if (newEmployments.length > 0) {
             formData.append('employment', JSON.stringify(newEmployments));
           } else {
-            formData.append('employment', '[]'); // Explicitly send empty array
+            formData.append('employment', JSON.stringify([])); 
           }
 
           employmentAction(formData);
@@ -722,9 +808,9 @@ export function UpdateProfileCard({
                         </div>
                         </section>
                     </form>
-                    )}
+                )}
 
-                    {activeSection === 'resume' && (
+                {activeSection === 'resume' && (
                     <form action={updateUserProfileAction}>
                         <input type="hidden" name="userId" value={session?.uid} />
                         <section className="space-y-6">
