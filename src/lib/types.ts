@@ -252,7 +252,16 @@ export interface Resume {
     data: string; // Base64 data URI
 }
 
-// Added from new request
+export interface Employment {
+    id: string;
+    designation: string;
+    company: string;
+    isCurrent: boolean;
+    startDate: string;
+    endDate: string | null;
+    responsibilities: string;
+}
+
 export interface UserProfile {
     uid: string;
     email: string;
@@ -287,7 +296,7 @@ export interface UserProfile {
     hasResume?: boolean;
     profileSummary?: string;
     keySkills?: string[];
-    employment?: any[];
+    employment?: Employment[];
     education?: any[];
     projects?: any[];
     portfolio?: string;

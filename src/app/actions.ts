@@ -8,7 +8,7 @@ import { db, auth, storage } from "@/lib/firebase/config";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import type { Price, Round, Job, AiInterview } from "@/lib/types";
+import type { Price, Round, Job, AiInterview, Employment } from "@/lib/types";
 import { updateProfile, reauthenticateWithCredential, EmailAuthProvider, updatePassword } from "firebase/auth";
 import { randomUUID } from 'crypto';
 import { careerChat } from "@/ai/flows/career-chat-flow";
@@ -695,7 +695,7 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
   const dobYear = formData.get('dob-year');
 
   if (dobDay && dobMonth && dobYear) {
-    dataToUpdate['dob'] = new Date(`${dobYear}-${dobMonth}-${dobDay}`).toISOString();
+    dataToUpdate['dob'] = new Date(`${dobYear}-${dobMonth}-${day}`).toISOString();
   }
   
   const permanentAddress = {
@@ -722,6 +722,14 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
     }
   }
 
+   if (formData.has('employment')) {
+    try {
+      const employmentString = formData.get('employment') as string;
+      dataToUpdate.employment = employmentString ? JSON.parse(employmentString) : [];
+    } catch (e) {
+      console.error("Error parsing employment JSON:", e);
+    }
+  }
 
   const resumeFile = formData.get('resumeFile') as File;
   const MAX_RESUME_SIZE = 750 * 1024; // 750KB
@@ -1362,5 +1370,3 @@ export async function generateAtsResumeAction(prevState: any, formData: FormData
         return { error: e.message || "An unexpected error occurred during AI generation." };
     }
 }
-
-    

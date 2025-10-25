@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useActionState, useEffect, useRef, useState, useTransition, type DragEvent } from 'react';
 import { useFormStatus } from 'react-dom';
@@ -9,16 +10,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload, FileText, X, Plus, CalendarIcon, UploadCloud, Download, RefreshCw, Github } from 'lucide-react';
+import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload, FileText, X, Plus, CalendarIcon, UploadCloud, Download, RefreshCw, Github, FolderKanban } from 'lucide-react';
 import { FaFilePdf, FaFileWord, FaFileImage } from 'react-icons/fa';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import type { CompanySize, Socials } from '@/lib/types';
+import type { CompanySize, Socials, UserProfile, Resume, Employment } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import type { UserProfile } from '../page';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -76,6 +76,83 @@ interface LanguageProficiency {
     canSpeak: boolean;
 }
 
+const EmploymentForm = ({ employment, onSave, onCancel }: { employment: Employment | null, onSave: (employment: Employment) => void, onCancel: () => void }) => {
+    const [designation, setDesignation] = useState(employment?.designation || '');
+    const [company, setCompany] = useState(employment?.company || '');
+    const [isCurrent, setIsCurrent] = useState(employment?.isCurrent || false);
+    const [startDate, setStartDate] = useState<Date | undefined>(employment?.startDate ? new Date(employment.startDate) : undefined);
+    const [endDate, setEndDate] = useState<Date | undefined>(employment?.endDate ? new Date(employment.endDate) : undefined);
+    const [responsibilities, setResponsibilities] = useState(employment?.responsibilities || '');
+
+    const handleSave = () => {
+        const newEmployment: Employment = {
+            id: employment?.id || Date.now().toString(),
+            designation,
+            company,
+            isCurrent,
+            startDate: startDate!.toISOString(),
+            endDate: isCurrent ? null : endDate!.toISOString(),
+            responsibilities
+        };
+        onSave(newEmployment);
+    };
+
+    return (
+        <Card className="mt-4">
+            <CardContent className="p-6 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="designation">Designation</Label>
+                        <Input id="designation" value={designation} onChange={e => setDesignation(e.target.value)} />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="company">Company</Label>
+                        <Input id="company" value={company} onChange={e => setCompany(e.target.value)} />
+                    </div>
+                </div>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label>Start Date</Label>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !startDate && "text-muted-foreground")}>
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {startDate ? format(startDate, 'PPP') : 'Select start date'}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent><Calendar mode="single" selected={startDate} onSelect={setStartDate} /></PopoverContent>
+                        </Popover>
+                    </div>
+                    <div className="space-y-2">
+                        <Label>End Date</Label>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" className={cn("w-full justify-start text-left font-normal", !endDate && "text-muted-foreground", isCurrent && "opacity-50 cursor-not-allowed")} disabled={isCurrent}>
+                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                    {endDate ? format(endDate, 'PPP') : 'Select end date'}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent><Calendar mode="single" selected={endDate} onSelect={setEndDate} disabled={isCurrent} /></PopoverContent>
+                        </Popover>
+                    </div>
+                </div>
+                 <div className="flex items-center space-x-2">
+                    <Checkbox id="isCurrent" checked={isCurrent} onCheckedChange={(checked) => setIsCurrent(!!checked)} />
+                    <Label htmlFor="isCurrent">I currently work here</Label>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="responsibilities">Responsibilities / Key Achievements</Label>
+                    <Textarea id="responsibilities" value={responsibilities} onChange={e => setResponsibilities(e.target.value)} className="min-h-32" />
+                </div>
+                <div className="flex justify-end gap-2">
+                    <Button variant="ghost" onClick={onCancel}>Cancel</Button>
+                    <Button onClick={handleSave}>Save</Button>
+                </div>
+            </CardContent>
+        </Card>
+    );
+};
+
 export function UpdateProfileCard({ 
     profile,
     onSave, 
@@ -109,6 +186,9 @@ export function UpdateProfileCard({
   const [dob, setDob] = useState<Date | undefined>(profile.dob ? new Date(profile.dob) : undefined);
   
   const [languages, setLanguages] = useState<LanguageProficiency[]>(profile.languages || []);
+  const [employments, setEmployments] = useState<Employment[]>(profile.employment || []);
+  const [isAddingEmployment, setIsAddingEmployment] = useState(false);
+  const [editingEmployment, setEditingEmployment] = useState<Employment | null>(null);
   
   const isPending = isAvatarPending || isResumePending;
   
@@ -134,6 +214,7 @@ export function UpdateProfileCard({
         }
       newProfile.keySkills = skills;
       newProfile.languages = languages;
+      newProfile.employment = employments;
       
        const day = formData.get('dob-day');
        const month = formData.get('dob-month');
@@ -144,7 +225,7 @@ export function UpdateProfileCard({
 
       onSave(newProfile);
     }
-  }, [state.success, toast, onSave, profile.role, skills, languages]);
+  }, [state.success, toast, onSave, profile.role, skills, languages, employments]);
 
   // Logic for skill suggestions
   useEffect(() => {
@@ -352,6 +433,20 @@ export function UpdateProfileCard({
     setLanguages(languages.filter((_, i) => i !== index));
   };
 
+  const handleSaveEmployment = (employment: Employment) => {
+        if (editingEmployment) {
+            setEmployments(employments.map(emp => emp.id === employment.id ? employment : emp));
+        } else {
+            setEmployments([...employments, employment]);
+        }
+        setIsAddingEmployment(false);
+        setEditingEmployment(null);
+    };
+
+    const handleDeleteEmployment = (id: string) => {
+        setEmployments(employments.filter(emp => emp.id !== id));
+    };
+
 
   return (
     <div className="flex gap-6 h-full w-full">
@@ -389,6 +484,7 @@ export function UpdateProfileCard({
                             
                             <input type="hidden" name="keySkills" value={skills.join(',')} />
                             <input type="hidden" name="languages" value={JSON.stringify(languages)} />
+                            <input type="hidden" name="employment" value={JSON.stringify(employments)} />
 
                             {activeSection === 'profile-details' && (
                                 <section className="space-y-6">
@@ -650,6 +746,67 @@ export function UpdateProfileCard({
                                     </div>
                                 </section>
                             )}
+
+                             {activeSection === 'employment' && (
+                                <section className="space-y-6">
+                                    <div>
+                                        <h3 className="text-lg font-semibold">Employment History</h3>
+                                        <p className="text-sm text-muted-foreground">Detail your professional experience.</p>
+                                    </div>
+                                    <div className="space-y-4">
+                                        {employments.length === 0 && !isAddingEmployment && !editingEmployment ? (
+                                            <div className="text-center py-12 border-2 border-dashed rounded-lg flex flex-col items-center justify-center">
+                                                <Briefcase className="mx-auto h-12 w-12 text-muted-foreground" />
+                                                <h3 className="mt-4 text-lg font-semibold">No Employment Yet</h3>
+                                                <p className="mt-1 text-sm text-muted-foreground">Get started by adding your first work experience.</p>
+                                                <Button className="mt-6" type="button" onClick={() => setIsAddingEmployment(true)}>
+                                                    <Plus className="mr-2 h-4 w-4" />
+                                                    Add Employment
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                {employments.map(emp => (
+                                                    editingEmployment?.id === emp.id ? (
+                                                        <EmploymentForm key={emp.id} employment={editingEmployment} onSave={handleSaveEmployment} onCancel={() => setEditingEmployment(null)} />
+                                                    ) : (
+                                                        <Card key={emp.id} className="p-4">
+                                                            <div className="flex justify-between items-start">
+                                                                <div>
+                                                                    <p className="font-semibold">{emp.designation}</p>
+                                                                    <p className="text-sm text-muted-foreground">{emp.company}</p>
+                                                                    <p className="text-xs text-muted-foreground mt-1">
+                                                                        {format(new Date(emp.startDate), 'MMM yyyy')} - {emp.isCurrent ? 'Present' : emp.endDate ? format(new Date(emp.endDate), 'MMM yyyy') : ''}
+                                                                    </p>
+                                                                </div>
+                                                                <div className="flex gap-2">
+                                                                    <Button variant="ghost" size="icon" onClick={() => setEditingEmployment(emp)}><Edit className="h-4 w-4" /></Button>
+                                                                    <Button variant="ghost" size="icon" onClick={() => handleDeleteEmployment(emp.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                                                </div>
+                                                            </div>
+                                                        </Card>
+                                                    )
+                                                ))}
+                                                {isAddingEmployment && <EmploymentForm employment={null} onSave={handleSaveEmployment} onCancel={() => setIsAddingEmployment(false)} />}
+                                                {!isAddingEmployment && !editingEmployment && (
+                                                    <Button type="button" variant="outline" onClick={() => setIsAddingEmployment(true)}>
+                                                        <Plus className="mr-2 h-4 w-4" />
+                                                        Add Another Employment
+                                                    </Button>
+                                                )}
+                                            </>
+                                        )}
+                                    </div>
+                                </section>
+                            )}
+                            
+                            {(activeSection === 'education' || activeSection === 'projects') && (
+                                <div className="text-center py-12">
+                                    <FolderKanban className="mx-auto h-12 w-12 text-muted-foreground" />
+                                    <h3 className="mt-4 text-lg font-semibold">Under Construction</h3>
+                                    <p className="text-sm text-muted-foreground">The form for the &quot;{navItems.find(i => i.id === activeSection)?.label}&quot; section will be here.</p>
+                                </div>
+                            )}
                             
                             {activeSection === 'online-profiles' && (
                                 <section className="space-y-6">
@@ -710,13 +867,6 @@ export function UpdateProfileCard({
                                     </div>
                                 </section>
                             )}
-
-                            {(activeSection === 'employment' || activeSection === 'education' || activeSection === 'projects') && (
-                                <div className="text-center py-12">
-                                    <h3 className="text-lg font-semibold">Under Construction</h3>
-                                    <p className="text-sm text-muted-foreground">The form for the &quot;{navItems.find(i => i.id === activeSection)?.label}&quot; section will be here.</p>
-                                </div>
-                            )}
                             
                             {activeSection === 'personal-details' && (
                             <section className="space-y-6">
@@ -750,15 +900,15 @@ export function UpdateProfileCard({
                                     <Label>Date of Birth</Label>
                                     <div className="flex rounded-md border border-input transition-colors focus-within:border-b-ring focus-within:border-b-2">
                                         <Select name="dob-day" defaultValue={dob ? String(dob.getDate()) : undefined}>
-                                            <SelectTrigger className="w-24 border-0 rounded-r-none focus-visible:ring-0 focus-visible:ring-offset-0"><SelectValue placeholder="Day" /></SelectTrigger>
+                                            <SelectTrigger className="w-24 border-0 rounded-r-none focus:ring-0"><SelectValue placeholder="Day" /></SelectTrigger>
                                             <SelectContent>{Array.from({ length: 31 }, (_, i) => i + 1).map(day => <SelectItem key={day} value={String(day)}>{day}</SelectItem>)}</SelectContent>
                                         </Select>
                                         <Select name="dob-month" defaultValue={dob ? String(dob.getMonth() + 1) : undefined}>
-                                            <SelectTrigger className="flex-1 border-y-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0"><SelectValue placeholder="Month" /></SelectTrigger>
+                                            <SelectTrigger className="flex-1 border-y-0 rounded-none focus:ring-0"><SelectValue placeholder="Month" /></SelectTrigger>
                                             <SelectContent>{Array.from({ length: 12 }, (_, i) => i + 1).map(month => <SelectItem key={month} value={String(month)}>{format(new Date(2000, month - 1), 'MMMM')}</SelectItem>)}</SelectContent>
                                         </Select>
                                         <Select name="dob-year" defaultValue={dob ? String(dob.getFullYear()) : undefined}>
-                                            <SelectTrigger className="w-32 border-0 rounded-l-none focus-visible:ring-0 focus-visible:ring-offset-0"><SelectValue placeholder="Year" /></SelectTrigger>
+                                            <SelectTrigger className="w-32 border-0 rounded-l-none focus:ring-0"><SelectValue placeholder="Year" /></SelectTrigger>
                                             <SelectContent>{Array.from({ length: 70 }, (_, i) => new Date().getFullYear() - 18 - i).map(year => <SelectItem key={year} value={String(year)}>{year}</SelectItem>)}</SelectContent>
                                         </Select>
                                     </div>
@@ -848,5 +998,3 @@ export function UpdateProfileCard({
     </div>
   );
 }
-
-    
