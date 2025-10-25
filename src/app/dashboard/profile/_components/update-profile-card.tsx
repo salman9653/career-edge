@@ -157,7 +157,7 @@ const EmploymentForm = ({ employment, onSave, onCancel }: { employment: Employme
     );
 };
 
-const useFormFeedback = (state: any, onSave: (data: any) => void) => {
+const useFormFeedback = (state: any) => {
     const { toast } = useToast();
   
     useEffect(() => {
@@ -166,8 +166,6 @@ const useFormFeedback = (state: any, onSave: (data: any) => void) => {
           title: 'Success',
           description: state.success,
         });
-        
-        onSave({});
       }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [state.success, toast]);
@@ -195,20 +193,12 @@ export function UpdateProfileCard({
   const [keySkillsState, keySkillsAction] = useActionState(updateUserProfileAction, initialState);
   const [employmentState, employmentAction] = useActionState(updateUserProfileAction, initialState);
 
-  useFormFeedback(profileDetailsState, onSave);
-  useFormFeedback(careerProfileState, onSave);
-  useFormFeedback(onlineProfilesState, onSave);
-  useFormFeedback(personalDetailsState, onSave);
-  useFormFeedback(keySkillsState, onSave);
-  useEffect(() => {
-    if (employmentState.success) {
-      toast({ title: 'Success', description: employmentState.success });
-      setIsAddingEmployment(false);
-      setEditingEmployment(null);
-      onSave({}); // Trigger data refresh
-    }
-  }, [employmentState, toast, onSave]);
-
+  useFormFeedback(profileDetailsState);
+  useFormFeedback(careerProfileState);
+  useFormFeedback(onlineProfilesState);
+  useFormFeedback(personalDetailsState);
+  useFormFeedback(keySkillsState);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isAvatarPending, startAvatarTransition] = useTransition();
 
@@ -244,6 +234,14 @@ export function UpdateProfileCard({
     setEmployments(profile.employment || []);
   }, [profile.employment]);
   
+   useEffect(() => {
+    if (employmentState.success) {
+      toast({ title: 'Success', description: employmentState.success });
+      setIsAddingEmployment(false);
+      setEditingEmployment(null);
+    }
+  }, [employmentState, toast]);
+
   // Logic for skill suggestions
   useEffect(() => {
     let newSuggestions: Skill[] = [];
@@ -502,7 +500,7 @@ export function UpdateProfileCard({
           </Card>
           
           <div className="flex-1 flex flex-col min-h-0">
-              <ScrollArea className="h-full">
+              <ScrollArea className="h-full pr-4 custom-scrollbar">
                   <Card className="h-full">
                       <CardContent className="p-6">
                           
@@ -849,7 +847,7 @@ export function UpdateProfileCard({
                                                     )
                                                 ))}
                                                 {isAddingEmployment && <EmploymentForm employment={null} onSave={handleSaveEmployment} onCancel={() => setIsAddingEmployment(false)} />}
-                                                {!isAddingEmployment && !editingEmployment && (
+                                                {!isAddingEmployment && !editingEmployment && employments.length > 0 && (
                                                     <Button type="button" variant="outline" onClick={() => setIsAddingEmployment(true)}>
                                                         <Plus className="mr-2 h-4 w-4" />
                                                         Add Another Employment
