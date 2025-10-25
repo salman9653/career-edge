@@ -63,7 +63,7 @@ const getInitials = (name: string) => {
     if (!name) return '';
     const names = name.split(' ');
     if (names.length > 1) {
-        return `${'names[0][0]'}${names[names.length - 1][0]}`.toUpperCase();
+        return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
     }
     return name.substring(0, 2).toUpperCase();
 }
@@ -153,6 +153,35 @@ const EmploymentForm = ({ employment, onSave, onCancel }: { employment: Employme
     );
 };
 
+const useFormFeedback = (state: any, onSave: (data: any) => void) => {
+    const { toast } = useToast();
+    const formRef = useRef<HTMLFormElement>(null);
+  
+    useEffect(() => {
+      if (state.success) {
+        toast({
+          title: 'Success',
+          description: state.success,
+        });
+        const formData = new FormData(formRef.current!);
+        const updatedData: { [key: string]: any } = {};
+  
+        for (const [key, value] of formData.entries()) {
+          if (key.includes('.')) {
+              const [parent, child] = key.split('.');
+              if (!updatedData[parent]) updatedData[parent] = {};
+              updatedData[parent][child] = value;
+          } else {
+              updatedData[key] = value;
+          }
+        }
+        onSave(updatedData);
+      }
+    }, [state.success, toast, onSave]);
+  
+    return formRef;
+};
+
 export function UpdateProfileCard({ 
     profile,
     onSave, 
@@ -164,12 +193,24 @@ export function UpdateProfileCard({
     onCancel: () => void ,
     onAvatarChange: (url: string | null) => void
 }) {
-  const [state, formAction] = useActionState(updateUserProfileAction, initialState);
   const { session, updateSession } = useSession();
   const { toast } = useToast();
-  const formRef = useRef<HTMLFormElement>(null);
+  
+  const [profileDetailsState, profileDetailsAction] = useActionState(updateUserProfileAction, initialState);
+  const [careerProfileState, careerProfileAction] = useActionState(updateUserProfileAction, initialState);
+  const [onlineProfilesState, onlineProfilesAction] = useActionState(updateUserProfileAction, initialState);
+  const [personalDetailsState, personalDetailsAction] = useActionState(updateUserProfileAction, initialState);
+  const [keySkillsState, keySkillsAction] = useActionState(updateUserProfileAction, initialState);
+  const [employmentState, employmentAction] = useActionState(updateUserProfileAction, initialState);
+  
+  const profileDetailsFormRef = useFormFeedback(profileDetailsState, onSave);
+  const careerProfileFormRef = useFormFeedback(careerProfileState, onSave);
+  const onlineProfilesFormRef = useFormFeedback(onlineProfilesState, onSave);
+  const personalDetailsFormRef = useFormFeedback(personalDetailsState, onSave);
+  const keySkillsFormRef = useFormFeedback(keySkillsState, onSave);
+  const employmentFormRef = useFormFeedback(employmentState, onSave);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const resumeInputRef = useRef<HTMLInputElement>(null);
   const [isAvatarPending, startAvatarTransition] = useTransition();
 
   const router = useRouter();
@@ -202,41 +243,6 @@ export function UpdateProfileCard({
   
   const isPending = isAvatarPending || isResumePending;
   
-  useEffect(() => {
-    if (state.success) {
-      toast({
-        title: 'Success',
-        description: state.success,
-      });
-      const formData = new FormData(formRef.current!);
-      const newProfile: Partial<UserProfile> = {};
-        for (const [key, value] of formData.entries()) {
-            if (key.includes('.')) {
-                const [parent, child] = key.split('.');
-                // @ts-ignore
-                if (!newProfile[parent]) newProfile[parent] = {};
-                // @ts-ignore
-                newProfile[parent][child] = value;
-            } else if (!['keySkills', 'languages'].includes(key) && !key.startsWith('dob-')) {
-                // @ts-ignore
-                newProfile[key] = value;
-            }
-        }
-      newProfile.keySkills = skills;
-      newProfile.languages = languages;
-      newProfile.employment = employments;
-      
-       const day = formData.get('dob-day');
-       const month = formData.get('dob-month');
-       const year = formData.get('dob-year');
-       if (day && month && year) {
-           newProfile.dob = new Date(`${year}-${month}-${day}`).toISOString();
-       }
-
-      onSave(newProfile);
-    }
-  }, [state.success, toast, onSave, profile.role, skills, languages, employments]);
-
   // Logic for skill suggestions
   useEffect(() => {
     let newSuggestions: Skill[] = [];
@@ -334,7 +340,11 @@ export function UpdateProfileCard({
   };
   const handleResumeDragOver = (e: DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); };
   const handleResumeDragLeave = (e: DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); };
-  const handleResumeButtonClick = () => resumeInputRef.current?.click();
+  const handleResumeButtonClick = () => {
+    const resumeInput = document.getElementById('resume-file-input') as HTMLInputElement;
+    resumeInput?.click();
+  };
+
 
   const handleRemoveResume = () => {
     if (!session?.uid) return;
@@ -483,7 +493,7 @@ export function UpdateProfileCard({
                           <CardContent className="p-6">
                               
                               {activeSection === 'profile-details' && (
-                                  <form action={formAction}>
+                                  <form action={profileDetailsAction} ref={profileDetailsFormRef}>
                                       <input type="hidden" name="userId" value={session?.uid} />
                                       <section className="space-y-6">
                                           <div>
@@ -547,7 +557,7 @@ export function UpdateProfileCard({
                               )}
                               
                               {activeSection === 'career-profile' && (
-                              <form action={formAction}>
+                              <form action={careerProfileAction} ref={careerProfileFormRef}>
                                   <input type="hidden" name="userId" value={session?.uid} />
                                   <section className="space-y-6">
                                       <div>
@@ -604,7 +614,7 @@ export function UpdateProfileCard({
                               )}
 
                                {activeSection === 'resume' && (
-                                <form action={formAction}>
+                                <form action={updateUserProfileAction}>
                                   <input type="hidden" name="userId" value={session?.uid} />
                                   <section className="space-y-6">
                                       <div>
@@ -614,7 +624,7 @@ export function UpdateProfileCard({
                                       <div className="space-y-2">
                                           <input 
                                               type="file" 
-                                              ref={resumeInputRef}
+                                              id="resume-file-input"
                                               className="hidden" 
                                               onChange={handleResumeFileChange}
                                               accept=".pdf,.doc,.docx"
@@ -716,9 +726,9 @@ export function UpdateProfileCard({
                               )}
 
                               {activeSection === 'key-skills' && (
-                                  <form action={formAction}>
+                                  <form action={keySkillsAction} ref={keySkillsFormRef}>
                                       <input type="hidden" name="userId" value={session?.uid} />
-                                      <input type="hidden" name="keySkills" value={skills.join(',')} />
+                                      <input type="hidden" name="keySkills" value={JSON.stringify(skills)} />
                                       <section className="space-y-6">
                                           <div>
                                               <h3 className="text-lg font-semibold">Key Skills</h3>
@@ -785,7 +795,7 @@ export function UpdateProfileCard({
                               )}
 
                                {activeSection === 'employment' && (
-                                  <form action={formAction}>
+                                  <form action={employmentAction} ref={employmentFormRef}>
                                       <input type="hidden" name="userId" value={session?.uid} />
                                       <input type="hidden" name="employment" value={JSON.stringify(employments)} />
                                       <section className="space-y-6">
@@ -849,12 +859,12 @@ export function UpdateProfileCard({
                                   <div className="text-center py-12">
                                       <FolderKanban className="mx-auto h-12 w-12 text-muted-foreground" />
                                       <h3 className="mt-4 text-lg font-semibold">Under Construction</h3>
-                                      <p className="text-sm text-muted-foreground">The form for the &quot;{navItems.find(i => i.id === activeSection)?.label}&quot; section will be here.</p>
+                                      <p className="text-sm text-muted-foreground">The form for the "{navItems.find(i => i.id === activeSection)?.label}" section will be here.</p>
                                   </div>
                               )}
                               
                               {activeSection === 'online-profiles' && (
-                                  <form action={formAction}>
+                                  <form action={onlineProfilesAction} ref={onlineProfilesFormRef}>
                                       <input type="hidden" name="userId" value={session?.uid} />
                                       <section className="space-y-6">
                                           <div>
@@ -921,8 +931,9 @@ export function UpdateProfileCard({
                               )}
                               
                               {activeSection === 'personal-details' && (
-                              <form action={formAction}>
+                              <form action={personalDetailsAction} ref={personalDetailsFormRef}>
                                   <input type="hidden" name="userId" value={session?.uid} />
+                                  <input type="hidden" name="languages" value={JSON.stringify(languages)} />
                                   <section className="space-y-6">
                                       <div>
                                       <h3 className="text-lg font-semibold">Personal Details</h3>
@@ -952,22 +963,18 @@ export function UpdateProfileCard({
                                       </div>
                                       <div className="grid gap-2">
                                           <Label>Date of Birth</Label>
-                                          <div className="flex rounded-md border border-input focus-within:border-b-ring focus-within:border-b-2 transition-colors">
-                                              <Select name="dob-day" defaultValue={dob ? String(dob.getDate()) : undefined}>
-                                                  <SelectTrigger className="w-24 border-0 rounded-r-none focus:ring-0 focus-visible:ring-0">
-                                                      <SelectValue placeholder="Day" />
-                                                  </SelectTrigger>
-                                                  <SelectContent>{Array.from({ length: 31 }, (_, i) => i + 1).map(day => <SelectItem key={day} value={String(day)}>{day}</SelectItem>)}</SelectContent>
-                                              </Select>
-                                              <Select name="dob-month" defaultValue={dob ? String(dob.getMonth() + 1) : undefined}>
-                                                  <SelectTrigger className="flex-1 border-y-0 rounded-none focus:ring-0 focus-visible:ring-0"><SelectValue placeholder="Month" /></SelectTrigger>
-                                                  <SelectContent>{Array.from({ length: 12 }, (_, i) => i + 1).map(month => <SelectItem key={month} value={String(month)}>{format(new Date(2000, month - 1), 'MMMM')}</SelectItem>)}</SelectContent>
-                                              </Select>
-                                              <Select name="dob-year" defaultValue={dob ? String(dob.getFullYear()) : undefined}>
-                                                  <SelectTrigger className="w-32 border-0 rounded-l-none focus:ring-0 focus-visible:ring-0"><SelectValue placeholder="Year" /></SelectTrigger>
-                                                  <SelectContent>{Array.from({ length: 70 }, (_, i) => new Date().getFullYear() - 18 - i).map(year => <SelectItem key={year} value={String(year)}>{year}</SelectItem>)}</SelectContent>
-                                              </Select>
-                                          </div>
+                                          <Popover>
+                                            <PopoverTrigger asChild>
+                                                <Button variant="outline" className={cn("justify-start text-left font-normal", !dob && "text-muted-foreground")}>
+                                                    <CalendarIcon className="mr-2 h-4 w-4" />
+                                                    {dob ? format(dob, 'PPP') : 'Select a date'}
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-auto p-0">
+                                                <Calendar mode="single" selected={dob} onSelect={setDob} initialFocus captionLayout="dropdown-buttons" fromYear={1950} toYear={new Date().getFullYear() - 18} />
+                                            </PopoverContent>
+                                          </Popover>
+                                          <input type="hidden" name="dob" value={dob?.toISOString()} />
                                       </div>
                                       </div>
                                       <div className="space-y-2">
@@ -985,71 +992,71 @@ export function UpdateProfileCard({
                                           </div>
                                       </div>
 
-                                <div className="space-y-4 pt-4">
-                                  <Label className="font-semibold text-lg">Language Proficiency</Label>
-                                  {languages.map((lang, index) => (
-                                    <div key={index} className="p-4 border rounded-lg space-y-4">
-                                      <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                          <Label>Language</Label>
-                                          <Select value={lang.language} onValueChange={(value) => handleLanguageChange(index, 'language', value)}>
-                                            <SelectTrigger><SelectValue placeholder="Select Language"/></SelectTrigger>
-                                            <SelectContent>
-                                              <SelectItem value="English">English</SelectItem>
-                                              <SelectItem value="Hindi">Hindi</SelectItem>
-                                              <SelectItem value="Spanish">Spanish</SelectItem>
-                                              <SelectItem value="French">French</SelectItem>
-                                              <SelectItem value="German">German</SelectItem>
-                                            </SelectContent>
-                                          </Select>
-                                        </div>
-                                        <div className="space-y-2">
-                                          <Label>Proficiency</Label>
-                                          <Select value={lang.proficiency} onValueChange={(value) => handleLanguageChange(index, 'proficiency', value)}>
-                                            <SelectTrigger><SelectValue placeholder="Select Proficiency"/></SelectTrigger>
-                                            <SelectContent>
-                                              <SelectItem value="Beginner">Beginner</SelectItem>
-                                              <SelectItem value="Intermediate">Intermediate</SelectItem>
-                                              <SelectItem value="Advanced">Advanced</SelectItem>
-                                              <SelectItem value="Proficient">Proficient</SelectItem>
-                                              <SelectItem value="Expert">Expert</SelectItem>
-                                            </SelectContent>
-                                          </Select>
-                                        </div>
+                                      <div className="space-y-4 pt-4">
+                                        <Label className="font-semibold text-lg">Language Proficiency</Label>
+                                        {languages.map((lang, index) => (
+                                          <div key={index} className="p-4 border rounded-lg space-y-4">
+                                            <div className="grid grid-cols-2 gap-4">
+                                              <div className="space-y-2">
+                                                <Label>Language</Label>
+                                                <Select value={lang.language} onValueChange={(value) => handleLanguageChange(index, 'language', value)}>
+                                                  <SelectTrigger><SelectValue placeholder="Select Language"/></SelectTrigger>
+                                                  <SelectContent>
+                                                    <SelectItem value="English">English</SelectItem>
+                                                    <SelectItem value="Hindi">Hindi</SelectItem>
+                                                    <SelectItem value="Spanish">Spanish</SelectItem>
+                                                    <SelectItem value="French">French</SelectItem>
+                                                    <SelectItem value="German">German</SelectItem>
+                                                  </SelectContent>
+                                                </Select>
+                                              </div>
+                                              <div className="space-y-2">
+                                                <Label>Proficiency</Label>
+                                                <Select value={lang.proficiency} onValueChange={(value) => handleLanguageChange(index, 'proficiency', value)}>
+                                                  <SelectTrigger><SelectValue placeholder="Select Proficiency"/></SelectTrigger>
+                                                  <SelectContent>
+                                                    <SelectItem value="Beginner">Beginner</SelectItem>
+                                                    <SelectItem value="Intermediate">Intermediate</SelectItem>
+                                                    <SelectItem value="Advanced">Advanced</SelectItem>
+                                                    <SelectItem value="Proficient">Proficient</SelectItem>
+                                                    <SelectItem value="Expert">Expert</SelectItem>
+                                                  </SelectContent>
+                                                </Select>
+                                              </div>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                              <div className="flex items-center gap-6">
+                                                <div className="flex items-center gap-2">
+                                                  <Checkbox id={`read-${index}`} checked={lang.canRead} onCheckedChange={(checked) => handleLanguageChange(index, 'canRead', !!checked)}/>
+                                                  <Label htmlFor={`read-${index}`} className="font-normal">Read</Label>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                  <Checkbox id={`write-${index}`} checked={lang.canWrite} onCheckedChange={(checked) => handleLanguageChange(index, 'canWrite', !!checked)}/>
+                                                  <Label htmlFor={`write-${index}`} className="font-normal">Write</Label>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                  <Checkbox id={`speak-${index}`} checked={lang.canSpeak} onCheckedChange={(checked) => handleLanguageChange(index, 'canSpeak', !!checked)}/>
+                                                  <Label htmlFor={`speak-${index}`} className="font-normal">Speak</Label>
+                                                </div>
+                                              </div>
+                                              <Button variant="link" size="sm" type="button" onClick={() => handleRemoveLanguage(index)} className="text-destructive p-0 h-auto">Delete</Button>
+                                            </div>
+                                          </div>
+                                        ))}
+                                        <Button type="button" variant="link" onClick={handleAddLanguage}>+ Add another language</Button>
                                       </div>
-                                      <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-12">
-                                          <div className="flex items-center gap-2">
-                                            <Checkbox id={`read-${index}`} checked={lang.canRead} onCheckedChange={(checked) => handleLanguageChange(index, 'canRead', !!checked)}/>
-                                            <Label htmlFor={`read-${index}`} className="font-normal">Read</Label>
-                                          </div>
-                                          <div className="flex items-center gap-2">
-                                            <Checkbox id={`write-${index}`} checked={lang.canWrite} onCheckedChange={(checked) => handleLanguageChange(index, 'canWrite', !!checked)}/>
-                                            <Label htmlFor={`write-${index}`} className="font-normal">Write</Label>
-                                          </div>
-                                          <div className="flex items-center gap-2">
-                                            <Checkbox id={`speak-${index}`} checked={lang.canSpeak} onCheckedChange={(checked) => handleLanguageChange(index, 'canSpeak', !!checked)}/>
-                                            <Label htmlFor={`speak-${index}`} className="font-normal">Speak</Label>
-                                          </div>
-                                        </div>
-                                        <Button variant="link" size="sm" type="button" onClick={() => handleRemoveLanguage(index)} className="text-destructive p-0 h-auto">Delete</Button>
+                                      <div className="flex justify-end gap-2 pt-6 border-t mt-6">
+                                          <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
+                                          <SubmitButton />
                                       </div>
-                                    </div>
-                                  ))}
-                                  <Button type="button" variant="link" onClick={handleAddLanguage}>+ Add another language</Button>
-                                </div>
-                            </section>
-                            )}
-
-                            {state?.error && <Alert variant="destructive" className="mt-2"><AlertDescription>{state.error}</AlertDescription></Alert>}
-                             <div className="flex justify-end gap-2 pt-6 border-t mt-6">
-                                <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
-                                <SubmitButton />
-                            </div>
-                        </CardContent>
-                    </Card>
-                </ScrollArea>
-            </div>
-        </div>
+                                  </section>
+                              </form>
+                              )}
+                          </CardContent>
+                      </Card>
+                  </ScrollArea>
+              </div>
+          </div>
+      </>
   );
 }
