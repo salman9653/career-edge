@@ -274,6 +274,7 @@ export interface Education {
     isPrimary?: boolean;
     // For 10th/12th
     board?: string;
+    school?: string;
     passingYear?: number;
     marks?: number; // as percentage
     // For higher education

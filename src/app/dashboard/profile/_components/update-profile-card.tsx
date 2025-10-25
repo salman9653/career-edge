@@ -247,7 +247,7 @@ const EmploymentForm = ({ employment, onSave, onCancel }: { employment: Employme
                     />
                     <p className={cn(
                       "text-xs text-right",
-                      jobProfile.length > JOB_PROFILE_MAX_LENGTH ? "text-destructive" : "text-muted-foreground"
+                      jobProfile.length > JOB_PROFILE_MAX_LENGTH * 0.9 ? "text-destructive" : "text-muted-foreground"
                     )}>
                       {JOB_PROFILE_MAX_LENGTH - jobProfile.length} characters remaining
                     </p>
@@ -303,6 +303,7 @@ const EmploymentForm = ({ employment, onSave, onCancel }: { employment: Employme
 const EducationForm = ({ education, onSave, onCancel }: { education: Education | null, onSave: (education: Education) => void, onCancel: () => void }) => {
     const [level, setLevel] = useState<Education['level'] | ''>(education?.level || '');
     const [board, setBoard] = useState(education?.board || '');
+    const [school, setSchool] = useState(education?.school || '');
     const [passingYear, setPassingYear] = useState<number | undefined>(education?.passingYear);
     const [marks, setMarks] = useState(education?.marks?.toString() || '');
     const [university, setUniversity] = useState(education?.university || '');
@@ -321,7 +322,7 @@ const EducationForm = ({ education, onSave, onCancel }: { education: Education |
         let educationData: Partial<Education> = { level };
 
         if (level === 'Class 10th' || level === 'Class 12th') {
-            educationData = { ...educationData, board, passingYear, marks: Number(marks) };
+            educationData = { ...educationData, board, school, passingYear, marks: Number(marks) };
         } else {
             educationData = { ...educationData, university, course, specialization, courseType, startYear, endYear, gradingSystem, marks: Number(marks) };
             if (level === 'Graduation/Diploma') {
@@ -359,7 +360,7 @@ const EducationForm = ({ education, onSave, onCancel }: { education: Education |
                 </div>
                 
                 {(level === 'Class 10th' || level === 'Class 12th') && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="board">Board</Label>
                             <Select value={board} onValueChange={setBoard}>
@@ -373,6 +374,10 @@ const EducationForm = ({ education, onSave, onCancel }: { education: Education |
                                     <SelectItem value="State Board">State Board</SelectItem>
                                 </SelectContent>
                             </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="school">School Name</Label>
+                            <Input id="school" value={school} onChange={e => setSchool(e.target.value)} placeholder="e.g., Delhi Public School" />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="passing-year">Passing Out Year</Label>
@@ -802,10 +807,14 @@ export function UpdateProfileCard({
 
   const handleDeleteEmployment = (id: string) => {
       startDeleteEmploymentTransition(() => {
-          const newEmployments = employments.filter(emp => emp.id !== id);
           const formData = new FormData();
           formData.append('userId', session!.uid);
-          formData.append('employment', JSON.stringify(newEmployments));
+          if (employments.length > 1) {
+            const newEmployments = employments.filter(emp => emp.id !== id);
+            formData.append('employment', JSON.stringify(newEmployments));
+          } else {
+            formData.append('employment', '[]');
+          }
           employmentAction(formData);
       });
   };
@@ -1326,11 +1335,25 @@ const handleDeleteEducation = (id: string) => {
                               <EducationForm key={edu.id} education={editingEducation} onSave={handleSaveEducation} onCancel={() => setEditingEducation(null)} />
                             ) : (
                               <Card key={edu.id} className="p-4">
-                                {/* Display logic for education record */}
                                 <div className="flex justify-between items-start">
                                   <div>
-                                    <p className="font-semibold">{edu.level}</p>
-                                    <p className="text-sm text-muted-foreground">{edu.university || edu.board}</p>
+                                     {edu.level === 'Class 10th' || edu.level === 'Class 12th' ? (
+                                        <>
+                                            <p className="font-semibold">{edu.level}</p>
+                                            <p className="text-sm text-muted-foreground">{edu.board} &bull; {edu.school}</p>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                Passed in {edu.passingYear}
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <p className="font-semibold">{edu.course} in {edu.specialization}</p>
+                                            <p className="text-sm text-muted-foreground">{edu.university}</p>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                {edu.startYear} - {edu.endYear} &bull; {edu.courseType}
+                                            </p>
+                                        </>
+                                    )}
                                   </div>
                                   <div className="flex gap-2">
                                     <Button variant="ghost" size="icon" onClick={() => setEditingEducation(edu)}><Edit className="h-4 w-4" /></Button>
