@@ -1,5 +1,4 @@
 
-
 'use client';
 import { useActionState, useEffect, useRef, useState, useTransition, type DragEvent } from 'react';
 import { useFormStatus } from 'react-dom';
@@ -128,7 +127,7 @@ export function UpdateProfileCard({
                 if (!newProfile[parent]) newProfile[parent] = {};
                 // @ts-ignore
                 newProfile[parent][child] = value;
-            } else if (!['keySkills', 'languages'].includes(key)) {
+            } else if (!['keySkills', 'languages'].includes(key) && !key.startsWith('dob-')) {
                 // @ts-ignore
                 newProfile[key] = value;
             }
@@ -136,13 +135,16 @@ export function UpdateProfileCard({
       newProfile.keySkills = skills;
       newProfile.languages = languages;
       
-      if (dob) {
-        newProfile.dob = dob.toISOString();
-      }
+       const day = formData.get('dob-day');
+       const month = formData.get('dob-month');
+       const year = formData.get('dob-year');
+       if (day && month && year) {
+           newProfile.dob = new Date(`${year}-${month}-${day}`).toISOString();
+       }
 
       onSave(newProfile);
     }
-  }, [state.success, toast, onSave, profile.role, skills, languages, dob]);
+  }, [state.success, toast, onSave, profile.role, skills, languages]);
 
   // Logic for skill suggestions
   useEffect(() => {
@@ -304,7 +306,7 @@ export function UpdateProfileCard({
         if (mimeType.includes('openxmlformats')) return 'docx';
         return 'doc';
     }
-    if (fileType.startsWith('image')) return mimeType.split('/')[1]?.toLowerCase() || 'image';
+    if (mimeType.startsWith('image')) return mimeType.split('/')[1]?.toLowerCase() || 'image';
     return mimeType;
   }
 
@@ -387,8 +389,6 @@ export function UpdateProfileCard({
                             
                             <input type="hidden" name="keySkills" value={skills.join(',')} />
                             <input type="hidden" name="languages" value={JSON.stringify(languages)} />
-                             <input type="hidden" name="dob" value={dob?.toISOString() || ''} />
-
 
                             {activeSection === 'profile-details' && (
                                 <section className="space-y-6">
@@ -433,17 +433,7 @@ export function UpdateProfileCard({
                                         </div>
                                         <div className="grid gap-2">
                                             <Label htmlFor="phone">Phone Number</Label>
-                                            <div className="flex rounded-md border border-input focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
-                                                <Select defaultValue="+91">
-                                                    <SelectTrigger className="w-24 rounded-r-none border-r-0 border-y-0 border-l-0">
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="+91">+91 (IN)</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                                <Input id="phone" name="phone" defaultValue={profile.phone ?? ''} type="tel" className="rounded-l-none border-0" />
-                                            </div>
+                                            <Input id="phone" name="phone" defaultValue={profile.phone ?? ''} type="tel" />
                                         </div>
                                         <div className="grid gap-2">
                                             <Label htmlFor="address">City / Town</Label>
@@ -710,6 +700,13 @@ export function UpdateProfileCard({
                                                 <Input id="socials.indeed" name="socials.indeed" defaultValue={profile.socials?.indeed ?? ''} placeholder="https://profile.indeed.com/..." className="pl-9" />
                                             </div>
                                         </div>
+                                        <div className="grid gap-2 md:col-span-2">
+                                            <Label htmlFor="portfolio">Portfolio</Label>
+                                            <div className="relative">
+                                                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                <Input id="portfolio" name="portfolio" defaultValue={profile.portfolio ?? ''} placeholder="https://your-portfolio.com" className="pl-9" />
+                                            </div>
+                                        </div>
                                     </div>
                                 </section>
                             )}
@@ -751,17 +748,17 @@ export function UpdateProfileCard({
                                 </div>
                                 <div className="grid gap-2">
                                     <Label>Date of Birth</Label>
-                                    <div className="flex rounded-md border border-input focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
+                                    <div className="flex rounded-md border border-input transition-colors focus-within:border-b-ring focus-within:border-b-2">
                                         <Select name="dob-day" defaultValue={dob ? String(dob.getDate()) : undefined}>
-                                            <SelectTrigger className="w-24 border-0 rounded-r-none"><SelectValue placeholder="Day" /></SelectTrigger>
+                                            <SelectTrigger className="w-24 border-0 rounded-r-none focus-visible:ring-0 focus-visible:ring-offset-0"><SelectValue placeholder="Day" /></SelectTrigger>
                                             <SelectContent>{Array.from({ length: 31 }, (_, i) => i + 1).map(day => <SelectItem key={day} value={String(day)}>{day}</SelectItem>)}</SelectContent>
                                         </Select>
                                         <Select name="dob-month" defaultValue={dob ? String(dob.getMonth() + 1) : undefined}>
-                                            <SelectTrigger className="flex-1 border-y-0 rounded-none"><SelectValue placeholder="Month" /></SelectTrigger>
+                                            <SelectTrigger className="flex-1 border-y-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0"><SelectValue placeholder="Month" /></SelectTrigger>
                                             <SelectContent>{Array.from({ length: 12 }, (_, i) => i + 1).map(month => <SelectItem key={month} value={String(month)}>{format(new Date(2000, month - 1), 'MMMM')}</SelectItem>)}</SelectContent>
                                         </Select>
                                         <Select name="dob-year" defaultValue={dob ? String(dob.getFullYear()) : undefined}>
-                                            <SelectTrigger className="w-32 border-0 rounded-l-none"><SelectValue placeholder="Year" /></SelectTrigger>
+                                            <SelectTrigger className="w-32 border-0 rounded-l-none focus-visible:ring-0 focus-visible:ring-offset-0"><SelectValue placeholder="Year" /></SelectTrigger>
                                             <SelectContent>{Array.from({ length: 70 }, (_, i) => new Date().getFullYear() - 18 - i).map(year => <SelectItem key={year} value={String(year)}>{year}</SelectItem>)}</SelectContent>
                                         </Select>
                                     </div>
@@ -851,3 +848,5 @@ export function UpdateProfileCard({
     </div>
   );
 }
+
+    

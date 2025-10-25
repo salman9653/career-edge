@@ -690,14 +690,12 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
       }
   });
 
+  const dobDay = formData.get('dob-day');
+  const dobMonth = formData.get('dob-month');
+  const dobYear = formData.get('dob-year');
 
-  const dobDay = formData.get('dob-day') as string;
-  const dobMonth = formData.get('dob-month') as string;
-  const dobYear = formData.get('dob-year') as string;
   if (dobDay && dobMonth && dobYear) {
     dataToUpdate['dob'] = new Date(`${dobYear}-${dobMonth}-${dobDay}`).toISOString();
-  } else if (formData.get('dob')) { // fallback for old calendar picker
-      dataToUpdate['dob'] = formData.get('dob');
   }
   
   const permanentAddress = {
@@ -1364,3 +1362,5 @@ export async function generateAtsResumeAction(prevState: any, formData: FormData
         return { error: e.message || "An unexpected error occurred during AI generation." };
     }
 }
+
+    
