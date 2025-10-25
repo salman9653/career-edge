@@ -288,6 +288,7 @@ export interface UserProfile {
     employment?: any[];
     education?: any[];
     projects?: any[];
+    portfolio?: string;
     linkedin?: string;
     naukri?: string;
     gender?: string;

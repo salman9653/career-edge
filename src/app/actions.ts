@@ -1,4 +1,5 @@
 
+
 "use server";
 
 import { analyzeResumeForJobMatching } from "@/ai/flows/resume-analysis-for-job-matching";
@@ -17,8 +18,8 @@ import { generateAiInterview } from '@/ai/flows/generate-ai-interview-flow';
 import type { GenerateAiInterviewInput } from '@/ai/flows/generate-ai-interview-flow-types';
 import { regenerateQuestion, refineTone, addFollowUps, regenerateFollowUps, regenerateIntro, regenerateOutro } from '@/ai/flows/edit-ai-interview-flow';
 import type { RegenerateQuestionInput, RefineToneInput, AddFollowUpsInput, RegenerateFollowUpsInput, RegenerateIntroInput, RegenerateOutroInput } from '@/ai/flows/edit-ai-interview-flow-types';
-import { generateAiQuestions } from "@/ai/flows/generate-ai-questions-flow";
-import type { GenerateAiQuestionsInput, GenerateAiQuestionsOutput } from "@/ai/flows/generate-ai-questions-flow-types";
+import { generateAiQuestions } from '@/ai/flows/generate-ai-questions-flow';
+import type { GenerateAiQuestionsInput, GenerateAiQuestionsOutput } from '@/ai/flows/generate-ai-questions-flow-types';
 import { enhanceText, generateTextFromPrompt } from '@/ai/flows/text-generation-flows';
 import { generateAtsResume } from '@/ai/flows/generate-ats-resume-flow';
 import type { GenerateAtsResumeInput, GeneratedResume } from '@/ai/flows/generate-ats-resume-flow-types';
@@ -672,7 +673,7 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
     'name', 'phone', 'address', 'profileSummary',
     'jobTitle', 'currentCompany', 'workStatus', 'experience', 'noticePeriod', 'currentSalary',
     'gender', 'maritalStatus',
-    'linkedin', 'naukri'
+    'portfolio', 'linkedin', 'naukri'
   ];
 
   fields.forEach(field => {
@@ -681,14 +682,11 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
     }
   });
 
-  const dobDay = formData.get('dob-day') as string;
-  const dobMonth = formData.get('dob-month') as string;
-  const dobYear = formData.get('dob-year') as string;
-  if (dobDay && dobMonth && dobYear) {
-    const dob = new Date(parseInt(dobYear), parseInt(dobMonth) - 1, parseInt(dobDay));
-    dataToUpdate['dob'] = dob.toISOString();
+  const dob = formData.get('dob') as string;
+  if (dob) {
+    dataToUpdate['dob'] = dob;
   }
-
+  
   const permanentAddress = {
       address: formData.get('permanentAddress.address'),
       city: formData.get('permanentAddress.city'),

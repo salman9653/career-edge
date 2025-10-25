@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useState, useEffect } from 'react';
 import { useSession } from '@/hooks/use-session';
@@ -76,6 +77,7 @@ export default function ProfilePage() {
                     employment: data.employment,
                     education: data.education,
                     projects: data.projects,
+                    portfolio: data.portfolio,
                     linkedin: data.linkedin,
                     naukri: data.naukri,
                     gender: data.gender,

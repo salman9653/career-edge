@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useActionState, useEffect, useRef, useState, useTransition, type DragEvent } from 'react';
 import { useFormStatus } from 'react-dom';
@@ -99,23 +100,12 @@ export function UpdateProfileCard({
   const [suggestedSkills, setSuggestedSkills] = useState<Skill[]>([]);
   const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
 
-  const [dobDay, setDobDay] = useState<string>('');
-  const [dobMonth, setDobMonth] = useState<string>('');
-  const [dobYear, setDobYear] = useState<string>('');
+  const [dob, setDob] = useState<Date | undefined>(profile.dob ? new Date(profile.dob) : undefined);
   
   const [languages, setLanguages] = useState<LanguageProficiency[]>(profile.languages || []);
   
   const isPending = isAvatarPending || isResumePending;
   
-  useEffect(() => {
-    if (profile.dob) {
-      const date = new Date(profile.dob);
-      setDobDay(String(date.getDate()));
-      setDobMonth(String(date.getMonth() + 1));
-      setDobYear(String(date.getFullYear()));
-    }
-  }, [profile.dob]);
-
   useEffect(() => {
     if (state.success) {
       toast({
@@ -131,24 +121,21 @@ export function UpdateProfileCard({
                 if (!newProfile[parent]) newProfile[parent] = {};
                 // @ts-ignore
                 newProfile[parent][child] = value;
-            } else if (!['keySkills', 'languages', 'dob-day', 'dob-month', 'dob-year'].includes(key)) {
+            } else if (!['keySkills', 'languages'].includes(key)) {
                 // @ts-ignore
                 newProfile[key] = value;
             }
         }
       newProfile.keySkills = skills;
       newProfile.languages = languages;
-
-      const day = formData.get('dob-day');
-      const month = formData.get('dob-month');
-      const year = formData.get('dob-year');
-      if (day && month && year) {
-        newProfile.dob = new Date(`${year}-${month}-${day}`).toISOString();
+      
+      if (dob) {
+        newProfile.dob = dob.toISOString();
       }
 
       onSave(newProfile);
     }
-  }, [state.success, toast, onSave, profile.role, skills, languages]);
+  }, [state.success, toast, onSave, profile.role, skills, languages, dob]);
 
   // Logic for skill suggestions
   useEffect(() => {
@@ -393,6 +380,7 @@ export function UpdateProfileCard({
                             
                             <input type="hidden" name="keySkills" value={skills.join(',')} />
                             <input type="hidden" name="languages" value={JSON.stringify(languages)} />
+                             <input type="hidden" name="dob" value={dob?.toISOString() || ''} />
 
 
                             {activeSection === 'profile-details' && (
@@ -432,18 +420,22 @@ export function UpdateProfileCard({
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="name">Name</Label>
-                                        <Input id="name" name="name" defaultValue={profile.name ?? ''} required />
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="phone">Phone Number</Label>
-                                        <Input id="phone" name="phone" defaultValue={profile.phone ?? ''} type="tel" />
-                                    </div>
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="address">City / Town</Label>
-                                        <Input id="address" name="address" defaultValue={profile.address ?? ''} />
-                                    </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="name">Name</Label>
+                                            <Input id="name" name="name" defaultValue={profile.name ?? ''} required />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="phone">Phone Number</Label>
+                                            <Input id="phone" name="phone" defaultValue={profile.phone ?? ''} type="tel" />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="address">City / Town</Label>
+                                            <Input id="address" name="address" defaultValue={profile.address ?? ''} />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="portfolio">Portfolio URL</Label>
+                                            <Input id="portfolio" name="portfolio" type="url" defaultValue={profile.portfolio ?? ''} placeholder="https://yourportfolio.com" />
+                                        </div>
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="profileSummary">Profile Summary</Label>
@@ -684,34 +676,33 @@ export function UpdateProfileCard({
                                     </SelectContent>
                                     </Select>
                                 </div>
-                                <div className="grid gap-2 md:col-span-2">
-                                    <Label>Date of Birth</Label>
-                                    <div className="flex items-center rounded-md border border-input focus-within:border-b-ring focus-within:border-b-2">
-                                        <Select name="dob-day" value={dobDay} onValueChange={setDobDay}>
-                                            <SelectTrigger className="rounded-r-none border-0 focus:ring-0 focus:ring-offset-0"><SelectValue placeholder="Day" /></SelectTrigger>
-                                            <SelectContent>
-                                                {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
-                                                    <SelectItem key={day} value={String(day)}>{day}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <Select name="dob-month" value={dobMonth} onValueChange={setDobMonth}>
-                                            <SelectTrigger className="rounded-none border-y-0 border-x focus:ring-0 focus:ring-offset-0"><SelectValue placeholder="Month" /></SelectTrigger>
-                                            <SelectContent>
-                                                {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
-                                                    <SelectItem key={month} value={String(month)}>{format(new Date(0, month - 1), 'MMMM')}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <Select name="dob-year" value={dobYear} onValueChange={setDobYear}>
-                                            <SelectTrigger className="rounded-l-none border-0 focus:ring-0 focus:ring-offset-0"><SelectValue placeholder="Year" /></SelectTrigger>
-                                            <SelectContent>
-                                                {Array.from({ length: 70 }, (_, i) => new Date().getFullYear() - 18 - i).map(year => (
-                                                    <SelectItem key={year} value={String(year)}>{year}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
+                                <div className="grid gap-2">
+                                     <Label>Date of Birth</Label>
+                                     <Popover>
+                                        <PopoverTrigger asChild>
+                                        <Button
+                                            variant={"outline"}
+                                            className={cn(
+                                            "justify-start text-left font-normal",
+                                            !dob && "text-muted-foreground"
+                                            )}
+                                        >
+                                            <CalendarIcon className="mr-2 h-4 w-4" />
+                                            {dob ? format(dob, "PPP") : <span>Pick a date</span>}
+                                        </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0">
+                                        <Calendar
+                                            mode="single"
+                                            selected={dob}
+                                            onSelect={setDob}
+                                            captionLayout="dropdown-nav"
+                                            fromYear={1950}
+                                            toYear={new Date().getFullYear() - 18}
+                                            initialFocus
+                                        />
+                                        </PopoverContent>
+                                    </Popover>
                                 </div>
                                 </div>
                                 <div className="space-y-2">
