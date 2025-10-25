@@ -178,7 +178,7 @@ const useFormFeedback = (state: any, onSave: (data: any) => void, formRef: React
         }
       }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [state.success, toast, formRef]);
+    }, [state]);
 };
 
 export function UpdateProfileCard({ 
@@ -413,7 +413,7 @@ export function UpdateProfileCard({
         if (mimeType.includes('openxmlformats')) return 'docx';
         return 'doc';
     }
-    if (mimeType.startsWith('image')) return mimeType.split('/')[1]?.toLowerCase() || 'image';
+    if (fileType.startsWith('image')) return mimeType.split('/')[1]?.toLowerCase() || 'image';
     return mimeType;
   }
 
@@ -460,19 +460,37 @@ export function UpdateProfileCard({
   };
 
   const handleSaveEmployment = (employment: Employment) => {
-        if (editingEmployment) {
-            setEmployments(employments.map(emp => emp.id === employment.id ? employment : emp));
-        } else {
-            setEmployments([...employments, employment]);
-        }
-        setIsAddingEmployment(false);
-        setEditingEmployment(null);
-    };
+    const newEmployments = [...employments];
+    if (editingEmployment) {
+        const index = newEmployments.findIndex(e => e.id === editingEmployment.id);
+        if (index > -1) newEmployments[index] = employment;
+    } else {
+        newEmployments.push(employment);
+    }
+    setEmployments(newEmployments);
 
-    const handleDeleteEmployment = (id: string) => {
-        setEmployments(employments.filter(emp => emp.id !== id));
-    };
+    const formData = new FormData();
+    formData.append('userId', session!.uid);
+    formData.append('employment', JSON.stringify(newEmployments));
+    
+    startTransition(() => {
+        employmentAction(formData);
+    });
 
+    setIsAddingEmployment(false);
+    setEditingEmployment(null);
+  };
+
+  const handleDeleteEmployment = (id: string) => {
+      const newEmployments = employments.filter(emp => emp.id !== id);
+      setEmployments(newEmployments);
+      const formData = new FormData();
+      formData.append('userId', session!.uid);
+      formData.append('employment', JSON.stringify(newEmployments));
+      startTransition(() => {
+        employmentAction(formData);
+    });
+  };
 
   return (
     <>
@@ -806,64 +824,59 @@ export function UpdateProfileCard({
                           )}
 
                            {activeSection === 'employment' && (
-                              <form action={employmentAction} ref={employmentFormRef}>
-                                  <input type="hidden" name="userId" value={session?.uid} />
-                                  <input type="hidden" name="employment" value={JSON.stringify(employments)} />
-                                  <section className="space-y-6">
-                                      <div>
-                                          <h3 className="text-lg font-semibold">Employment History</h3>
-                                          <p className="text-sm text-muted-foreground">Detail your professional experience.</p>
-                                      </div>
-                                      <div className="space-y-4">
-                                          {employments.length === 0 && !isAddingEmployment && !editingEmployment ? (
-                                              <div className="text-center py-12 border-2 border-dashed rounded-lg flex flex-col items-center justify-center">
-                                                  <Briefcase className="mx-auto h-12 w-12 text-muted-foreground" />
-                                                  <h3 className="mt-4 text-lg font-semibold">No Employment Yet</h3>
-                                                  <p className="mt-1 text-sm text-muted-foreground">You haven't created any work experience yet, Add your work experience.</p>
-                                                  <Button className="mt-6" variant="secondary" type="button" onClick={() => setIsAddingEmployment(true)}>
-                                                      <Plus className="mr-2 h-4 w-4" />
-                                                      Add Employment
-                                                  </Button>
-                                              </div>
-                                          ) : (
-                                              <>
-                                                  {employments.map(emp => (
-                                                      editingEmployment?.id === emp.id ? (
-                                                          <EmploymentForm key={emp.id} employment={editingEmployment} onSave={handleSaveEmployment} onCancel={() => setEditingEmployment(null)} />
-                                                      ) : (
-                                                          <Card key={emp.id} className="p-4">
-                                                              <div className="flex justify-between items-start">
-                                                                  <div>
-                                                                      <p className="font-semibold">{emp.designation}</p>
-                                                                      <p className="text-sm text-muted-foreground">{emp.company}</p>
-                                                                      <p className="text-xs text-muted-foreground mt-1">
-                                                                          {format(new Date(emp.startDate), 'MMM yyyy')} - {emp.isCurrent ? 'Present' : emp.endDate ? format(new Date(emp.endDate), 'MMM yyyy') : ''}
-                                                                      </p>
-                                                                  </div>
-                                                                  <div className="flex gap-2">
-                                                                      <Button variant="ghost" size="icon" onClick={() => setEditingEmployment(emp)}><Edit className="h-4 w-4" /></Button>
-                                                                      <Button variant="ghost" size="icon" onClick={() => handleDeleteEmployment(emp.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                                                                  </div>
-                                                              </div>
-                                                          </Card>
-                                                      )
-                                                  ))}
-                                                  {isAddingEmployment && <EmploymentForm employment={null} onSave={handleSaveEmployment} onCancel={() => setIsAddingEmployment(false)} />}
-                                                  {!isAddingEmployment && !editingEmployment && (
-                                                      <Button type="button" variant="outline" onClick={() => setIsAddingEmployment(true)}>
-                                                          <Plus className="mr-2 h-4 w-4" />
-                                                          Add Another Employment
-                                                      </Button>
-                                                  )}
-                                              </>
-                                          )}
-                                      </div>
-                                      <div className="flex justify-end gap-2 pt-6 border-t mt-6">
-                                          <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
-                                          <SubmitButton />
-                                      </div>
-                                  </section>
-                              </form>
+                                <section className="space-y-6">
+                                    <div>
+                                        <h3 className="text-lg font-semibold">Employment History</h3>
+                                        <p className="text-sm text-muted-foreground">Detail your professional experience.</p>
+                                    </div>
+                                    <div className="space-y-4">
+                                        {employments.length === 0 && !isAddingEmployment && !editingEmployment ? (
+                                            <div className="text-center py-12 border-2 border-dashed rounded-lg flex flex-col items-center justify-center">
+                                                <Briefcase className="mx-auto h-12 w-12 text-muted-foreground" />
+                                                <h3 className="mt-4 text-lg font-semibold">No Employment Yet</h3>
+                                                <p className="mt-1 text-sm text-muted-foreground">You haven't created any work experience yet, Add your work experience.</p>
+                                                <Button className="mt-6" variant="secondary" type="button" onClick={() => setIsAddingEmployment(true)}>
+                                                    <Plus className="mr-2 h-4 w-4" />
+                                                    Add Employment
+                                                </Button>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                {employments.map(emp => (
+                                                    editingEmployment?.id === emp.id ? (
+                                                        <EmploymentForm key={emp.id} employment={editingEmployment} onSave={handleSaveEmployment} onCancel={() => setEditingEmployment(null)} />
+                                                    ) : (
+                                                        <Card key={emp.id} className="p-4">
+                                                            <div className="flex justify-between items-start">
+                                                                <div>
+                                                                    <p className="font-semibold">{emp.designation}</p>
+                                                                    <p className="text-sm text-muted-foreground">{emp.company}</p>
+                                                                    <p className="text-xs text-muted-foreground mt-1">
+                                                                        {format(new Date(emp.startDate), 'MMM yyyy')} - {emp.isCurrent ? 'Present' : emp.endDate ? format(new Date(emp.endDate), 'MMM yyyy') : ''}
+                                                                    </p>
+                                                                </div>
+                                                                <div className="flex gap-2">
+                                                                    <Button variant="ghost" size="icon" onClick={() => setEditingEmployment(emp)}><Edit className="h-4 w-4" /></Button>
+                                                                    <Button variant="ghost" size="icon" onClick={() => handleDeleteEmployment(emp.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                                                </div>
+                                                            </div>
+                                                        </Card>
+                                                    )
+                                                ))}
+                                                {isAddingEmployment && <EmploymentForm employment={null} onSave={handleSaveEmployment} onCancel={() => setIsAddingEmployment(false)} />}
+                                                {!isAddingEmployment && !editingEmployment && (
+                                                    <Button type="button" variant="outline" onClick={() => setIsAddingEmployment(true)}>
+                                                        <Plus className="mr-2 h-4 w-4" />
+                                                        Add Another Employment
+                                                    </Button>
+                                                )}
+                                            </>
+                                        )}
+                                    </div>
+                                    <div className="flex justify-end gap-2 pt-6 border-t mt-6">
+                                        <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
+                                    </div>
+                                </section>
                           )}
                           
                           {(activeSection === 'education' || activeSection === 'projects') && (
