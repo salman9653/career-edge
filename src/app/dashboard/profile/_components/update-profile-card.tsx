@@ -433,7 +433,17 @@ export function UpdateProfileCard({
                                         </div>
                                         <div className="grid gap-2">
                                             <Label htmlFor="phone">Phone Number</Label>
-                                            <Input id="phone" name="phone" defaultValue={profile.phone ?? ''} type="tel" />
+                                            <div className="flex focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 rounded-md">
+                                                <Select defaultValue="+91">
+                                                    <SelectTrigger className="w-24 rounded-r-none border-r-0 focus-visible:ring-0 focus-visible:ring-offset-0">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="+91">+91 (IN)</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                                <Input id="phone" name="phone" defaultValue={profile.phone ?? ''} type="tel" className="rounded-l-none" />
+                                            </div>
                                         </div>
                                         <div className="grid gap-2">
                                             <Label htmlFor="address">City / Town</Label>
@@ -657,33 +667,47 @@ export function UpdateProfileCard({
                                         <h3 className="text-lg font-semibold">Online Profiles</h3>
                                         <p className="text-sm text-muted-foreground">Add links to your professional profiles.</p>
                                     </div>
-                                    <div className="space-y-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                                         <div className="grid gap-2">
-                                            <Label htmlFor="linkedin">LinkedIn</Label>
-                                            <div className="relative">
-                                                <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                                <Input id="linkedin" name="linkedin" defaultValue={profile.linkedin ?? ''} placeholder="https://linkedin.com/in/..." className="pl-9" />
-                                            </div>
-                                        </div>
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="github">GitHub</Label>
+                                            <Label htmlFor="socials.github">GitHub</Label>
                                             <div className="relative">
                                                 <Github className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                                <Input id="github" name="github" defaultValue={profile.github ?? ''} placeholder="https://github.com/..." className="pl-9" />
+                                                <Input id="socials.github" name="socials.github" defaultValue={profile.socials?.github ?? ''} placeholder="https://github.com/..." className="pl-9" />
                                             </div>
                                         </div>
                                         <div className="grid gap-2">
-                                            <Label htmlFor="twitter">Twitter / X</Label>
+                                            <Label htmlFor="socials.twitter">Twitter / X</Label>
                                             <div className="relative">
                                                 <Twitter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                                <Input id="twitter" name="socials.twitter" defaultValue={profile.socials?.twitter ?? ''} placeholder="https://x.com/..." className="pl-9" />
+                                                <Input id="socials.twitter" name="socials.twitter" defaultValue={profile.socials?.twitter ?? ''} placeholder="https://x.com/..." className="pl-9" />
                                             </div>
                                         </div>
                                         <div className="grid gap-2">
-                                            <Label htmlFor="naukri">Naukri.com</Label>
+                                            <Label htmlFor="socials.linkedin">LinkedIn</Label>
+                                            <div className="relative">
+                                                <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                <Input id="socials.linkedin" name="socials.linkedin" defaultValue={profile.socials?.linkedin ?? ''} placeholder="https://linkedin.com/in/..." className="pl-9" />
+                                            </div>
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="socials.naukri">Naukri.com</Label>
                                             <div className="relative">
                                                 <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                                <Input id="naukri" name="naukri" defaultValue={profile.naukri ?? ''} placeholder="https://naukri.com/mnjuser/..." className="pl-9" />
+                                                <Input id="socials.naukri" name="socials.naukri" defaultValue={profile.socials?.naukri ?? ''} placeholder="https://naukri.com/mnjuser/..." className="pl-9" />
+                                            </div>
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="socials.glassdoor">Glassdoor</Label>
+                                            <div className="relative">
+                                                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                <Input id="socials.glassdoor" name="socials.glassdoor" defaultValue={profile.socials?.glassdoor ?? ''} placeholder="https://glassdoor.co.in/..." className="pl-9" />
+                                            </div>
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="socials.indeed">Indeed</Label>
+                                            <div className="relative">
+                                                <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                <Input id="socials.indeed" name="socials.indeed" defaultValue={profile.socials?.indeed ?? ''} placeholder="https://profile.indeed.com/..." className="pl-9" />
                                             </div>
                                         </div>
                                     </div>
@@ -727,31 +751,20 @@ export function UpdateProfileCard({
                                 </div>
                                 <div className="grid gap-2">
                                      <Label>Date of Birth</Label>
-                                     <Popover>
-                                        <PopoverTrigger asChild>
-                                        <Button
-                                            variant={"outline"}
-                                            className={cn(
-                                            "justify-start text-left font-normal",
-                                            !dob && "text-muted-foreground"
-                                            )}
-                                        >
-                                            <CalendarIcon className="mr-2 h-4 w-4" />
-                                            {dob ? format(dob, "PPP") : <span>Pick a date</span>}
-                                        </Button>
-                                        </PopoverTrigger>
-                                        <PopoverContent className="w-auto p-0">
-                                        <Calendar
-                                            mode="single"
-                                            selected={dob}
-                                            onSelect={setDob}
-                                            captionLayout="dropdown-nav"
-                                            fromYear={1950}
-                                            toYear={new Date().getFullYear() - 18}
-                                            initialFocus
-                                        />
-                                        </PopoverContent>
-                                    </Popover>
+                                      <div className="flex rounded-md border border-input focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
+                                        <Select name="dob-day" defaultValue={dob ? String(dob.getDate()) : undefined}>
+                                            <SelectTrigger className="w-24 border-0 rounded-r-none focus-visible:ring-0 focus-visible:ring-offset-0"><SelectValue placeholder="Day" /></SelectTrigger>
+                                            <SelectContent>{Array.from({ length: 31 }, (_, i) => i + 1).map(day => <SelectItem key={day} value={String(day)}>{day}</SelectItem>)}</SelectContent>
+                                        </Select>
+                                        <Select name="dob-month" defaultValue={dob ? String(dob.getMonth() + 1) : undefined}>
+                                            <SelectTrigger className="flex-1 border-y-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0"><SelectValue placeholder="Month" /></SelectTrigger>
+                                            <SelectContent>{Array.from({ length: 12 }, (_, i) => i + 1).map(month => <SelectItem key={month} value={String(month)}>{format(new Date(2000, month - 1), 'MMMM')}</SelectItem>)}</SelectContent>
+                                        </Select>
+                                        <Select name="dob-year" defaultValue={dob ? String(dob.getFullYear()) : undefined}>
+                                            <SelectTrigger className="w-32 border-l-0 rounded-l-none focus-visible:ring-0 focus-visible:ring-offset-0"><SelectValue placeholder="Year" /></SelectTrigger>
+                                            <SelectContent>{Array.from({ length: 70 }, (_, i) => new Date().getFullYear() - 18 - i).map(year => <SelectItem key={year} value={String(year)}>{year}</SelectItem>)}</SelectContent>
+                                        </Select>
+                                    </div>
                                 </div>
                                 </div>
                                 <div className="space-y-2">

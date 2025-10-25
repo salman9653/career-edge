@@ -669,19 +669,27 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
   const role = formData.get('role') as string;
   const dataToUpdate: { [key: string]: any } = {};
 
-  const fields = [
+  const directFields = [
     'name', 'phone', 'address', 'profileSummary',
     'jobTitle', 'currentCompany', 'workStatus', 'experience', 'noticePeriod', 'currentSalary',
-    'gender', 'maritalStatus',
-    'portfolio', 'linkedin', 'naukri', 'github',
-    'socials.twitter'
+    'gender', 'maritalStatus', 'portfolio'
   ];
 
-  fields.forEach(field => {
+  directFields.forEach(field => {
     if (formData.has(field)) {
       dataToUpdate[field] = formData.get(field);
     }
   });
+  
+  // Handling nested socials object
+  const socialsFields = ['github', 'twitter', 'linkedin', 'naukri', 'glassdoor', 'indeed'];
+  socialsFields.forEach(field => {
+      const formKey = `socials.${field}`;
+      if (formData.has(formKey)) {
+          dataToUpdate[formKey] = formData.get(formKey);
+      }
+  });
+
 
   const dobDay = formData.get('dob-day') as string;
   const dobMonth = formData.get('dob-month') as string;

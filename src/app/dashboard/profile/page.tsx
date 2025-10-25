@@ -113,7 +113,14 @@ export default function ProfilePage() {
         if (updatedProfile.name) {
             sessionUpdate.displayName = updatedProfile.name;
         }
-
+        
+        // Consolidate social links for session update
+        const updatedSocials = {
+            ...userProfile.socials,
+            ...updatedProfile.socials,
+        };
+        sessionUpdate.socials = updatedSocials;
+        
         updateSession(sessionUpdate);
     }
     setIsEditing(false);

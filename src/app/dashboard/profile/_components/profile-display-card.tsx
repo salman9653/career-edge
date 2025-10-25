@@ -122,47 +122,14 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                 )}
                  <div className="space-y-4 pt-4 border-t">
                     <h3 className="font-semibold text-lg">Online Profiles</h3>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {profile.linkedin && (
-                            <div className="flex items-start gap-3 text-sm">
-                                <Linkedin className="h-5 w-5 text-muted-foreground mt-1 shrink-0" />
-                                <div>
-                                    <p className="text-muted-foreground">LinkedIn</p>
-                                    <Link href={getWebsiteUrl(profile.linkedin)} target="_blank" rel="noopener noreferrer" className="font-medium text-dash-primary hover:underline break-all">
-                                        {profile.linkedin}
-                                    </Link>
-                                </div>
-                            </div>
-                        )}
-                         {profile.github && (
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                        {profile.socials?.github && (
                             <div className="flex items-start gap-3 text-sm">
                                 <Github className="h-5 w-5 text-muted-foreground mt-1 shrink-0" />
                                 <div>
                                     <p className="text-muted-foreground">GitHub</p>
-                                    <Link href={getWebsiteUrl(profile.github)} target="_blank" rel="noopener noreferrer" className="font-medium text-dash-primary hover:underline break-all">
-                                        {profile.github}
-                                    </Link>
-                                </div>
-                            </div>
-                        )}
-                        {profile.naukri && (
-                            <div className="flex items-start gap-3 text-sm">
-                                <Briefcase className="h-5 w-5 text-muted-foreground mt-1 shrink-0" />
-                                <div>
-                                    <p className="text-muted-foreground">Naukri.com</p>
-                                    <Link href={getWebsiteUrl(profile.naukri)} target="_blank" rel="noopener noreferrer" className="font-medium text-dash-primary hover:underline break-all">
-                                        {profile.naukri}
-                                    </Link>
-                                </div>
-                            </div>
-                        )}
-                          {profile.portfolio && (
-                            <div className="flex items-start gap-3 text-sm">
-                                <Globe className="h-5 w-5 text-muted-foreground mt-1 shrink-0" />
-                                <div>
-                                    <p className="text-muted-foreground">Portfolio</p>
-                                    <Link href={getWebsiteUrl(profile.portfolio)} target="_blank" rel="noopener noreferrer" className="font-medium text-dash-primary hover:underline break-all">
-                                        {profile.portfolio}
+                                    <Link href={getWebsiteUrl(profile.socials.github)} target="_blank" rel="noopener noreferrer" className="font-medium text-dash-primary hover:underline break-all">
+                                        {profile.socials.github}
                                     </Link>
                                 </div>
                             </div>
@@ -174,6 +141,61 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                                     <p className="text-muted-foreground">Twitter / X</p>
                                     <Link href={getWebsiteUrl(profile.socials.twitter)} target="_blank" rel="noopener noreferrer" className="font-medium text-dash-primary hover:underline break-all">
                                         {profile.socials.twitter}
+                                    </Link>
+                                </div>
+                            </div>
+                        )}
+                        {profile.socials?.linkedin && (
+                            <div className="flex items-start gap-3 text-sm">
+                                <Linkedin className="h-5 w-5 text-muted-foreground mt-1 shrink-0" />
+                                <div>
+                                    <p className="text-muted-foreground">LinkedIn</p>
+                                    <Link href={getWebsiteUrl(profile.socials.linkedin)} target="_blank" rel="noopener noreferrer" className="font-medium text-dash-primary hover:underline break-all">
+                                        {profile.socials.linkedin}
+                                    </Link>
+                                </div>
+                            </div>
+                        )}
+                         {profile.socials?.naukri && (
+                            <div className="flex items-start gap-3 text-sm">
+                                <Briefcase className="h-5 w-5 text-muted-foreground mt-1 shrink-0" />
+                                <div>
+                                    <p className="text-muted-foreground">Naukri.com</p>
+                                    <Link href={getWebsiteUrl(profile.socials.naukri)} target="_blank" rel="noopener noreferrer" className="font-medium text-dash-primary hover:underline break-all">
+                                        {profile.socials.naukri}
+                                    </Link>
+                                </div>
+                            </div>
+                        )}
+                        {profile.socials?.glassdoor && (
+                            <div className="flex items-start gap-3 text-sm">
+                                <Building2 className="h-5 w-5 text-muted-foreground mt-1 shrink-0" />
+                                <div>
+                                    <p className="text-muted-foreground">Glassdoor</p>
+                                    <Link href={getWebsiteUrl(profile.socials.glassdoor)} target="_blank" rel="noopener noreferrer" className="font-medium text-dash-primary hover:underline break-all">
+                                        {profile.socials.glassdoor}
+                                    </Link>
+                                </div>
+                            </div>
+                        )}
+                        {profile.socials?.indeed && (
+                            <div className="flex items-start gap-3 text-sm">
+                                <Briefcase className="h-5 w-5 text-muted-foreground mt-1 shrink-0" />
+                                <div>
+                                    <p className="text-muted-foreground">Indeed</p>
+                                    <Link href={getWebsiteUrl(profile.socials.indeed)} target="_blank" rel="noopener noreferrer" className="font-medium text-dash-primary hover:underline break-all">
+                                        {profile.socials.indeed}
+                                    </Link>
+                                </div>
+                            </div>
+                        )}
+                          {profile.portfolio && (
+                            <div className="flex items-start gap-3 text-sm">
+                                <Globe className="h-5 w-5 text-muted-foreground mt-1 shrink-0" />
+                                <div>
+                                    <p className="text-muted-foreground">Portfolio</p>
+                                    <Link href={getWebsiteUrl(profile.portfolio)} target="_blank" rel="noopener noreferrer" className="font-medium text-dash-primary hover:underline break-all">
+                                        {profile.portfolio}
                                     </Link>
                                 </div>
                             </div>

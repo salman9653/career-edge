@@ -147,11 +147,12 @@ export interface CompanySize {
 }
 
 export interface Socials {
-    linkedin?: string;
+    github?: string;
     twitter?: string;
+    linkedin?: string;
     naukri?: string;
     glassdoor?: string;
-    github?: string;
+    indeed?: string;
 }
 
 export interface CompanyDetails {
@@ -290,9 +291,9 @@ export interface UserProfile {
     education?: any[];
     projects?: any[];
     portfolio?: string;
-    linkedin?: string;
-    naukri?: string;
-    github?: string;
+    linkedin?: string; // DEPRECATED: use socials.linkedin instead
+    naukri?: string; // DEPRECATED: use socials.naukri instead
+    github?: string; // DEPRECATED: use socials.github instead
     gender?: string;
     maritalStatus?: string;
     dob?: string;
