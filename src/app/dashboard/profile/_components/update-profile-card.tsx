@@ -1,4 +1,3 @@
-
 'use client';
 import { useActionState, useEffect, useRef, useState, useTransition, type DragEvent } from 'react';
 import { useFormStatus } from 'react-dom';
@@ -688,6 +687,7 @@ export function UpdateProfileCard({
                                                 toYear={new Date().getFullYear() - 10}
                                                 selected={dob}
                                                 onSelect={setDob}
+                                                defaultMonth={dob || new Date()}
                                                 initialFocus
                                             />
                                         </PopoverContent>
