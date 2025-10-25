@@ -1,5 +1,4 @@
 
-
 'use client';
 import { useActionState, useEffect, useRef, useState, useTransition, type DragEvent } from 'react';
 import { useFormStatus } from 'react-dom';
@@ -758,7 +757,7 @@ export function UpdateProfileCard({
                                             <div className="text-center py-12 border-2 border-dashed rounded-lg flex flex-col items-center justify-center">
                                                 <Briefcase className="mx-auto h-12 w-12 text-muted-foreground" />
                                                 <h3 className="mt-4 text-lg font-semibold">No Employment Yet</h3>
-                                                <p className="mt-1 text-sm text-muted-foreground">Get started by adding your first work experience.</p>
+                                                <p className="mt-1 text-sm text-muted-foreground">You haven't created any work experience yet, Add your work experience.</p>
                                                 <Button className="mt-6" type="button" onClick={() => setIsAddingEmployment(true)}>
                                                     <Plus className="mr-2 h-4 w-4" />
                                                     Add Employment
