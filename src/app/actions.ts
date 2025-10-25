@@ -661,78 +661,80 @@ export async function updateCouponAction(prevState: any, formData: FormData) {
 }
 
 export async function updateUserProfileAction(prevState: any, formData: FormData) {
-  const userId = formData.get('userId') as string;
-  if (!userId) {
-    return { error: 'User not authenticated.' };
-  }
+    const userId = formData.get('userId') as string;
+    if (!userId) {
+        return { error: 'User not authenticated.' };
+    }
 
-  const dataToUpdate: { [key: string]: any } = {};
+    const dataToUpdate: { [key: string]: any } = {};
 
-  // Dynamically iterate over formData to build the update object
-  for (const [key, value] of formData.entries()) {
-    if (key === 'userId' || key === 'role' || key.startsWith('$ACTION')) continue;
+    // Dynamically iterate over formData to build the update object
+    for (const [key, value] of formData.entries()) {
+        if (key === 'userId' || key === 'role' || key.startsWith('$ACTION') || key === 'resumeFile') continue;
 
-    // Skip empty values unless it's a field we want to clear
-    if (value === '' && !['profileSummary', 'phone', 'address'].includes(key)) continue;
+        // Skip empty values unless it's a field we want to clear
+        if (value === '' && !['profileSummary', 'phone', 'address'].includes(key)) continue;
 
-    if (key.includes('.')) {
-        // Handle nested objects like socials and address
-        dataToUpdate[key] = value;
-    } else if (key === 'keySkills') {
-        dataToUpdate.keySkills = (value as string).split(',').map(s => s.trim()).filter(s => s);
-    } else if (key === 'languages' || key === 'employment') {
-        try {
-            dataToUpdate[key] = JSON.parse(value as string);
-        } catch (e) {
-            console.error(`Error parsing JSON for ${key}:`, e);
+        if (key.includes('.')) {
+            // Handle nested objects like socials and address
+            dataToUpdate[key] = value;
+        } else if (key === 'keySkills' || key === 'employment' || key === 'languages') {
+            try {
+                const parsedValue = JSON.parse(value as string);
+                if ((Array.isArray(parsedValue) && parsedValue.length > 0) || !Array.isArray(parsedValue)) {
+                    dataToUpdate[key] = parsedValue;
+                }
+            } catch (e) {
+                // It's a string, like from keySkills
+                dataToUpdate[key] = (value as string).split(',').map(s => s.trim()).filter(s => s);
+            }
+        } else if (key === 'dob-day' || key === 'dob-month' || key === 'dob-year') {
+            // Handled below
+        } else {
+            dataToUpdate[key] = value;
         }
-    } else if (key === 'dob-day' || key === 'dob-month' || key === 'dob-year') {
-        // Handled below
-    } else {
-        dataToUpdate[key] = value;
     }
-  }
 
-  const dobDay = formData.get('dob-day');
-  const dobMonth = formData.get('dob-month');
-  const dobYear = formData.get('dob-year');
+    const dobDay = formData.get('dob-day');
+    const dobMonth = formData.get('dob-month');
+    const dobYear = formData.get('dob-year');
 
-  if (dobDay && dobMonth && dobYear) {
-    dataToUpdate['dob'] = new Date(`${dobYear}-${dobMonth}-${dobDay}`).toISOString();
-  }
-
-  if (Object.keys(dataToUpdate).length === 0 && !formData.has('resumeFile')) {
-      return { success: 'No changes to save.' };
-  }
-
-  const resumeFile = formData.get('resumeFile') as File | null;
-  const MAX_RESUME_SIZE = 750 * 1024; // 750KB
-
-  if (resumeFile && resumeFile.size > 0) {
-    if (resumeFile.size > MAX_RESUME_SIZE) {
-        return { error: `Resume file size should not exceed ${MAX_RESUME_SIZE / 1024}KB.`};
+    if (dobDay && dobMonth && dobYear) {
+        dataToUpdate['dob'] = new Date(`${dobYear}-${dobMonth}-${dobDay}`).toISOString();
     }
-    const resumeDataUri = await fileToDataURI(resumeFile);
-    await setDoc(doc(db, `users/${userId}/uploads/resume`), { 
-      data: resumeDataUri,
-      name: resumeFile.name,
-      size: resumeFile.size,
-      type: resumeFile.type,
-      updatedAt: serverTimestamp(),
-    });
-    dataToUpdate.hasResume = true;
-  }
 
-  try {
-    const userRef = doc(db, 'users', userId);
-    if(Object.keys(dataToUpdate).length > 0) {
+    const resumeFile = formData.get('resumeFile') as File | null;
+    const MAX_RESUME_SIZE = 750 * 1024; // 750KB
+
+    if (resumeFile && resumeFile.size > 0) {
+        if (resumeFile.size > MAX_RESUME_SIZE) {
+            return { error: `Resume file size should not exceed ${MAX_RESUME_SIZE / 1024}KB.` };
+        }
+        const resumeDataUri = await fileToDataURI(resumeFile);
+        await setDoc(doc(db, `users/${userId}/uploads/resume`), {
+            data: resumeDataUri,
+            name: resumeFile.name,
+            size: resumeFile.size,
+            type: resumeFile.type,
+            updatedAt: serverTimestamp(),
+        });
+        dataToUpdate.hasResume = true;
+    }
+
+    if (Object.keys(dataToUpdate).length === 0) {
+        return { success: 'No changes to save.' };
+    }
+
+    try {
+        const userRef = doc(db, 'users', userId);
         await updateDoc(userRef, dataToUpdate);
+
+        revalidatePath('/dashboard/profile');
+        return { success: 'Profile updated successfully.' };
+    } catch (error: any) {
+        console.error("Error updating profile:", error);
+        return { error: error.message };
     }
-    revalidatePath('/dashboard/profile');
-    return { success: 'Profile updated successfully.' };
-  } catch (error: any) {
-    return { error: error.message };
-  }
 }
 
 export async function removeResumeAction(userId: string) {

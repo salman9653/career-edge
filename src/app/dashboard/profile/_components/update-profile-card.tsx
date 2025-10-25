@@ -486,7 +486,6 @@ export function UpdateProfileCard({
                             
                             <input 
                                 type="file" 
-                                name="resumeFile" 
                                 ref={resumeInputRef}
                                 className="hidden" 
                                 onChange={handleResumeFileChange}
