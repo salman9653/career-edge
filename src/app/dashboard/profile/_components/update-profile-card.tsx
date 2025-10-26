@@ -15,7 +15,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import type { CompanySize, Socials, UserProfile, Resume, Employment, Education, Project } from '@/lib/types';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -442,7 +442,7 @@ const EducationForm = ({ education, onSave, onCancel }: { education: Education |
                                     <span className="text-muted-foreground">to</span>
                                     <Select value={endYear?.toString()} onValueChange={val => setEndYear(Number(val))}>
                                         <SelectTrigger><SelectValue placeholder="End Year" /></SelectTrigger>
-                                        <SelectContent>{yearOptions.map(year => <SelectItem key={year} value={String(year)}>{year}</SelectItem>)}</SelectContent>
+                                        <SelectContent>{yearOptions.map(year => <SelectItem key={year} value={String(year)}>{y}</SelectItem>)}</SelectContent>
                                     </Select>
                                 </div>
                             </div>
@@ -1194,34 +1194,35 @@ const handleDeleteEducation = (id: string) => {
         </AlertDialogContent>
       </AlertDialog>
       <div className="flex gap-6 h-full w-full">
-        <div className="w-[250px] flex-shrink-0 flex flex-col">
-          <div className="mb-4">
-              <Button variant="ghost" className="justify-start w-full" onClick={onCancel}>
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to Profile
-              </Button>
-          </div>
-            <div className="relative flex-1 min-h-0">
-                <ScrollArea className="absolute inset-0 pr-2 custom-scrollbar">
-                    <nav className="grid gap-1 text-sm">
-                        {navItems.map((item) => (
-                        <Button
-                            key={item.id}
-                            variant={activeSection === item.id ? 'default' : 'ghost'}
-                            className="justify-start"
-                            onClick={() => setActiveSection(item.id)}
-                        >
-                            {item.label}
-                        </Button>
-                        ))}
-                    </nav>
-                </ScrollArea>
+        <Card className="w-[250px] flex-shrink-0 flex flex-col">
+          <CardContent className="p-4 flex-1 flex flex-col min-h-0">
+            <div className="mb-4">
+                <Button variant="ghost" className="justify-start w-full" onClick={onCancel}>
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Profile
+                </Button>
             </div>
-        </div>
+              <div className="relative flex-1 min-h-0">
+                  <ScrollArea className="absolute inset-0 pr-2 custom-scrollbar">
+                      <nav className="grid gap-1 text-sm">
+                          {navItems.map((item) => (
+                          <Button
+                              key={item.id}
+                              variant={activeSection === item.id ? 'default' : 'ghost'}
+                              className="justify-start"
+                              onClick={() => setActiveSection(item.id)}
+                          >
+                              {item.label}
+                          </Button>
+                          ))}
+                      </nav>
+                  </ScrollArea>
+              </div>
+          </CardContent>
+        </Card>
 
-        <div className="flex-1 flex flex-col min-h-0">
-          <Card className="flex-1 flex flex-col min-h-0">
-            <CardContent className="p-6 flex-1 overflow-y-auto custom-scrollbar">
+        <Card className="flex-1 flex flex-col min-h-0">
+          <CardContent className="p-6 flex-1 overflow-y-auto custom-scrollbar">
                 {activeSection === 'profile-details' && (
                   <form action={profileDetailsAction}>
                     <input type="hidden" name="userId" value={session?.uid} />
@@ -1871,10 +1872,11 @@ const handleDeleteEducation = (id: string) => {
                     </section>
                   </form>
                 )}
-              </CardContent>
-            </Card>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </>
   );
 }
+
