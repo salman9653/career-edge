@@ -1,5 +1,4 @@
 
-
 'use client';
 import { useActionState, useEffect, useRef, useState, useTransition, type DragEvent } from 'react';
 import { useFormStatus } from 'react-dom';
@@ -64,7 +63,7 @@ const getInitials = (name: string) => {
     if (!name) return '';
     const names = name.split(' ');
     if (names.length > 1) {
-        return `${'names[0][0]'}${names[names.length - 1][0]}`.toUpperCase();
+        return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
     }
     return name.substring(0, 2).toUpperCase();
 }
@@ -514,6 +513,7 @@ export function UpdateProfileCard({
 
   const [isEducationPending, startEducationTransition] = useTransition();
   const [isDeleteEducationPending, startDeleteEducationTransition] = useTransition();
+  const [isResumePending, startResumeTransition] = useTransition();
 
   const router = useRouter();
   const pathname = usePathname();
@@ -589,6 +589,7 @@ export function UpdateProfileCard({
       toast({ variant: 'destructive', title: 'Upload Failed', description: resumeState.error });
     }
      setIsUploading(false);
+     setUploadProgress(0);
   }, [resumeState, toast]);
 
   // Logic for skill suggestions
@@ -672,31 +673,12 @@ export function UpdateProfileCard({
     if (file.type.includes('pdf') || file.type.includes('document')) {
         setSelectedFile(file);
         if (session?.uid) {
-            setIsUploading(true);
-            setUploadProgress(0);
-
-            const reader = new FileReader();
-            reader.onprogress = (event) => {
-                if (event.lengthComputable) {
-                    const percentLoaded = Math.round((event.loaded / event.total) * 100);
-                    setUploadProgress(percentLoaded);
-                }
-            };
-            reader.onloadend = () => {
+            startResumeTransition(() => {
                 const formData = new FormData();
-                formData.append('resumeFile', reader.result as string);
-                formData.append('fileName', file.name);
-                formData.append('fileType', file.type);
-                formData.append('fileSize', file.size.toString());
+                formData.append('resumeFile', file);
                 formData.append('userId', session.uid);
-                
                 resumeAction(formData);
-            };
-            reader.onerror = () => {
-                toast({ variant: 'destructive', title: 'File Read Error', description: 'Could not read the selected file.' });
-                setIsUploading(false);
-            };
-            reader.readAsDataURL(file);
+            });
         }
     } else {
         toast({ variant: 'destructive', title: 'Invalid File Type', description: 'Please select a PDF or DOC file.' });
@@ -978,19 +960,21 @@ const handleDeleteEducation = (id: string) => {
       </AlertDialog>
       <div className="flex gap-6 h-full w-full">
         <Card className="p-4 w-[250px] flex-shrink-0 flex flex-col">
-            <div className="flex-1 overflow-y-auto custom-scrollbar -mr-2 pr-2">
-                <nav className="grid gap-1 text-sm">
-                    {navItems.map((item) => (
-                    <Button
-                        key={item.id}
-                        variant={activeSection === item.id ? 'default' : 'ghost'}
-                        className="justify-start"
-                        onClick={() => setActiveSection(item.id)}
-                    >
-                        {item.label}
-                    </Button>
-                    ))}
-                </nav>
+            <div className="relative flex-1 min-h-0">
+                <ScrollArea className="absolute inset-0 pr-2">
+                    <nav className="grid gap-1 text-sm">
+                        {navItems.map((item) => (
+                        <Button
+                            key={item.id}
+                            variant={activeSection === item.id ? 'default' : 'ghost'}
+                            className="justify-start"
+                            onClick={() => setActiveSection(item.id)}
+                        >
+                            {item.label}
+                        </Button>
+                        ))}
+                    </nav>
+                </ScrollArea>
             </div>
         </Card>
 
@@ -1134,6 +1118,7 @@ const handleDeleteEducation = (id: string) => {
                           onChange={handleResumeFileChange}
                           accept=".pdf,.doc,.docx"
                           disabled={isUploading}
+                          name="resumeFile"
                         />
                         {isUploading ? (
                            <Card className="relative flex flex-col items-center justify-center p-6 text-center h-48">
