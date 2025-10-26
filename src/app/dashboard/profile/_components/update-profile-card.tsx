@@ -38,7 +38,7 @@ import { skillsData, type Skill } from '@/lib/skills-data';
 import { Checkbox } from '@/components/ui/checkbox';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Switch } from '@/components/ui/switch';
-import { Progress } from '../ui/progress';
+import { Progress } from '@/components/ui/progress';
 
 const Twitter = (props: React.SVGProps<SVGSVGElement>) => (
     <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24" {...props}>
@@ -600,6 +600,7 @@ export function UpdateProfileCard({
             setUploadProgress(100);
             toast({ title: 'Resume Uploaded!' });
             setSelectedFile(null);
+            setTimeout(() => setUploadProgress(0), 1000);
         } else if (resumeState.error) {
             setUploadProgress(0);
             toast({ variant: 'destructive', title: 'Upload Failed', description: resumeState.error });
