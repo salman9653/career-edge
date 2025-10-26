@@ -528,7 +528,9 @@ export function UpdateProfileCard({
   
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [isResumePending, startResumeTransition] = useTransition();
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  
   const [isDownloadHovered, setIsDownloadHovered] = useState(false);
 
   const [skills, setSkills] = useState(profile.keySkills || []);
@@ -586,6 +588,7 @@ export function UpdateProfileCard({
     } else if (resumeState.error) {
       toast({ variant: 'destructive', title: 'Upload Failed', description: resumeState.error });
     }
+     setIsUploading(false);
   }, [resumeState, toast]);
 
   // Logic for skill suggestions
@@ -664,18 +667,39 @@ export function UpdateProfileCard({
   }
 
   const handleResumeFileSelect = (file: File | null) => {
-    if (file && (file.type.includes('pdf') || file.type.includes('document'))) {
+    if (!file) return;
+    
+    if (file.type.includes('pdf') || file.type.includes('document')) {
         setSelectedFile(file);
-        // Automatically submit
         if (session?.uid) {
-            const formData = new FormData();
-            formData.append('resumeFile', file);
-            formData.append('userId', session.uid);
-            startResumeTransition(() => {
+            setIsUploading(true);
+            setUploadProgress(0);
+
+            const reader = new FileReader();
+            reader.onprogress = (event) => {
+                if (event.lengthComputable) {
+                    const percentLoaded = Math.round((event.loaded / event.total) * 100);
+                    setUploadProgress(percentLoaded);
+                }
+            };
+            reader.onloadend = () => {
+                const formData = new FormData();
+                formData.append('resumeFile', reader.result as string);
+                formData.append('fileName', file.name);
+                formData.append('fileType', file.type);
+                formData.append('fileSize', file.size.toString());
+                formData.append('userId', session.uid);
+                
                 resumeAction(formData);
-            });
+            };
+            reader.onerror = () => {
+                toast({ variant: 'destructive', title: 'File Read Error', description: 'Could not read the selected file.' });
+                setIsUploading(false);
+            };
+            reader.readAsDataURL(file);
         }
     } else {
+        toast({ variant: 'destructive', title: 'Invalid File Type', description: 'Please select a PDF or DOC file.' });
         setSelectedFile(null);
     }
   };
@@ -702,12 +726,11 @@ export function UpdateProfileCard({
 
   const handleRemoveResume = () => {
     if (!session?.uid) return;
-     startResumeTransition(async () => {
+    startDeleteEmploymentTransition(async () => {
         const result = await removeResumeAction(session.uid);
         if(result.success) {
             toast({ title: 'Resume removed' });
             setSelectedFile(null);
-            // The onSnapshot in profile page will update the state
         } else {
             toast({ title: 'Error', description: result.error, variant: 'destructive' });
         }
@@ -954,25 +977,26 @@ const handleDeleteEducation = (id: string) => {
         </AlertDialogContent>
       </AlertDialog>
       <div className="flex gap-6 h-full w-full">
-        <Card className="p-4 w-[250px] self-start sticky top-20">
-          <nav className="grid gap-1 text-sm">
-            {navItems.map((item) => (
-              <Button
-                key={item.id}
-                variant={activeSection === item.id ? 'default' : 'ghost'}
-                className="justify-start"
-                onClick={() => setActiveSection(item.id)}
-              >
-                {item.label}
-              </Button>
-            ))}
-          </nav>
+        <Card className="p-4 w-[250px] flex-shrink-0 flex flex-col">
+            <div className="flex-1 overflow-y-auto custom-scrollbar -mr-2 pr-2">
+                <nav className="grid gap-1 text-sm">
+                    {navItems.map((item) => (
+                    <Button
+                        key={item.id}
+                        variant={activeSection === item.id ? 'default' : 'ghost'}
+                        className="justify-start"
+                        onClick={() => setActiveSection(item.id)}
+                    >
+                        {item.label}
+                    </Button>
+                    ))}
+                </nav>
+            </div>
         </Card>
 
         <div className="flex-1 flex flex-col min-h-0">
-          <ScrollArea className="h-full pr-4 custom-scrollbar">
-            <Card className="h-full">
-              <CardContent className="p-6">
+            <Card className="flex-1 flex flex-col">
+                <CardContent className="p-6 flex-1 overflow-y-auto custom-scrollbar">
                 {activeSection === 'profile-details' && (
                   <form action={profileDetailsAction}>
                     <input type="hidden" name="userId" value={session?.uid} />
@@ -1109,13 +1133,15 @@ const handleDeleteEducation = (id: string) => {
                           className="hidden"
                           onChange={handleResumeFileChange}
                           accept=".pdf,.doc,.docx"
-                          disabled={isResumePending}
-                          name="resumeFile"
+                          disabled={isUploading}
                         />
-                        {isResumePending ? (
-                            <Card className="relative flex flex-col items-center justify-center p-6 text-center h-48">
-                               <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
-                               <p className="mt-4 text-sm font-medium">Uploading and processing your resume...</p>
+                        {isUploading ? (
+                           <Card className="relative flex flex-col items-center justify-center p-6 text-center h-48">
+                                <p className="mb-4 text-sm font-medium">Uploading...</p>
+                                <div className="w-full bg-muted rounded-full h-2.5">
+                                    <div className="bg-dash-primary h-2.5 rounded-full" style={{ width: `${uploadProgress}%`, transition: 'width 0.3s ease-in-out' }}></div>
+                                </div>
+                                <p className="mt-2 text-sm text-muted-foreground">{uploadProgress}%</p>
                             </Card>
                         ) : profile.hasResume && !selectedFile ? (
                           <Card className="relative flex flex-col items-center justify-center p-6 text-center">
@@ -1179,10 +1205,10 @@ const handleDeleteEducation = (id: string) => {
                         ) : (
                           <div
                             className={cn("relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 transition-colors", isDragging && "border-dash-primary bg-dash-primary/10")}
-                            onDrop={isResumePending ? undefined : handleDrop}
-                            onDragOver={isResumePending ? undefined : handleResumeDragOver}
-                            onDragLeave={isResumePending ? undefined : handleResumeDragLeave}
-                            onClick={isResumePending ? undefined : handleResumeButtonClick}
+                            onDrop={isUploading ? undefined : handleDrop}
+                            onDragOver={isUploading ? undefined : handleResumeDragOver}
+                            onDragLeave={isUploading ? undefined : handleResumeDragLeave}
+                            onClick={isUploading ? undefined : handleResumeButtonClick}
                           >
                             <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
                             <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
@@ -1583,7 +1609,6 @@ const handleDeleteEducation = (id: string) => {
                 )}
               </CardContent>
             </Card>
-          </ScrollArea>
         </div>
       </div>
     </>
