@@ -528,8 +528,6 @@ export function UpdateProfileCard({
   
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [isUploading, setIsUploading] = useState(false);
   
   const [isDownloadHovered, setIsDownloadHovered] = useState(false);
 
@@ -588,8 +586,6 @@ export function UpdateProfileCard({
     } else if (resumeState.error) {
       toast({ variant: 'destructive', title: 'Upload Failed', description: resumeState.error });
     }
-     setIsUploading(false);
-     setUploadProgress(0);
   }, [resumeState, toast]);
 
   // Logic for skill suggestions
@@ -667,23 +663,29 @@ export function UpdateProfileCard({
     });
   }
 
-  const handleResumeFileSelect = (file: File | null) => {
-    if (!file) return;
-    
-    if (file.type.includes('pdf') || file.type.includes('document')) {
-        setSelectedFile(file);
-        if (session?.uid) {
-            startResumeTransition(() => {
-                const formData = new FormData();
-                formData.append('resumeFile', file);
-                formData.append('userId', session.uid);
-                resumeAction(formData);
-            });
-        }
-    } else {
-        toast({ variant: 'destructive', title: 'Invalid File Type', description: 'Please select a PDF or DOC file.' });
-        setSelectedFile(null);
+  const handleResumeFileSelect = async (file: File | null) => {
+    if (!file || !session?.uid) return;
+  
+    if (!(file.type.includes('pdf') || file.type.includes('document'))) {
+      toast({ variant: 'destructive', title: 'Invalid File Type', description: 'Please select a PDF or DOC file.' });
+      return;
     }
+  
+    setSelectedFile(file);
+    startResumeTransition(async () => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onloadend = () => {
+            const dataUri = reader.result as string;
+            const formData = new FormData();
+            formData.append('resumeData', dataUri);
+            formData.append('resumeName', file.name);
+            formData.append('resumeSize', file.size.toString());
+            formData.append('resumeType', file.type);
+            formData.append('userId', session.uid);
+            resumeAction(formData);
+        };
+    });
   };
 
   const handleResumeFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -961,7 +963,7 @@ const handleDeleteEducation = (id: string) => {
       <div className="flex gap-6 h-full w-full">
         <Card className="p-4 w-[250px] flex-shrink-0 flex flex-col">
             <div className="relative flex-1 min-h-0">
-                <ScrollArea className="absolute inset-0 pr-2">
+                <ScrollArea className="absolute inset-0 pr-2 custom-scrollbar">
                     <nav className="grid gap-1 text-sm">
                         {navItems.map((item) => (
                         <Button
@@ -978,9 +980,8 @@ const handleDeleteEducation = (id: string) => {
             </div>
         </Card>
 
-        <div className="flex-1 flex flex-col min-h-0">
-            <Card className="flex-1 flex flex-col">
-                <CardContent className="p-6 flex-1 overflow-y-auto custom-scrollbar">
+        <Card className="flex-1 flex flex-col min-h-0">
+          <CardContent className="p-6 flex-1 overflow-y-auto custom-scrollbar">
                 {activeSection === 'profile-details' && (
                   <form action={profileDetailsAction}>
                     <input type="hidden" name="userId" value={session?.uid} />
@@ -1117,16 +1118,13 @@ const handleDeleteEducation = (id: string) => {
                           className="hidden"
                           onChange={handleResumeFileChange}
                           accept=".pdf,.doc,.docx"
-                          disabled={isUploading}
+                          disabled={isResumePending}
                           name="resumeFile"
                         />
-                        {isUploading ? (
+                        {isResumePending ? (
                            <Card className="relative flex flex-col items-center justify-center p-6 text-center h-48">
                                 <p className="mb-4 text-sm font-medium">Uploading...</p>
-                                <div className="w-full bg-muted rounded-full h-2.5">
-                                    <div className="bg-dash-primary h-2.5 rounded-full" style={{ width: `${uploadProgress}%`, transition: 'width 0.3s ease-in-out' }}></div>
-                                </div>
-                                <p className="mt-2 text-sm text-muted-foreground">{uploadProgress}%</p>
+                                <Progress value={0} className="w-full" />
                             </Card>
                         ) : profile.hasResume && !selectedFile ? (
                           <Card className="relative flex flex-col items-center justify-center p-6 text-center">
@@ -1190,10 +1188,10 @@ const handleDeleteEducation = (id: string) => {
                         ) : (
                           <div
                             className={cn("relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 transition-colors", isDragging && "border-dash-primary bg-dash-primary/10")}
-                            onDrop={isUploading ? undefined : handleDrop}
-                            onDragOver={isUploading ? undefined : handleResumeDragOver}
-                            onDragLeave={isUploading ? undefined : handleResumeDragLeave}
-                            onClick={isUploading ? undefined : handleResumeButtonClick}
+                            onDrop={isResumePending ? undefined : handleDrop}
+                            onDragOver={isResumePending ? undefined : handleResumeDragOver}
+                            onDragLeave={isResumePending ? undefined : handleResumeDragLeave}
+                            onClick={isResumePending ? undefined : handleResumeButtonClick}
                           >
                             <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
                             <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
