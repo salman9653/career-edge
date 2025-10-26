@@ -287,6 +287,18 @@ export interface Education {
     gradingSystem?: string;
 }
 
+export interface Project {
+    id: string;
+    projectTitle: string;
+    taggedWith?: string; // employment or education id
+    clientName?: string;
+    projectStatus: 'in progress' | 'finished';
+    workedFrom: { month: number; year: number; };
+    workedTill?: { month: number; year: number; };
+    projectDetails: string;
+    skillsUsed: string[];
+}
+
 
 export interface UserProfile {
     uid: string;
@@ -324,7 +336,7 @@ export interface UserProfile {
     keySkills?: string[];
     employment?: Employment[];
     education?: Education[];
-    projects?: any[];
+    projects?: Project[];
     portfolio?: string;
     linkedin?: string; // DEPRECATED: use socials.linkedin instead
     naukri?: string; // DEPRECATED: use socials.naukri instead
@@ -332,6 +344,18 @@ export interface UserProfile {
     gender?: string;
     maritalStatus?: string;
     dob?: string;
-    permanentAddress?: string;
-    languages?: string[];
+    permanentAddress?: {
+      address: string;
+      city: string;
+      state: string;
+      country: string;
+      pincode: string;
+    };
+    languages?: {
+      language: string;
+      proficiency: string;
+      canRead: boolean;
+      canWrite: boolean;
+      canSpeak: boolean;
+    }[];
 }

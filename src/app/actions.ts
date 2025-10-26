@@ -678,7 +678,7 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
         if (key.includes('.')) {
             // Handle nested objects like socials and address
             dataToUpdate[key] = value;
-        } else if (key === 'keySkills' || key === 'employment' || key === 'education' || key === 'languages') {
+        } else if (key === 'keySkills' || key === 'employment' || key === 'education' || key === 'languages' || key === 'projects') {
             try {
                 const parsedValue = JSON.parse(value as string);
                 if (Array.isArray(parsedValue)) {
