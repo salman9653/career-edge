@@ -290,6 +290,7 @@ export interface Education {
 export interface Project {
     id: string;
     projectTitle: string;
+    projectUrl?: string;
     taggedWith?: string; // employment or education id
     clientName?: string;
     projectStatus: 'in progress' | 'finished';

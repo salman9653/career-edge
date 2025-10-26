@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useActionState, useEffect, useRef, useState, useTransition, type DragEvent } from 'react';
 import { useFormStatus } from 'react-dom';
@@ -9,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload, FileText, X, Plus, CalendarIcon, UploadCloud, Download, RefreshCw, Github, FolderKanban, AlertTriangle, GraduationCap, ArrowLeft } from 'lucide-react';
+import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload, FileText, X, Plus, CalendarIcon, UploadCloud, Download, RefreshCw, Github, FolderKanban, AlertTriangle, GraduationCap, ArrowLeft, Link as LinkIcon } from 'lucide-react';
 import { FaFilePdf, FaFileWord, FaFileImage } from 'react-icons/fa';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -488,6 +489,7 @@ const EducationForm = ({ education, onSave, onCancel }: { education: Education |
 
 const ProjectForm = ({ project, onSave, onCancel, employments, educationRecords }: { project: Project | null, onSave: (project: Project) => void, onCancel: () => void, employments: Employment[], educationRecords: Education[] }) => {
     const [projectTitle, setProjectTitle] = useState(project?.projectTitle || '');
+    const [projectUrl, setProjectUrl] = useState(project?.projectUrl || '');
     const [taggedWith, setTaggedWith] = useState(project?.taggedWith || '');
     const [skillsUsed, setSkillsUsed] = useState(project?.skillsUsed?.join(', ') || '');
     const [clientName, setClientName] = useState(project?.clientName || '');
@@ -503,6 +505,7 @@ const ProjectForm = ({ project, onSave, onCancel, employments, educationRecords 
         const newProject: Project = {
             id: project?.id || Date.now().toString(),
             projectTitle,
+            projectUrl,
             taggedWith,
             skillsUsed: skillsUsed.split(',').map(s => s.trim()).filter(Boolean),
             clientName,
@@ -525,17 +528,17 @@ const ProjectForm = ({ project, onSave, onCancel, employments, educationRecords 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="grid gap-2">
                         <Label htmlFor="projectTitle">Project Title</Label>
-                        <Input id="projectTitle" value={projectTitle} onChange={e => setProjectTitle(e.target.value)} />
+                        <Input id="projectTitle" value={projectTitle} onChange={e => setProjectTitle(e.target.value)} placeholder="e.g., E-commerce Website Redesign" />
                     </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="clientName">Client Name (Optional)</Label>
-                        <Input id="clientName" value={clientName} onChange={e => setClientName(e.target.value)} />
+                     <div className="grid gap-2">
+                        <Label htmlFor="projectUrl">Project URL (Optional)</Label>
+                        <Input id="projectUrl" value={projectUrl} onChange={e => setProjectUrl(e.target.value)} placeholder="https://myproject.com" />
                     </div>
                 </div>
                  <div className="grid gap-2">
-                    <Label htmlFor="taggedWith">Tag with Employment/Education</Label>
+                    <Label htmlFor="taggedWith">Tag with Employment/Education (Optional)</Label>
                     <Select value={taggedWith} onValueChange={setTaggedWith}>
-                        <SelectTrigger id="taggedWith"><SelectValue placeholder="Select..." /></SelectTrigger>
+                        <SelectTrigger id="taggedWith"><SelectValue placeholder="Select an experience..." /></SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
                                 <SelectLabel>Employment</SelectLabel>
@@ -552,29 +555,35 @@ const ProjectForm = ({ project, onSave, onCancel, employments, educationRecords 
                     <Label htmlFor="project-skillsUsed">Skills Used (comma-separated)</Label>
                     <Input id="project-skillsUsed" value={skillsUsed} onChange={e => setSkillsUsed(e.target.value)} placeholder="e.g. React, Figma, Leadership" />
                 </div>
-                <div className="space-y-2">
-                    <Label>Project Status</Label>
-                    <RadioGroup value={projectStatus} onValueChange={(val) => setProjectStatus(val as any)} className="flex gap-4">
-                        <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="in progress" id="status-in-progress" />
-                            <Label htmlFor="status-in-progress" className="font-normal">In Progress</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="finished" id="status-finished" />
-                            <Label htmlFor="status-finished" className="font-normal">Finished</Label>
-                        </div>
-                    </RadioGroup>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="clientName">Client Name (Optional)</Label>
+                        <Input id="clientName" value={clientName} onChange={e => setClientName(e.target.value)} placeholder="e.g., ABC Corporation" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label>Project Status</Label>
+                        <RadioGroup value={projectStatus} onValueChange={(val) => setProjectStatus(val as any)} className="flex gap-4 pt-2">
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="in progress" id="status-in-progress" />
+                                <Label htmlFor="status-in-progress" className="font-normal">In Progress</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="finished" id="status-finished" />
+                                <Label htmlFor="status-finished" className="font-normal">Finished</Label>
+                            </div>
+                        </RadioGroup>
+                    </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                         <Label>Started</Label>
                         <div className="flex items-center gap-2">
                              <Select value={workedFrom.month.toString()} onValueChange={val => setWorkedFrom(p => ({...p, month: Number(val)}))}>
-                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger>
                                 <SelectContent>{monthOptions.map(m => <SelectItem key={m.value} value={String(m.value)}>{m.label}</SelectItem>)}</SelectContent>
                             </Select>
                             <Select value={workedFrom.year.toString()} onValueChange={val => setWorkedFrom(p => ({...p, year: Number(val)}))}>
-                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectTrigger><SelectValue placeholder="Year" /></SelectTrigger>
                                 <SelectContent>{yearOptions.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}</SelectContent>
                             </Select>
                         </div>
@@ -1220,661 +1229,662 @@ const handleDeleteEducation = (id: string) => {
           </div>
         </CardContent>
       </Card>
-      <Card className="flex-1 flex flex-col min-h-0">
-        <CardContent className="p-6 flex-1 overflow-y-auto custom-scrollbar">
-          {activeSection === 'profile-details' && (
-            <form action={profileDetailsAction}>
-              <input type="hidden" name="userId" value={session?.uid} />
-              <section className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold">Profile Details</h3>
-                  <p className="text-sm text-muted-foreground">Your personal and contact information.</p>
-                </div>
-                <div className="flex items-center gap-6">
-                  <div className="relative">
-                    <Avatar className="h-24 w-24">
-                      <AvatarImage src={profile.displayImageUrl ?? undefined} />
-                      <AvatarFallback className="text-3xl bg-dash-primary text-dash-primary-foreground">{getInitials(profile.name)}</AvatarFallback>
-                    </Avatar>
-                    {isAvatarPending && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
-                        <Loader2 className="h-8 w-8 animate-spin text-white" />
-                      </div>
-                    )}
+      <div className="flex-1 overflow-hidden">
+        <Card className="h-full flex flex-col">
+          <CardContent className="p-6 flex-1 overflow-y-auto custom-scrollbar">
+            {activeSection === 'profile-details' && (
+              <form action={profileDetailsAction}>
+                <input type="hidden" name="userId" value={session?.uid} />
+                <section className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold">Profile Details</h3>
+                    <p className="text-sm text-muted-foreground">Your personal and contact information.</p>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex items-center gap-6">
+                    <div className="relative">
+                      <Avatar className="h-24 w-24">
+                        <AvatarImage src={profile.displayImageUrl ?? undefined} />
+                        <AvatarFallback className="text-3xl bg-dash-primary text-dash-primary-foreground">{getInitials(profile.name)}</AvatarFallback>
+                      </Avatar>
+                      {isAvatarPending && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
+                          <Loader2 className="h-8 w-8 animate-spin text-white" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        className="hidden"
+                        accept="image/png, image/jpeg, image/gif"
+                      />
+                      <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isAvatarPending}>
+                        <Edit className="mr-2 h-4 w-4" /> {profile.displayImageUrl ? 'Change' : 'Add'} Picture
+                      </Button>
+                      {profile.displayImageUrl && (
+                        <Button type="button" variant="destructive" size="sm" onClick={handleRemoveAvatar} disabled={isAvatarPending}>
+                          <Trash2 className="mr-2 h-4 w-4" /> Remove
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="name">Name</Label>
+                      <Input id="name" name="name" defaultValue={profile.name ?? ''} required />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="phone">Phone Number</Label>
+                      <Input id="phone" name="phone" defaultValue={profile.phone ?? ''} type="tel" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="address">City / Town</Label>
+                      <Input id="address" name="address" defaultValue={profile.address ?? ''} />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="profileSummary">Profile Summary</Label>
+                    <Textarea name="profileSummary" id="profileSummary" defaultValue={profile.profileSummary ?? ''} placeholder="A brief summary about your professional background..." className="min-h-32" />
+                  </div>
+                  <div className="flex justify-end gap-2 pt-6 border-t mt-6">
+                    <SubmitButton />
+                  </div>
+                </section>
+              </form>
+            )}
+
+            {activeSection === 'career-profile' && (
+              <form action={careerProfileAction}>
+                <input type="hidden" name="userId" value={session?.uid} />
+                <section className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold">Career Profile</h3>
+                    <p className="text-sm text-muted-foreground">Your current professional status.</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="jobTitle">Current Job Title</Label>
+                      <Input id="jobTitle" name="jobTitle" defaultValue={profile.jobTitle ?? ''} placeholder="e.g. Software Engineer" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="currentCompany">Current Company</Label>
+                      <Input id="currentCompany" name="currentCompany" defaultValue={profile.currentCompany ?? ''} placeholder="e.g. Innovate Inc." />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="workStatus">Work Status</Label>
+                      <Select name="workStatus" defaultValue={profile.workStatus ?? ''}>
+                        <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="fresher">Fresher</SelectItem>
+                          <SelectItem value="experienced">Experienced</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="experience">Total Years of Experience</Label>
+                      <Input id="experience" name="experience" type="number" defaultValue={profile.experience ?? ''} />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="noticePeriod">Notice Period</Label>
+                      <Select name="noticePeriod" defaultValue={profile.noticePeriod ?? ''}>
+                        <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Immediate">Immediate</SelectItem>
+                          <SelectItem value="15 Days">15 Days</SelectItem>
+                          <SelectItem value="1 Month">1 Month</SelectItem>
+                          <SelectItem value="2 Months">2 Months</SelectItem>
+                          <SelectItem value="3 Months">3 Months</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="currentSalary">Current Salary (LPA)</Label>
+                      <Input id="currentSalary" name="currentSalary" defaultValue={profile.currentSalary ?? ''} placeholder="e.g. 12.5" />
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-6 border-t mt-6">
+                    <SubmitButton />
+                  </div>
+                </section>
+              </form>
+            )}
+
+            {activeSection === 'resume' && (
+              <form action={resumeAction}>
+                <input type="hidden" name="userId" value={session?.uid} />
+                <section className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold">Resume</h3>
+                    <p className="text-sm text-muted-foreground">Upload your latest resume. This will be used for AI analysis.</p>
+                  </div>
+                  <div className="space-y-2">
                     <input
                       type="file"
-                      ref={fileInputRef}
-                      onChange={handleFileChange}
+                      id="resume-file-input"
                       className="hidden"
-                      accept="image/png, image/jpeg, image/gif"
+                      onChange={handleResumeFileChange}
+                      accept=".pdf,.doc,.docx"
+                      disabled={isResumePending}
+                      name="resumeFile"
                     />
-                    <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isAvatarPending}>
-                      <Edit className="mr-2 h-4 w-4" /> {profile.displayImageUrl ? 'Change' : 'Add'} Picture
-                    </Button>
-                    {profile.displayImageUrl && (
-                      <Button type="button" variant="destructive" size="sm" onClick={handleRemoveAvatar} disabled={isAvatarPending}>
-                        <Trash2 className="mr-2 h-4 w-4" /> Remove
-                      </Button>
+                    {isResumePending ? (
+                       <Card className="relative flex flex-col items-center justify-center p-6 text-center h-48">
+                            <p className="mb-4 text-sm font-medium">Uploading...</p>
+                            <Progress value={uploadProgress} className="w-full" />
+                        </Card>
+                    ) : profile.hasResume && !selectedFile ? (
+                      <Card className="relative flex flex-col items-center justify-center p-6 text-center">
+                        <motion.button
+                          type="button"
+                          onHoverStart={() => setIsDownloadHovered(true)}
+                          onHoverEnd={() => setIsDownloadHovered(false)}
+                          onClick={handleResumeDownload}
+                          disabled={!profile.resume?.data}
+                          className="absolute top-4 right-4 flex items-center justify-center overflow-hidden rounded-full bg-secondary text-secondary-foreground"
+                          style={{ height: '2.5rem' }}
+                        >
+                          <motion.div
+                            animate={{ width: isDownloadHovered ? 'auto' : '2.5rem' }}
+                            transition={{ duration: 0.3, ease: 'easeInOut' }}
+                            className="flex items-center justify-center h-full px-3"
+                          >
+                            <Download className="h-5 w-5 flex-shrink-0" />
+                            <AnimatePresence>
+                              {isDownloadHovered && (
+                                <motion.span
+                                  initial={{ opacity: 0, x: -10 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  exit={{ opacity: 0, x: -10 }}
+                                  transition={{ duration: 0.2, delay: 0.1 }}
+                                  className="ml-2 whitespace-nowrap"
+                                >
+                                  Download
+                                </motion.span>
+                              )}
+                            </AnimatePresence>
+                          </motion.div>
+                        </motion.button>
+
+                        <div className="flex justify-center">{getFileIcon(profile.resume?.type)}</div>
+                        <p className="font-semibold mt-4">{profile.resume?.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Type: {getSimplifiedFileType(profile.resume?.type)} &bull; Size: {formatFileSize(profile.resume?.size)}
+                        </p>
+                        {profile.resume?.updatedAt && (
+                          <p className="text-xs text-muted-foreground mt-2">
+                            Last updated: {formatDistanceToNow(profile.resume.updatedAt.toDate(), { addSuffix: true })}
+                          </p>
+                        )}
+                        <div className="flex gap-2 mt-6">
+                          <Button type="button" variant="secondary" size="sm" onClick={handleResumeButtonClick} disabled={isResumePending}><RefreshCw className="mr-2 h-4 w-4" />Update</Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button type="button" variant="destructive" size="sm" disabled={isResumePending}><Trash2 className="mr-2 h-4 w-4" />Delete</Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader><AlertDialogTitle>Are you sure?</AlertDialogTitle><AlertDialogDescription>This will permanently delete your uploaded resume.</AlertDialogDescription></AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleRemoveResume} disabled={isResumePending} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </Card>
+                    ) : (
+                      <div
+                        className={cn("relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 transition-colors", isDragging && "border-dash-primary bg-dash-primary/10")}
+                        onDrop={isResumePending ? undefined : handleDrop}
+                        onDragOver={isResumePending ? undefined : handleResumeDragOver}
+                        onDragLeave={isResumePending ? undefined : handleResumeDragLeave}
+                        onClick={isResumePending ? undefined : handleResumeButtonClick}
+                      >
+                        <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
+                        <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                        <p className="text-xs text-muted-foreground">PDF, DOC, or DOCX (MAX. 750KB)</p>
+                      </div>
                     )}
                   </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="name">Name</Label>
-                    <Input id="name" name="name" defaultValue={profile.name ?? ''} required />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" name="phone" defaultValue={profile.phone ?? ''} type="tel" />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="address">City / Town</Label>
-                    <Input id="address" name="address" defaultValue={profile.address ?? ''} />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="profileSummary">Profile Summary</Label>
-                  <Textarea name="profileSummary" id="profileSummary" defaultValue={profile.profileSummary ?? ''} placeholder="A brief summary about your professional background..." className="min-h-32" />
-                </div>
-                <div className="flex justify-end gap-2 pt-6 border-t mt-6">
-                  <SubmitButton />
-                </div>
-              </section>
-            </form>
-          )}
+                   {resumeState.error && <Alert variant="destructive"><AlertDescription>{resumeState.error}</AlertDescription></Alert>}
+                </section>
+              </form>
+            )}
 
-          {activeSection === 'career-profile' && (
-            <form action={careerProfileAction}>
-              <input type="hidden" name="userId" value={session?.uid} />
-              <section className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold">Career Profile</h3>
-                  <p className="text-sm text-muted-foreground">Your current professional status.</p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="jobTitle">Current Job Title</Label>
-                    <Input id="jobTitle" name="jobTitle" defaultValue={profile.jobTitle ?? ''} placeholder="e.g. Software Engineer" />
+            {activeSection === 'key-skills' && (
+              <form action={keySkillsAction}>
+                <input type="hidden" name="userId" value={session?.uid} />
+                <input type="hidden" name="keySkills" value={JSON.stringify(skills)} />
+                <section className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold">Key Skills</h3>
+                    <p className="text-sm text-muted-foreground">Add skills that best define your expertise.</p>
                   </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="currentCompany">Current Company</Label>
-                    <Input id="currentCompany" name="currentCompany" defaultValue={profile.currentCompany ?? ''} placeholder="e.g. Innovate Inc." />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="workStatus">Work Status</Label>
-                    <Select name="workStatus" defaultValue={profile.workStatus ?? ''}>
-                      <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="fresher">Fresher</SelectItem>
-                        <SelectItem value="experienced">Experienced</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="experience">Total Years of Experience</Label>
-                    <Input id="experience" name="experience" type="number" defaultValue={profile.experience ?? ''} />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="noticePeriod">Notice Period</Label>
-                    <Select name="noticePeriod" defaultValue={profile.noticePeriod ?? ''}>
-                      <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Immediate">Immediate</SelectItem>
-                        <SelectItem value="15 Days">15 Days</SelectItem>
-                        <SelectItem value="1 Month">1 Month</SelectItem>
-                        <SelectItem value="2 Months">2 Months</SelectItem>
-                        <SelectItem value="3 Months">3 Months</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="currentSalary">Current Salary (LPA)</Label>
-                    <Input id="currentSalary" name="currentSalary" defaultValue={profile.currentSalary ?? ''} placeholder="e.g. 12.5" />
-                  </div>
-                </div>
-                <div className="flex justify-end gap-2 pt-6 border-t mt-6">
-                  <SubmitButton />
-                </div>
-              </section>
-            </form>
-          )}
-
-          {activeSection === 'resume' && (
-            <form action={resumeAction}>
-              <input type="hidden" name="userId" value={session?.uid} />
-              <section className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold">Resume</h3>
-                  <p className="text-sm text-muted-foreground">Upload your latest resume. This will be used for AI analysis.</p>
-                </div>
-                <div className="space-y-2">
-                  <input
-                    type="file"
-                    id="resume-file-input"
-                    className="hidden"
-                    onChange={handleResumeFileChange}
-                    accept=".pdf,.doc,.docx"
-                    disabled={isResumePending}
-                    name="resumeFile"
-                  />
-                  {isResumePending ? (
-                     <Card className="relative flex flex-col items-center justify-center p-6 text-center h-48">
-                          <p className="mb-4 text-sm font-medium">Uploading...</p>
-                          <Progress value={uploadProgress} className="w-full" />
-                      </Card>
-                  ) : profile.hasResume && !selectedFile ? (
-                    <Card className="relative flex flex-col items-center justify-center p-6 text-center">
-                      <motion.button
-                        type="button"
-                        onHoverStart={() => setIsDownloadHovered(true)}
-                        onHoverEnd={() => setIsDownloadHovered(false)}
-                        onClick={handleResumeDownload}
-                        disabled={!profile.resume?.data}
-                        className="absolute top-4 right-4 flex items-center justify-center overflow-hidden rounded-full bg-secondary text-secondary-foreground"
-                        style={{ height: '2.5rem' }}
-                      >
-                        <motion.div
-                          animate={{ width: isDownloadHovered ? 'auto' : '2.5rem' }}
-                          transition={{ duration: 0.3, ease: 'easeInOut' }}
-                          className="flex items-center justify-center h-full px-3"
-                        >
-                          <Download className="h-5 w-5 flex-shrink-0" />
-                          <AnimatePresence>
-                            {isDownloadHovered && (
-                              <motion.span
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -10 }}
-                                transition={{ duration: 0.2, delay: 0.1 }}
-                                className="ml-2 whitespace-nowrap"
-                              >
-                                Download
-                              </motion.span>
-                            )}
-                          </AnimatePresence>
-                        </motion.div>
-                      </motion.button>
-
-                      <div className="flex justify-center">{getFileIcon(profile.resume?.type)}</div>
-                      <p className="font-semibold mt-4">{profile.resume?.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Type: {getSimplifiedFileType(profile.resume?.type)} &bull; Size: {formatFileSize(profile.resume?.size)}
-                      </p>
-                      {profile.resume?.updatedAt && (
-                        <p className="text-xs text-muted-foreground mt-2">
-                          Last updated: {formatDistanceToNow(profile.resume.updatedAt.toDate(), { addSuffix: true })}
-                        </p>
-                      )}
-                      <div className="flex gap-2 mt-6">
-                        <Button type="button" variant="secondary" size="sm" onClick={handleResumeButtonClick} disabled={isResumePending}><RefreshCw className="mr-2 h-4 w-4" />Update</Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button type="button" variant="destructive" size="sm" disabled={isResumePending}><Trash2 className="mr-2 h-4 w-4" />Delete</Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader><AlertDialogTitle>Are you sure?</AlertDialogTitle><AlertDialogDescription>This will permanently delete your uploaded resume.</AlertDialogDescription></AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={handleRemoveResume} disabled={isResumePending} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Your skills</Label>
+                      <div className="min-h-[80px] p-2 flex flex-wrap gap-2">
+                        {skills.map((skill: string) => (
+                          <Badge key={skill} variant="secondary" className="flex items-center gap-1 text-base py-1">
+                            {skill}
+                            <button type="button" onClick={() => handleRemoveSkill(skill)} className="rounded-full hover:bg-black/20 p-0.5">
+                              <X className="h-3 w-3" />
+                            </button>
+                          </Badge>
+                        ))}
                       </div>
-                    </Card>
-                  ) : (
-                    <div
-                      className={cn("relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 transition-colors", isDragging && "border-dash-primary bg-dash-primary/10")}
-                      onDrop={isResumePending ? undefined : handleDrop}
-                      onDragOver={isResumePending ? undefined : handleResumeDragOver}
-                      onDragLeave={isResumePending ? undefined : handleResumeDragLeave}
-                      onClick={isResumePending ? undefined : handleResumeButtonClick}
-                    >
-                      <UploadCloud className="w-8 h-8 mb-4 text-muted-foreground" />
-                      <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                      <p className="text-xs text-muted-foreground">PDF, DOC, or DOCX (MAX. 750KB)</p>
                     </div>
-                  )}
-                </div>
-                 {resumeState.error && <Alert variant="destructive"><AlertDescription>{resumeState.error}</AlertDescription></Alert>}
-              </section>
-            </form>
-          )}
+                    <div className="relative">
+                      <Input
+                        value={skillInput}
+                        onChange={(e) => setSkillInput(e.target.value)}
+                        onKeyDown={handleSkillKeyDown}
+                        onFocus={() => setIsAutocompleteOpen(true)}
+                        onBlur={() => setTimeout(() => setIsAutocompleteOpen(false), 150)}
+                        placeholder="Add skills and press Enter"
+                      />
+                      {isAutocompleteOpen && skillInput && autocompleteSkills.length > 0 && (
+                        <Card className="absolute z-10 w-full mt-1 max-h-60 overflow-y-auto">
+                          <CardContent className="p-2">
+                            {autocompleteSkills.map(skill => (
+                              <Button
+                                key={skill.id}
+                                type="button"
+                                variant="ghost"
+                                className="w-full justify-start"
+                                onMouseDown={() => handleAddSkill(skill.name)}
+                              >
+                                {skill.name}
+                              </Button>
+                            ))}
+                          </CardContent>
+                        </Card>
+                      )}
+                    </div>
+                    <div className="space-y-2 pt-4">
+                      <Label>Or you can select from the suggested set of skills</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {suggestedSkills.map(skill => (
+                          <Button key={skill.id} type="button" variant="outline" size="sm" onClick={() => handleAddSkill(skill.name)}>
+                            {skill.name} <Plus className="ml-1 h-4 w-4" />
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-6 border-t mt-6">
+                    <SubmitButton />
+                  </div>
+                </section>
+              </form>
+            )}
 
-          {activeSection === 'key-skills' && (
-            <form action={keySkillsAction}>
-              <input type="hidden" name="userId" value={session?.uid} />
-              <input type="hidden" name="keySkills" value={JSON.stringify(skills)} />
+            {activeSection === 'employment' && (
               <section className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-semibold">Key Skills</h3>
-                  <p className="text-sm text-muted-foreground">Add skills that best define your expertise.</p>
+                  <h3 className="text-lg font-semibold">Employment</h3>
+                  <p className="text-sm text-muted-foreground">Detail your professional experience.</p>
                 </div>
                 <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Your skills</Label>
-                    <div className="min-h-[80px] p-2 flex flex-wrap gap-2">
-                      {skills.map((skill: string) => (
-                        <Badge key={skill} variant="secondary" className="flex items-center gap-1 text-base py-1">
-                          {skill}
-                          <button type="button" onClick={() => handleRemoveSkill(skill)} className="rounded-full hover:bg-black/20 p-0.5">
-                            <X className="h-3 w-3" />
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="relative">
-                    <Input
-                      value={skillInput}
-                      onChange={(e) => setSkillInput(e.target.value)}
-                      onKeyDown={handleSkillKeyDown}
-                      onFocus={() => setIsAutocompleteOpen(true)}
-                      onBlur={() => setTimeout(() => setIsAutocompleteOpen(false), 150)}
-                      placeholder="Add skills and press Enter"
-                    />
-                    {isAutocompleteOpen && skillInput && autocompleteSkills.length > 0 && (
-                      <Card className="absolute z-10 w-full mt-1 max-h-60 overflow-y-auto">
-                        <CardContent className="p-2">
-                          {autocompleteSkills.map(skill => (
-                            <Button
-                              key={skill.id}
-                              type="button"
-                              variant="ghost"
-                              className="w-full justify-start"
-                              onMouseDown={() => handleAddSkill(skill.name)}
-                            >
-                              {skill.name}
-                            </Button>
-                          ))}
-                        </CardContent>
-                      </Card>
-                    )}
-                  </div>
-                  <div className="space-y-2 pt-4">
-                    <Label>Or you can select from the suggested set of skills</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {suggestedSkills.map(skill => (
-                        <Button key={skill.id} type="button" variant="outline" size="sm" onClick={() => handleAddSkill(skill.name)}>
-                          {skill.name} <Plus className="ml-1 h-4 w-4" />
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex justify-end gap-2 pt-6 border-t mt-6">
-                  <SubmitButton />
-                </div>
-              </section>
-            </form>
-          )}
-
-          {activeSection === 'employment' && (
-            <section className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold">Employment</h3>
-                <p className="text-sm text-muted-foreground">Detail your professional experience.</p>
-              </div>
-              <div className="space-y-4">
-                {employments.length === 0 && !isAddingEmployment && !editingEmployment ? (
-                  <div className="text-center py-12 border-2 border-dashed rounded-lg flex flex-col items-center justify-center">
-                    <Briefcase className="mx-auto h-12 w-12 text-muted-foreground" />
-                    <h3 className="mt-4 text-lg font-semibold">No Employment Yet</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">You haven't created any work experience yet, Add your work experience.</p>
-                    <Button className="mt-6" variant="secondary" type="button" onClick={() => setIsAddingEmployment(true)}>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Add Employment
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    {employments.map(emp => (
-                      editingEmployment?.id === emp.id ? (
-                        <EmploymentForm key={emp.id} employment={editingEmployment} onSave={handleSaveEmployment} onCancel={() => setEditingEmployment(null)} />
-                      ) : (
-                        <Card key={emp.id} className="p-4">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <p className="font-semibold">{emp.designation}</p>
-                              <p className="text-sm text-muted-foreground">{emp.company} &bull; {emp.employmentType}</p>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {format(new Date(emp.startDate), 'MMM yyyy')} - {emp.isCurrent ? 'Present' : emp.endDate ? format(new Date(emp.endDate), 'MMM yyyy') : 'N/A'}
-                                <span className="mx-2 text-gray-400">&bull;</span>
-                                {calculateDuration(emp.startDate, emp.endDate, emp.isCurrent)}
-                              </p>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button variant="ghost" size="icon" onClick={() => setEditingEmployment(emp)}><Edit className="h-4 w-4" /></Button>
-                              <Button variant="ghost" size="icon" onClick={() => openDeleteDialog(emp.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                            </div>
-                          </div>
-                        </Card>
-                      )
-                    ))}
-                    {isAddingEmployment && <EmploymentForm employment={null} onSave={handleSaveEmployment} onCancel={() => setIsAddingEmployment(false)} />}
-                    {!isAddingEmployment && !editingEmployment && employments.length > 0 && (
-                      <Button type="button" variant="outline" onClick={() => setIsAddingEmployment(true)}>
+                  {employments.length === 0 && !isAddingEmployment && !editingEmployment ? (
+                    <div className="text-center py-12 border-2 border-dashed rounded-lg flex flex-col items-center justify-center">
+                      <Briefcase className="mx-auto h-12 w-12 text-muted-foreground" />
+                      <h3 className="mt-4 text-lg font-semibold">No Employment Yet</h3>
+                      <p className="mt-1 text-sm text-muted-foreground">You haven't created any work experience yet, Add your work experience.</p>
+                      <Button className="mt-6" variant="secondary" type="button" onClick={() => setIsAddingEmployment(true)}>
                         <Plus className="mr-2 h-4 w-4" />
-                        Add Another Employment
+                        Add Employment
                       </Button>
-                    )}
-                  </>
-                )}
-              </div>
-            </section>
-          )}
-
-          {activeSection === 'education' && (
-            <section className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold">Education</h3>
-                <p className="text-sm text-muted-foreground">Details like course, university, and more, help recruiters identify your educational background.</p>
-              </div>
-               <div className="space-y-4">
-                 {educationRecords.length === 0 && !isAddingEducation && !editingEducation ? (
-                  <div className="text-center py-12 border-2 border-dashed rounded-lg flex flex-col items-center justify-center">
-                    <GraduationCap className="mx-auto h-12 w-12 text-muted-foreground" />
-                    <h3 className="mt-4 text-lg font-semibold">No Education Yet</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">Add your educational qualifications.</p>
-                    <Button className="mt-6" variant="secondary" type="button" onClick={() => setIsAddingEducation(true)}>
-                      <Plus className="mr-2 h-4 w-4" />
-                      Add Education
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    {educationRecords.map(edu => (
-                      editingEducation?.id === edu.id ? (
-                        <EducationForm key={edu.id} education={editingEducation} onSave={handleSaveEducation} onCancel={() => setEditingEducation(null)} />
-                      ) : (
-                        <Card key={edu.id} className="p-4">
-                          <div className="flex justify-between items-start">
-                            <div>
-                               {edu.level === 'Class 10th' || edu.level === 'Class 12th' ? (
-                                  <>
-                                      <p className="font-semibold">{edu.level}</p>
-                                      <p className="text-sm text-muted-foreground">{edu.board} &bull; {edu.school}</p>
-                                      <p className="text-xs text-muted-foreground mt-1">
-                                          Passed in {edu.passingYear}
-                                      </p>
-                                  </>
-                              ) : (
-                                  <>
-                                      <p className="font-semibold">{edu.course} in {edu.specialization}</p>
-                                      <p className="text-sm text-muted-foreground">{edu.university}</p>
-                                      <p className="text-xs text-muted-foreground mt-1">
-                                          {edu.startYear} - {edu.endYear} &bull; {edu.courseType}
-                                      </p>
-                                  </>
-                              )}
-                            </div>
-                            <div className="flex gap-2">
-                              <Button variant="ghost" size="icon" onClick={() => setEditingEducation(edu)}><Edit className="h-4 w-4" /></Button>
-                              <Button variant="ghost" size="icon" onClick={() => openEducationDeleteDialog(edu.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                            </div>
-                          </div>
-                        </Card>
-                      )
-                    ))}
-                    {isAddingEducation && <EducationForm education={null} onSave={handleSaveEducation} onCancel={() => setIsAddingEducation(false)} />}
-                    {!isAddingEducation && !editingEducation && educationRecords.length > 0 && (
-                      <Button type="button" variant="outline" onClick={() => setIsAddingEducation(true)}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add Another Education
-                      </Button>
-                    )}
-                  </>
-                 )}
-              </div>
-            </section>
-          )}
-
-          {activeSection === 'projects' && (
-            <section className="space-y-6">
-              <div>
-                  <h3 className="text-lg font-semibold">Projects</h3>
-                  <p className="text-sm text-muted-foreground">Showcase your work and highlight your skills.</p>
-              </div>
-               <div className="space-y-4">
-                  {projects.length === 0 && !isAddingProject && !editingProject ? (
-                      <div className="text-center py-12 border-2 border-dashed rounded-lg flex flex-col items-center justify-center">
-                          <FolderKanban className="mx-auto h-12 w-12 text-muted-foreground" />
-                          <h3 className="mt-4 text-lg font-semibold">No Projects Yet</h3>
-                          <p className="mt-1 text-sm text-muted-foreground">Add projects you've worked on to impress recruiters.</p>
-                          <Button className="mt-6" variant="secondary" type="button" onClick={() => setIsAddingProject(true)}>
-                              <Plus className="mr-2 h-4 w-4" />
-                              Add Project
-                          </Button>
-                      </div>
+                    </div>
                   ) : (
-                       <>
-                          {projects.map(proj => (
-                              editingProject?.id === proj.id ? (
-                                  <ProjectForm key={proj.id} project={editingProject} onSave={handleSaveProject} onCancel={() => setEditingProject(null)} employments={employments} educationRecords={educationRecords} />
-                              ) : (
-                                  <Card key={proj.id} className="p-4">
-                                      <div className="flex justify-between items-start">
-                                          <div>
-                                              <p className="font-semibold">{proj.projectTitle}</p>
-                                              <p className="text-sm text-muted-foreground">{proj.clientName || 'Personal Project'}</p>
-                                              <p className="text-xs text-muted-foreground mt-1">
-                                                  {format(new Date(proj.workedFrom.year, proj.workedFrom.month - 1), 'MMM yyyy')} - 
-                                                  {proj.projectStatus === 'finished' && proj.workedTill ? ` ${format(new Date(proj.workedTill.year, proj.workedTill.month - 1), 'MMM yyyy')}` : ' Present'}
-                                              </p>
-                                          </div>
-                                          <div className="flex gap-2">
-                                              <Button variant="ghost" size="icon" onClick={() => setEditingProject(proj)}><Edit className="h-4 w-4" /></Button>
-                                              <Button variant="ghost" size="icon" onClick={() => openProjectDeleteDialog(proj.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                                          </div>
-                                      </div>
-                                  </Card>
-                              )
-                          ))}
-                          {isAddingProject && <ProjectForm project={null} onSave={handleSaveProject} onCancel={() => setIsAddingProject(false)} employments={employments} educationRecords={educationRecords} />}
-                          {!isAddingProject && !editingProject && projects.length > 0 && (
-                              <Button type="button" variant="outline" onClick={() => setIsAddingProject(true)}>
-                                  <Plus className="mr-2 h-4 w-4" />
-                                  Add Another Project
-                              </Button>
-                          )}
-                      </>
-                  )}
-              </div>
-          </section>
-          )}
-
-          {activeSection === 'online-profiles' && (
-            <form action={onlineProfilesAction}>
-              <input type="hidden" name="userId" value={session?.uid} />
-              <section className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold">Online Profiles</h3>
-                  <p className="text-sm text-muted-foreground">Add links to your professional profiles.</p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="socials.github">GitHub</Label>
-                    <div className="relative">
-                      <Github className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input id="socials.github" name="socials.github" defaultValue={profile.socials?.github ?? ''} placeholder="https://github.com/..." className="pl-9" />
-                    </div>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="socials.twitter">Twitter / X</Label>
-                    <div className="relative">
-                      <Twitter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input id="socials.twitter" name="socials.twitter" defaultValue={profile.socials?.twitter ?? ''} placeholder="https://x.com/..." className="pl-9" />
-                    </div>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="socials.linkedin">LinkedIn</Label>
-                    <div className="relative">
-                      <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input id="socials.linkedin" name="socials.linkedin" defaultValue={profile.socials?.linkedin ?? ''} placeholder="https://linkedin.com/in/..." className="pl-9" />
-                    </div>
-                  </div>
-                   <div className="grid gap-2">
-                    <Label htmlFor="socials.naukri">Naukri.com</Label>
-                    <div className="relative">
-                      <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input id="socials.naukri" name="socials.naukri" defaultValue={profile.socials?.naukri ?? ''} placeholder="https://naukri.com/mnjuser/..." className="pl-9" />
-                    </div>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="socials.glassdoor">Glassdoor</Label>
-                    <div className="relative">
-                      <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input id="socials.glassdoor" name="socials.glassdoor" defaultValue={profile.socials?.glassdoor ?? ''} placeholder="https://glassdoor.co.in/..." className="pl-9" />
-                    </div>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="socials.indeed">Indeed</Label>
-                    <div className="relative">
-                      <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input id="socials.indeed" name="socials.indeed" defaultValue={profile.socials?.indeed ?? ''} placeholder="https://profile.indeed.com/..." className="pl-9" />
-                    </div>
-                  </div>
-                    <div className="grid gap-2 md:col-span-2">
-                    <Label htmlFor="portfolio">Portfolio</Label>
-                    <div className="relative">
-                      <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input id="portfolio" name="portfolio" defaultValue={profile.portfolio ?? ''} placeholder="https://your-portfolio.com" className="pl-9" />
-                    </div>
-                  </div>
-                </div>
-                <div className="flex justify-end gap-2 pt-6 border-t mt-6">
-                  <SubmitButton />
-                </div>
-              </section>
-            </form>
-          )}
-
-          {activeSection === 'personal-details' && (
-            <form action={personalDetailsAction}>
-              <input type="hidden" name="userId" value={session?.uid} />
-              <input type="hidden" name="languages" value={JSON.stringify(languages)} />
-              <section className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold">Personal Details</h3>
-                  <p className="text-sm text-muted-foreground">This information helps us personalize your experience.</p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="gender">Gender</Label>
-                    <Select name="gender" defaultValue={profile.gender ?? ''}>
-                      <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Male">Male</SelectItem>
-                        <SelectItem value="Female">Female</SelectItem>
-                        <SelectItem value="Other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="maritalStatus">Marital Status</Label>
-                    <Select name="maritalStatus" defaultValue={profile.maritalStatus ?? ''}>
-                      <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Single">Single</SelectItem>
-                        <SelectItem value="Married">Married</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label>Date of Birth</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button variant="outline" className={cn("justify-start text-left font-normal", !dob && "text-muted-foreground")}>
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {dob ? format(dob, 'PPP') : 'Select a date'}
+                    <>
+                      {employments.map(emp => (
+                        editingEmployment?.id === emp.id ? (
+                          <EmploymentForm key={emp.id} employment={editingEmployment} onSave={handleSaveEmployment} onCancel={() => setEditingEmployment(null)} />
+                        ) : (
+                          <Card key={emp.id} className="p-4">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <p className="font-semibold">{emp.designation}</p>
+                                <p className="text-sm text-muted-foreground">{emp.company} &bull; {emp.employmentType}</p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {format(new Date(emp.startDate), 'MMM yyyy')} - {emp.isCurrent ? 'Present' : emp.endDate ? format(new Date(emp.endDate), 'MMM yyyy') : 'N/A'}
+                                  <span className="mx-2 text-gray-400">&bull;</span>
+                                  {calculateDuration(emp.startDate, emp.endDate, emp.isCurrent)}
+                                </p>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button variant="ghost" size="icon" onClick={() => setEditingEmployment(emp)}><Edit className="h-4 w-4" /></Button>
+                                <Button variant="ghost" size="icon" onClick={() => openDeleteDialog(emp.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                              </div>
+                            </div>
+                          </Card>
+                        )
+                      ))}
+                      {isAddingEmployment && <EmploymentForm employment={null} onSave={handleSaveEmployment} onCancel={() => setIsAddingEmployment(false)} />}
+                      {!isAddingEmployment && !editingEmployment && employments.length > 0 && (
+                        <Button type="button" variant="outline" onClick={() => setIsAddingEmployment(true)}>
+                          <Plus className="mr-2 h-4 w-4" />
+                          Add Another Employment
                         </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar mode="single" selected={dob} onSelect={setDob} initialFocus captionLayout="dropdown-buttons" fromYear={1950} toYear={new Date().getFullYear() - 18} />
-                      </PopoverContent>
-                    </Popover>
-                    <input type="hidden" name="dob" value={dob?.toISOString()} />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Permanent Address</Label>
-                  <div className="space-y-4">
-                    <Textarea name="permanentAddress.address" placeholder="Street Address" defaultValue={profile.permanentAddress?.address ?? ''} />
-                    <div className="grid grid-cols-2 gap-4">
-                      <Input name="permanentAddress.city" placeholder="City" defaultValue={profile.permanentAddress?.city ?? ''} />
-                      <Input name="permanentAddress.state" placeholder="State" defaultValue={profile.permanentAddress?.state ?? ''} />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <Input name="permanentAddress.country" placeholder="Country" defaultValue={profile.permanentAddress?.country ?? ''} />
-                      <Input name="permanentAddress.pincode" placeholder="Pin Code" defaultValue={profile.permanentAddress?.pincode ?? ''} />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4 pt-4">
-                  <Label className="font-semibold text-lg">Language Proficiency</Label>
-                  {languages.map((lang, index) => (
-                    <div key={index} className="p-4 border rounded-lg space-y-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>Language</Label>
-                          <Select value={lang.language} onValueChange={(value) => handleLanguageChange(index, 'language', value)}>
-                            <SelectTrigger><SelectValue placeholder="Select Language" /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="English">English</SelectItem>
-                              <SelectItem value="Hindi">Hindi</SelectItem>
-                              <SelectItem value="Spanish">Spanish</SelectItem>
-                              <SelectItem value="French">French</SelectItem>
-                              <SelectItem value="German">German</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Proficiency</Label>
-                          <Select value={lang.proficiency} onValueChange={(value) => handleLanguageChange(index, 'proficiency', value)}>
-                            <SelectTrigger><SelectValue placeholder="Select Proficiency" /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Beginner">Beginner</SelectItem>
-                              <SelectItem value="Intermediate">Intermediate</SelectItem>
-                              <SelectItem value="Advanced">Advanced</SelectItem>
-                              <SelectItem value="Proficient">Proficient</SelectItem>
-                              <SelectItem value="Expert">Expert</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-6">
-                          <div className="flex items-center gap-2">
-                            <Checkbox id={`read-${index}`} checked={lang.canRead} onCheckedChange={(checked) => handleLanguageChange(index, 'canRead', !!checked)} />
-                            <Label htmlFor={`read-${index}`} className="font-normal">Read</Label>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Checkbox id={`write-${index}`} checked={lang.canWrite} onCheckedChange={(checked) => handleLanguageChange(index, 'canWrite', !!checked)} />
-                            <Label htmlFor={`write-${index}`} className="font-normal">Write</Label>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Checkbox id={`speak-${index}`} checked={lang.canSpeak} onCheckedChange={(checked) => handleLanguageChange(index, 'canSpeak', !!checked)} />
-                            <Label htmlFor={`speak-${index}`} className="font-normal">Speak</Label>
-                          </div>
-                        </div>
-                        <Button variant="link" size="sm" type="button" onClick={() => handleRemoveLanguage(index)} className="text-destructive p-0 h-auto">Delete</Button>
-                      </div>
-                    </div>
-                  ))}
-                  <Button type="button" variant="link" onClick={handleAddLanguage}>+ Add another language</Button>
-                </div>
-                <div className="flex justify-end gap-2 pt-6 border-t mt-6">
-                  <SubmitButton />
+                      )}
+                    </>
+                  )}
                 </div>
               </section>
-            </form>
-          )}
-        </CardContent>
-      </Card>
+            )}
+
+            {activeSection === 'education' && (
+              <section className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold">Education</h3>
+                  <p className="text-sm text-muted-foreground">Details like course, university, and more, help recruiters identify your educational background.</p>
+                </div>
+                 <div className="space-y-4">
+                   {educationRecords.length === 0 && !isAddingEducation && !editingEducation ? (
+                    <div className="text-center py-12 border-2 border-dashed rounded-lg flex flex-col items-center justify-center">
+                      <GraduationCap className="mx-auto h-12 w-12 text-muted-foreground" />
+                      <h3 className="mt-4 text-lg font-semibold">No Education Yet</h3>
+                      <p className="mt-1 text-sm text-muted-foreground">Add your educational qualifications.</p>
+                      <Button className="mt-6" variant="secondary" type="button" onClick={() => setIsAddingEducation(true)}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add Education
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      {educationRecords.map(edu => (
+                        editingEducation?.id === edu.id ? (
+                          <EducationForm key={edu.id} education={editingEducation} onSave={handleSaveEducation} onCancel={() => setEditingEducation(null)} />
+                        ) : (
+                          <Card key={edu.id} className="p-4">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                 {edu.level === 'Class 10th' || edu.level === 'Class 12th' ? (
+                                    <>
+                                        <p className="font-semibold">{edu.level}</p>
+                                        <p className="text-sm text-muted-foreground">{edu.board} &bull; {edu.school}</p>
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                            Passed in {edu.passingYear}
+                                        </p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <p className="font-semibold">{edu.course} in {edu.specialization}</p>
+                                        <p className="text-sm text-muted-foreground">{edu.university}</p>
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                            {edu.startYear} - {edu.endYear} &bull; {edu.courseType}
+                                        </p>
+                                    </>
+                                )}
+                              </div>
+                              <div className="flex gap-2">
+                                <Button variant="ghost" size="icon" onClick={() => setEditingEducation(edu)}><Edit className="h-4 w-4" /></Button>
+                                <Button variant="ghost" size="icon" onClick={() => openEducationDeleteDialog(edu.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                              </div>
+                            </div>
+                          </Card>
+                        )
+                      ))}
+                      {isAddingEducation && <EducationForm education={null} onSave={handleSaveEducation} onCancel={() => setIsAddingEducation(false)} />}
+                      {!isAddingEducation && !editingEducation && educationRecords.length > 0 && (
+                        <Button type="button" variant="outline" onClick={() => setIsAddingEducation(true)}>
+                          <Plus className="mr-2 h-4 w-4" />
+                          Add Another Education
+                        </Button>
+                      )}
+                    </>
+                   )}
+                </div>
+              </section>
+            )}
+
+            {activeSection === 'projects' && (
+              <section className="space-y-6">
+                <div>
+                    <h3 className="text-lg font-semibold">Projects</h3>
+                    <p className="text-sm text-muted-foreground">Showcase your work and highlight your skills.</p>
+                </div>
+                 <div className="space-y-4">
+                    {projects.length === 0 && !isAddingProject && !editingProject ? (
+                        <div className="text-center py-12 border-2 border-dashed rounded-lg flex flex-col items-center justify-center">
+                            <FolderKanban className="mx-auto h-12 w-12 text-muted-foreground" />
+                            <h3 className="mt-4 text-lg font-semibold">No Projects Yet</h3>
+                            <p className="mt-1 text-sm text-muted-foreground">Add projects you've worked on to impress recruiters.</p>
+                            <Button className="mt-6" variant="secondary" type="button" onClick={() => setIsAddingProject(true)}>
+                                <Plus className="mr-2 h-4 w-4" />
+                                Add Project
+                            </Button>
+                        </div>
+                    ) : (
+                         <>
+                            {projects.map(proj => (
+                                editingProject?.id === proj.id ? (
+                                    <ProjectForm key={proj.id} project={editingProject} onSave={handleSaveProject} onCancel={() => setEditingProject(null)} employments={employments} educationRecords={educationRecords} />
+                                ) : (
+                                    <Card key={proj.id} className="p-4">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <p className="font-semibold">{proj.projectTitle}</p>
+                                                <p className="text-sm text-muted-foreground">{proj.clientName || 'Personal Project'}</p>
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    {format(new Date(proj.workedFrom.year, proj.workedFrom.month - 1), 'MMM yyyy')} - 
+                                                    {proj.projectStatus === 'finished' && proj.workedTill ? ` ${format(new Date(proj.workedTill.year, proj.workedTill.month - 1), 'MMM yyyy')}` : ' Present'}
+                                                </p>
+                                                {proj.projectUrl && <LinkIcon href={proj.projectUrl} className="text-xs text-blue-500 hover:underline mt-1 flex items-center gap-1"><LinkIcon className="h-3 w-3" /> Link to project</LinkIcon>}
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <Button variant="ghost" size="icon" onClick={() => setEditingProject(proj)}><Edit className="h-4 w-4" /></Button>
+                                                <Button variant="ghost" size="icon" onClick={() => openProjectDeleteDialog(proj.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                )
+                            ))}
+                            {isAddingProject && <ProjectForm project={null} onSave={handleSaveProject} onCancel={() => setIsAddingProject(false)} employments={employments} educationRecords={educationRecords} />}
+                            {!isAddingProject && !editingProject && projects.length > 0 && (
+                                <Button type="button" variant="outline" onClick={() => setIsAddingProject(true)}>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Add Another Project
+                                </Button>
+                            )}
+                        </>
+                    )}
+                </div>
+            </section>
+            )}
+
+            {activeSection === 'online-profiles' && (
+              <form action={onlineProfilesAction}>
+                <input type="hidden" name="userId" value={session?.uid} />
+                <section className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold">Online Profiles</h3>
+                    <p className="text-sm text-muted-foreground">Add links to your professional profiles.</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="socials.github">GitHub</Label>
+                      <div className="relative">
+                        <Github className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input id="socials.github" name="socials.github" defaultValue={profile.socials?.github ?? ''} placeholder="https://github.com/..." className="pl-9" />
+                      </div>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="socials.twitter">Twitter / X</Label>
+                      <div className="relative">
+                        <Twitter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input id="socials.twitter" name="socials.twitter" defaultValue={profile.socials?.twitter ?? ''} placeholder="https://x.com/..." className="pl-9" />
+                      </div>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="socials.linkedin">LinkedIn</Label>
+                      <div className="relative">
+                        <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input id="socials.linkedin" name="socials.linkedin" defaultValue={profile.socials?.linkedin ?? ''} placeholder="https://linkedin.com/in/..." className="pl-9" />
+                      </div>
+                    </div>
+                     <div className="grid gap-2">
+                      <Label htmlFor="socials.naukri">Naukri.com</Label>
+                      <div className="relative">
+                        <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input id="socials.naukri" name="socials.naukri" defaultValue={profile.socials?.naukri ?? ''} placeholder="https://naukri.com/mnjuser/..." className="pl-9" />
+                      </div>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="socials.glassdoor">Glassdoor</Label>
+                      <div className="relative">
+                        <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input id="socials.glassdoor" name="socials.glassdoor" defaultValue={profile.socials?.glassdoor ?? ''} placeholder="https://glassdoor.co.in/..." className="pl-9" />
+                      </div>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="socials.indeed">Indeed</Label>
+                      <div className="relative">
+                        <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input id="socials.indeed" name="socials.indeed" defaultValue={profile.socials?.indeed ?? ''} placeholder="https://profile.indeed.com/..." className="pl-9" />
+                      </div>
+                    </div>
+                      <div className="grid gap-2 md:col-span-2">
+                      <Label htmlFor="portfolio">Portfolio</Label>
+                      <div className="relative">
+                        <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input id="portfolio" name="portfolio" defaultValue={profile.portfolio ?? ''} placeholder="https://your-portfolio.com" className="pl-9" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-6 border-t mt-6">
+                    <SubmitButton />
+                  </div>
+                </section>
+              </form>
+            )}
+
+            {activeSection === 'personal-details' && (
+              <form action={personalDetailsAction}>
+                <input type="hidden" name="userId" value={session?.uid} />
+                <input type="hidden" name="languages" value={JSON.stringify(languages)} />
+                <section className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold">Personal Details</h3>
+                    <p className="text-sm text-muted-foreground">This information helps us personalize your experience.</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="gender">Gender</Label>
+                      <Select name="gender" defaultValue={profile.gender ?? ''}>
+                        <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Male">Male</SelectItem>
+                          <SelectItem value="Female">Female</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="maritalStatus">Marital Status</Label>
+                      <Select name="maritalStatus" defaultValue={profile.maritalStatus ?? ''}>
+                        <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Single">Single</SelectItem>
+                          <SelectItem value="Married">Married</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label>Date of Birth</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" className={cn("justify-start text-left font-normal", !dob && "text-muted-foreground")}>
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {dob ? format(dob, 'PPP') : 'Select a date'}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar mode="single" selected={dob} onSelect={setDob} initialFocus captionLayout="dropdown-buttons" fromYear={1950} toYear={new Date().getFullYear() - 18} />
+                        </PopoverContent>
+                      </Popover>
+                      <input type="hidden" name="dob" value={dob?.toISOString()} />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Permanent Address</Label>
+                    <div className="space-y-4">
+                      <Textarea name="permanentAddress.address" placeholder="Street Address" defaultValue={profile.permanentAddress?.address ?? ''} />
+                      <div className="grid grid-cols-2 gap-4">
+                        <Input name="permanentAddress.city" placeholder="City" defaultValue={profile.permanentAddress?.city ?? ''} />
+                        <Input name="permanentAddress.state" placeholder="State" defaultValue={profile.permanentAddress?.state ?? ''} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <Input name="permanentAddress.country" placeholder="Country" defaultValue={profile.permanentAddress?.country ?? ''} />
+                        <Input name="permanentAddress.pincode" placeholder="Pin Code" defaultValue={profile.permanentAddress?.pincode ?? ''} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 pt-4">
+                    <Label className="font-semibold text-lg">Language Proficiency</Label>
+                    {languages.map((lang, index) => (
+                      <div key={index} className="p-4 border rounded-lg space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label>Language</Label>
+                            <Select value={lang.language} onValueChange={(value) => handleLanguageChange(index, 'language', value)}>
+                              <SelectTrigger><SelectValue placeholder="Select Language" /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="English">English</SelectItem>
+                                <SelectItem value="Hindi">Hindi</SelectItem>
+                                <SelectItem value="Spanish">Spanish</SelectItem>
+                                <SelectItem value="French">French</SelectItem>
+                                <SelectItem value="German">German</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Proficiency</Label>
+                            <Select value={lang.proficiency} onValueChange={(value) => handleLanguageChange(index, 'proficiency', value)}>
+                              <SelectTrigger><SelectValue placeholder="Select Proficiency" /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Beginner">Beginner</SelectItem>
+                                <SelectItem value="Intermediate">Intermediate</SelectItem>
+                                <SelectItem value="Advanced">Advanced</SelectItem>
+                                <SelectItem value="Proficient">Proficient</SelectItem>
+                                <SelectItem value="Expert">Expert</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-6">
+                            <div className="flex items-center gap-2">
+                              <Checkbox id={`read-${index}`} checked={lang.canRead} onCheckedChange={(checked) => handleLanguageChange(index, 'canRead', !!checked)} />
+                              <Label htmlFor={`read-${index}`} className="font-normal">Read</Label>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Checkbox id={`write-${index}`} checked={lang.canWrite} onCheckedChange={(checked) => handleLanguageChange(index, 'canWrite', !!checked)} />
+                              <Label htmlFor={`write-${index}`} className="font-normal">Write</Label>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Checkbox id={`speak-${index}`} checked={lang.canSpeak} onCheckedChange={(checked) => handleLanguageChange(index, 'canSpeak', !!checked)} />
+                              <Label htmlFor={`speak-${index}`} className="font-normal">Speak</Label>
+                            </div>
+                          </div>
+                          <Button variant="link" size="sm" type="button" onClick={() => handleRemoveLanguage(index)} className="text-destructive p-0 h-auto">Delete</Button>
+                        </div>
+                      </div>
+                    ))}
+                    <Button type="button" variant="link" onClick={handleAddLanguage}>+ Add another language</Button>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-6 border-t mt-6">
+                    <SubmitButton />
+                  </div>
+                </section>
+              </form>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
-
-    
