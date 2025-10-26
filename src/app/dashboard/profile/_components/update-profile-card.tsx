@@ -14,7 +14,7 @@ import { FaFilePdf, FaFileWord, FaFileImage } from 'react-icons/fa';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import type { CompanySize, Socials, UserProfile, Resume, Employment, Education } from '@/lib/types';
+import type { CompanySize, Socials, UserProfile, Resume, Employment, Education, Project } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
@@ -485,6 +485,140 @@ const EducationForm = ({ education, onSave, onCancel }: { education: Education |
     );
 };
 
+const ProjectForm = ({ project, onSave, onCancel, employments, educationRecords }: { project: Project | null, onSave: (project: Project) => void, onCancel: () => void, employments: Employment[], educationRecords: Education[] }) => {
+    const [projectTitle, setProjectTitle] = useState(project?.projectTitle || '');
+    const [taggedWith, setTaggedWith] = useState(project?.taggedWith || '');
+    const [skillsUsed, setSkillsUsed] = useState(project?.skillsUsed?.join(', ') || '');
+    const [clientName, setClientName] = useState(project?.clientName || '');
+    const [projectStatus, setProjectStatus] = useState<'in progress' | 'finished'>(project?.projectStatus || 'finished');
+    const [workedFrom, setWorkedFrom] = useState<{ month: number, year: number }>(project?.workedFrom || { month: 1, year: new Date().getFullYear() });
+    const [workedTill, setWorkedTill] = useState<{ month: number, year: number } | undefined>(project?.workedTill);
+    const [projectDetails, setProjectDetails] = useState(project?.projectDetails || '');
+    const [isPending, startTransition] = useTransition();
+
+    const PROJECT_DETAILS_MAX_LENGTH = 1000;
+
+    const handleSave = () => {
+        const newProject: Project = {
+            id: project?.id || Date.now().toString(),
+            projectTitle,
+            taggedWith,
+            skillsUsed: skillsUsed.split(',').map(s => s.trim()).filter(Boolean),
+            clientName,
+            projectStatus,
+            workedFrom,
+            workedTill: projectStatus === 'finished' ? workedTill : undefined,
+            projectDetails,
+        };
+        startTransition(() => {
+            onSave(newProject);
+        });
+    };
+
+    const yearOptions = Array.from({ length: 50 }, (_, i) => new Date().getFullYear() - i);
+    const monthOptions = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: format(new Date(0, i), 'MMMM') }));
+
+    return (
+        <Card className="mt-4">
+            <CardContent className="p-6 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="projectTitle">Project Title</Label>
+                        <Input id="projectTitle" value={projectTitle} onChange={e => setProjectTitle(e.target.value)} />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="clientName">Client Name (Optional)</Label>
+                        <Input id="clientName" value={clientName} onChange={e => setClientName(e.target.value)} />
+                    </div>
+                </div>
+                 <div className="grid gap-2">
+                    <Label htmlFor="taggedWith">Tag with Employment/Education</Label>
+                    <Select value={taggedWith} onValueChange={setTaggedWith}>
+                        <SelectTrigger id="taggedWith"><SelectValue placeholder="Select..." /></SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectLabel>Employment</SelectLabel>
+                                {employments.map(emp => <SelectItem key={emp.id} value={emp.id}>{emp.designation} at {emp.company}</SelectItem>)}
+                            </SelectGroup>
+                            <SelectGroup>
+                                <SelectLabel>Education</SelectLabel>
+                                {educationRecords.map(edu => <SelectItem key={edu.id} value={edu.id}>{edu.course || edu.level} at {edu.university || edu.school}</SelectItem>)}
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="project-skillsUsed">Skills Used (comma-separated)</Label>
+                    <Input id="project-skillsUsed" value={skillsUsed} onChange={e => setSkillsUsed(e.target.value)} placeholder="e.g. React, Figma, Leadership" />
+                </div>
+                <div className="space-y-2">
+                    <Label>Project Status</Label>
+                    <RadioGroup value={projectStatus} onValueChange={(val) => setProjectStatus(val as any)} className="flex gap-4">
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="in progress" id="status-in-progress" />
+                            <Label htmlFor="status-in-progress" className="font-normal">In Progress</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="finished" id="status-finished" />
+                            <Label htmlFor="status-finished" className="font-normal">Finished</Label>
+                        </div>
+                    </RadioGroup>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label>Started</Label>
+                        <div className="flex items-center gap-2">
+                             <Select value={workedFrom.month.toString()} onValueChange={val => setWorkedFrom(p => ({...p, month: Number(val)}))}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>{monthOptions.map(m => <SelectItem key={m.value} value={String(m.value)}>{m.label}</SelectItem>)}</SelectContent>
+                            </Select>
+                            <Select value={workedFrom.year.toString()} onValueChange={val => setWorkedFrom(p => ({...p, year: Number(val)}))}>
+                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                <SelectContent>{yearOptions.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}</SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                     {projectStatus === 'finished' && (
+                        <div className="space-y-2">
+                            <Label>Finished</Label>
+                            <div className="flex items-center gap-2">
+                               <Select value={workedTill?.month?.toString()} onValueChange={val => setWorkedTill(p => ({...(p || { month: 1, year: workedFrom.year }), month: Number(val)}))}>
+                                    <SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger>
+                                    <SelectContent>{monthOptions.map(m => <SelectItem key={m.value} value={String(m.value)}>{m.label}</SelectItem>)}</SelectContent>
+                                </Select>
+                                <Select value={workedTill?.year?.toString()} onValueChange={val => setWorkedTill(p => ({...(p || { month: 1, year: workedFrom.year }), year: Number(val)}))}>
+                                    <SelectTrigger><SelectValue placeholder="Year" /></SelectTrigger>
+                                    <SelectContent>{yearOptions.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}</SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    )}
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="projectDetails">Details of Project</Label>
+                    <Textarea 
+                        id="projectDetails" 
+                        value={projectDetails}
+                        onChange={e => setProjectDetails(e.target.value)}
+                        placeholder="Describe your project, your role, and the outcome."
+                        maxLength={PROJECT_DETAILS_MAX_LENGTH}
+                    />
+                     <p className={cn("text-xs text-right", projectDetails.length > PROJECT_DETAILS_MAX_LENGTH * 0.9 ? "text-destructive" : "text-muted-foreground")}>
+                        {PROJECT_DETAILS_MAX_LENGTH - projectDetails.length} characters remaining
+                    </p>
+                </div>
+                <div className="flex justify-end gap-2">
+                    <Button variant="ghost" onClick={onCancel} disabled={isPending}>Cancel</Button>
+                    <Button onClick={handleSave} disabled={isPending}>
+                        {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Save
+                    </Button>
+                </div>
+            </CardContent>
+        </Card>
+    );
+};
+
 
 export function UpdateProfileCard({ 
     profile,
@@ -505,6 +639,7 @@ export function UpdateProfileCard({
   const [keySkillsState, keySkillsAction] = useActionState(updateUserProfileAction, initialState);
   const [employmentState, employmentAction] = useActionState(updateUserProfileAction, initialState);
   const [educationState, educationAction] = useActionState(updateUserProfileAction, initialState);
+  const [projectState, projectAction] = useActionState(updateUserProfileAction, initialState);
   const [resumeState, resumeAction] = useActionState(updateUserProfileAction, initialState);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -514,6 +649,10 @@ export function UpdateProfileCard({
 
   const [isEducationPending, startEducationTransition] = useTransition();
   const [isDeleteEducationPending, startDeleteEducationTransition] = useTransition();
+
+  const [isProjectPending, startProjectTransition] = useTransition();
+  const [isDeleteProjectPending, startDeleteProjectTransition] = useTransition();
+
   const [isResumePending, startResumeTransition] = useTransition();
   const [uploadProgress, setUploadProgress] = useState(0);
 
@@ -541,6 +680,7 @@ export function UpdateProfileCard({
   const [dob, setDob] = useState<Date | undefined>(profile.dob ? new Date(profile.dob) : undefined);
   
   const [languages, setLanguages] = useState<LanguageProficiency[]>(profile.languages || []);
+  
   const [employments, setEmployments] = useState<Employment[]>(profile.employment || []);
   const [isAddingEmployment, setIsAddingEmployment] = useState(false);
   const [editingEmployment, setEditingEmployment] = useState<Employment | null>(null);
@@ -552,7 +692,13 @@ export function UpdateProfileCard({
   const [editingEducation, setEditingEducation] = useState<Education | null>(null);
   const [deleteEducationId, setDeleteEducationId] = useState<string | null>(null);
   const [isEducationDeleteDialogOpen, setIsEducationDeleteDialogOpen] = useState(false);
-  
+
+  const [projects, setProjects] = useState<Project[]>(profile.projects || []);
+  const [isAddingProject, setIsAddingProject] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
+  const [isProjectDeleteDialogOpen, setIsProjectDeleteDialogOpen] = useState(false);
+
   useEffect(() => {
     if (employmentState.success) {
         toast({ title: 'Success', description: 'Employment history updated.' });
@@ -573,6 +719,17 @@ export function UpdateProfileCard({
     }
 }, [educationState, toast]);
 
+useEffect(() => {
+    if (projectState.success) {
+        toast({ title: 'Success', description: 'Projects updated.' });
+        setIsAddingProject(false);
+        setEditingProject(null);
+    } else if (projectState.error) {
+        toast({ variant: 'destructive', title: 'Error', description: projectState.error });
+    }
+}, [projectState, toast]);
+
+
   useEffect(() => {
     setEmployments(profile.employment || []);
   }, [profile.employment]);
@@ -580,6 +737,10 @@ export function UpdateProfileCard({
    useEffect(() => {
     setEducationRecords(profile.education || []);
   }, [profile.education]);
+  
+  useEffect(() => {
+    setProjects(profile.projects || []);
+  }, [profile.projects]);
 
     const simulateProgress = () => {
         setUploadProgress(0);
@@ -910,6 +1071,45 @@ const handleDeleteEducation = (id: string) => {
     setDeleteEducationId(null);
   };
 
+  const handleSaveProject = (project: Project) => {
+    startProjectTransition(() => {
+        const newProjects = [...projects];
+        const index = newProjects.findIndex(p => p.id === project.id);
+        if (index > -1) {
+            newProjects[index] = project;
+        } else {
+            newProjects.push(project);
+        }
+        const formData = new FormData();
+        formData.append('userId', session!.uid);
+        formData.append('projects', JSON.stringify(newProjects));
+        projectAction(formData);
+    });
+  };
+  
+  const handleDeleteProject = (id: string) => {
+      startDeleteProjectTransition(() => {
+          const newProjects = projects.filter(p => p.id !== id);
+          const formData = new FormData();
+          formData.append('userId', session!.uid);
+          formData.append('projects', JSON.stringify(newProjects));
+          projectAction(formData);
+      });
+  };
+  
+  const openProjectDeleteDialog = (id: string) => {
+    setDeleteProjectId(id);
+    setIsProjectDeleteDialogOpen(true);
+  };
+  
+  const confirmProjectDelete = () => {
+    if (deleteProjectId) {
+      handleDeleteProject(deleteProjectId);
+    }
+    setIsProjectDeleteDialogOpen(false);
+    setDeleteProjectId(null);
+  };
+
   const calculateDuration = (startDate: string, endDate: string | null, isCurrent: boolean) => {
     const start = new Date(startDate);
     const end = isCurrent ? new Date() : endDate ? new Date(endDate) : new Date();
@@ -927,7 +1127,6 @@ const handleDeleteEducation = (id: string) => {
     }
     return result;
   };
-  
 
   return (
     <>
@@ -969,6 +1168,27 @@ const handleDeleteEducation = (id: string) => {
             <AlertDialogCancel onClick={() => setDeleteEducationId(null)}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={confirmEducationDelete} disabled={isDeleteEducationPending} className="bg-destructive hover:bg-destructive/90">
               {isDeleteEducationPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+       <AlertDialog open={isProjectDeleteDialogOpen} onOpenChange={setIsProjectDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="flex justify-center">
+                <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center mb-2">
+                    <AlertTriangle className="h-6 w-6 text-destructive"/>
+                </div>
+            </div>
+            <AlertDialogTitle className="text-center">Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription className="text-center">
+              This will permanently delete this project record.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteProjectId(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmProjectDelete} disabled={isDeleteProjectPending} className="bg-destructive hover:bg-destructive/90">
+              {isDeleteProjectPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1410,12 +1630,58 @@ const handleDeleteEducation = (id: string) => {
                   </section>
                 )}
 
-                {(activeSection === 'projects') && (
-                  <div className="text-center py-12">
-                    <FolderKanban className="mx-auto h-12 w-12 text-muted-foreground" />
-                    <h3 className="mt-4 text-lg font-semibold">Under Construction</h3>
-                    <p className="text-sm text-muted-foreground">The form for the "{navItems.find(i => i.id === activeSection)?.label}" section will be here.</p>
-                  </div>
+                {activeSection === 'projects' && (
+                  <section className="space-y-6">
+                    <div>
+                        <h3 className="text-lg font-semibold">Projects</h3>
+                        <p className="text-sm text-muted-foreground">Showcase your work and highlight your skills.</p>
+                    </div>
+                     <div className="space-y-4">
+                        {projects.length === 0 && !isAddingProject && !editingProject ? (
+                            <div className="text-center py-12 border-2 border-dashed rounded-lg flex flex-col items-center justify-center">
+                                <FolderKanban className="mx-auto h-12 w-12 text-muted-foreground" />
+                                <h3 className="mt-4 text-lg font-semibold">No Projects Yet</h3>
+                                <p className="mt-1 text-sm text-muted-foreground">Add projects you've worked on to impress recruiters.</p>
+                                <Button className="mt-6" variant="secondary" type="button" onClick={() => setIsAddingProject(true)}>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Add Project
+                                </Button>
+                            </div>
+                        ) : (
+                             <>
+                                {projects.map(proj => (
+                                    editingProject?.id === proj.id ? (
+                                        <ProjectForm key={proj.id} project={editingProject} onSave={handleSaveProject} onCancel={() => setEditingProject(null)} employments={employments} educationRecords={educationRecords} />
+                                    ) : (
+                                        <Card key={proj.id} className="p-4">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <p className="font-semibold">{proj.projectTitle}</p>
+                                                    <p className="text-sm text-muted-foreground">{proj.clientName || 'Personal Project'}</p>
+                                                    <p className="text-xs text-muted-foreground mt-1">
+                                                        {format(new Date(proj.workedFrom.year, proj.workedFrom.month - 1), 'MMM yyyy')} - 
+                                                        {proj.projectStatus === 'finished' && proj.workedTill ? ` ${format(new Date(proj.workedTill.year, proj.workedTill.month - 1), 'MMM yyyy')}` : ' Present'}
+                                                    </p>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <Button variant="ghost" size="icon" onClick={() => setEditingProject(proj)}><Edit className="h-4 w-4" /></Button>
+                                                    <Button variant="ghost" size="icon" onClick={() => openProjectDeleteDialog(proj.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                                                </div>
+                                            </div>
+                                        </Card>
+                                    )
+                                ))}
+                                {isAddingProject && <ProjectForm project={null} onSave={handleSaveProject} onCancel={() => setIsAddingProject(false)} employments={employments} educationRecords={educationRecords} />}
+                                {!isAddingProject && !editingProject && projects.length > 0 && (
+                                    <Button type="button" variant="outline" onClick={() => setIsAddingProject(true)}>
+                                        <Plus className="mr-2 h-4 w-4" />
+                                        Add Another Project
+                                    </Button>
+                                )}
+                            </>
+                        )}
+                    </div>
+                </section>
                 )}
 
                 {activeSection === 'online-profiles' && (
