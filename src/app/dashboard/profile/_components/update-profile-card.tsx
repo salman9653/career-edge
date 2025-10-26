@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload, FileText, X, Plus, CalendarIcon, UploadCloud, Download, RefreshCw, Github, FolderKanban, AlertTriangle, GraduationCap } from 'lucide-react';
+import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload, FileText, X, Plus, CalendarIcon, UploadCloud, Download, RefreshCw, Github, FolderKanban, AlertTriangle, GraduationCap, ArrowLeft } from 'lucide-react';
 import { FaFilePdf, FaFileWord, FaFileImage } from 'react-icons/fa';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -975,6 +975,12 @@ const handleDeleteEducation = (id: string) => {
       </AlertDialog>
       <div className="flex gap-6 h-full w-full">
         <div className="w-[250px] flex-shrink-0 flex flex-col">
+          <div className="mb-4">
+              <Button variant="ghost" className="justify-start w-full" onClick={onCancel}>
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back to Profile
+              </Button>
+          </div>
             <div className="relative flex-1 min-h-0">
                 <ScrollArea className="absolute inset-0 pr-2 custom-scrollbar">
                     <nav className="grid gap-1 text-sm">
@@ -1053,7 +1059,6 @@ const handleDeleteEducation = (id: string) => {
                         <Textarea name="profileSummary" id="profileSummary" defaultValue={profile.profileSummary ?? ''} placeholder="A brief summary about your professional background..." className="min-h-32" />
                       </div>
                       <div className="flex justify-end gap-2 pt-6 border-t mt-6">
-                        <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
                         <SubmitButton />
                       </div>
                     </section>
@@ -1110,7 +1115,6 @@ const handleDeleteEducation = (id: string) => {
                         </div>
                       </div>
                       <div className="flex justify-end gap-2 pt-6 border-t mt-6">
-                        <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
                         <SubmitButton />
                       </div>
                     </section>
@@ -1280,7 +1284,6 @@ const handleDeleteEducation = (id: string) => {
                         </div>
                       </div>
                       <div className="flex justify-end gap-2 pt-6 border-t mt-6">
-                        <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
                         <SubmitButton />
                       </div>
                     </section>
@@ -1475,7 +1478,6 @@ const handleDeleteEducation = (id: string) => {
                         </div>
                       </div>
                       <div className="flex justify-end gap-2 pt-6 border-t mt-6">
-                        <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
                         <SubmitButton />
                       </div>
                     </section>
@@ -1598,7 +1600,6 @@ const handleDeleteEducation = (id: string) => {
                         <Button type="button" variant="link" onClick={handleAddLanguage}>+ Add another language</Button>
                       </div>
                       <div className="flex justify-end gap-2 pt-6 border-t mt-6">
-                        <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
                         <SubmitButton />
                       </div>
                     </section>
