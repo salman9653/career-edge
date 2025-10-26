@@ -442,7 +442,7 @@ const EducationForm = ({ education, onSave, onCancel }: { education: Education |
                                     <span className="text-muted-foreground">to</span>
                                     <Select value={endYear?.toString()} onValueChange={val => setEndYear(Number(val))}>
                                         <SelectTrigger><SelectValue placeholder="End Year" /></SelectTrigger>
-                                        <SelectContent>{yearOptions.map(year => <SelectItem key={year} value={String(year)}>{y}</SelectItem>)}</SelectContent>
+                                        <SelectContent>{yearOptions.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}</SelectContent>
                                     </Select>
                                 </div>
                             </div>
@@ -1208,7 +1208,7 @@ const handleDeleteEducation = (id: string) => {
                           {navItems.map((item) => (
                           <Button
                               key={item.id}
-                              variant={activeSection === item.id ? 'default' : 'ghost'}
+                              variant={activeSection === item.id ? 'secondary' : 'ghost'}
                               className="justify-start"
                               onClick={() => setActiveSection(item.id)}
                           >
@@ -1875,8 +1875,6 @@ const handleDeleteEducation = (id: string) => {
             </CardContent>
           </Card>
         </div>
-      </div>
     </>
   );
 }
-
