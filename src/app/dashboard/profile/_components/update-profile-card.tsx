@@ -38,6 +38,7 @@ import { skillsData, type Skill } from '@/lib/skills-data';
 import { Checkbox } from '@/components/ui/checkbox';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Switch } from '@/components/ui/switch';
+import { Progress } from '../ui/progress';
 
 const Twitter = (props: React.SVGProps<SVGSVGElement>) => (
     <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24" {...props}>
@@ -514,6 +515,7 @@ export function UpdateProfileCard({
   const [isEducationPending, startEducationTransition] = useTransition();
   const [isDeleteEducationPending, startDeleteEducationTransition] = useTransition();
   const [isResumePending, startResumeTransition] = useTransition();
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -579,14 +581,30 @@ export function UpdateProfileCard({
     setEducationRecords(profile.education || []);
   }, [profile.education]);
 
-  useEffect(() => {
-    if (resumeState.success) {
-      toast({ title: 'Resume Uploaded!' });
-      setSelectedFile(null);
-    } else if (resumeState.error) {
-      toast({ variant: 'destructive', title: 'Upload Failed', description: resumeState.error });
-    }
-  }, [resumeState, toast]);
+    const simulateProgress = () => {
+        setUploadProgress(0);
+        const interval = setInterval(() => {
+            setUploadProgress(prev => {
+                if (prev >= 95) {
+                    clearInterval(interval);
+                    return prev;
+                }
+                return prev + 5;
+            });
+        }, 100);
+        return interval;
+    };
+  
+    useEffect(() => {
+        if (resumeState.success) {
+            setUploadProgress(100);
+            toast({ title: 'Resume Uploaded!' });
+            setSelectedFile(null);
+        } else if (resumeState.error) {
+            setUploadProgress(0);
+            toast({ variant: 'destructive', title: 'Upload Failed', description: resumeState.error });
+        }
+    }, [resumeState, toast]);
 
   // Logic for skill suggestions
   useEffect(() => {
@@ -673,18 +691,12 @@ export function UpdateProfileCard({
   
     setSelectedFile(file);
     startResumeTransition(async () => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onloadend = () => {
-            const dataUri = reader.result as string;
-            const formData = new FormData();
-            formData.append('resumeData', dataUri);
-            formData.append('resumeName', file.name);
-            formData.append('resumeSize', file.size.toString());
-            formData.append('resumeType', file.type);
-            formData.append('userId', session.uid);
-            resumeAction(formData);
-        };
+      const progressInterval = simulateProgress();
+      const formData = new FormData();
+      formData.append('resumeFile', file);
+      formData.append('userId', session.uid);
+      await resumeAction(formData);
+      clearInterval(progressInterval);
     });
   };
 
@@ -961,7 +973,7 @@ const handleDeleteEducation = (id: string) => {
         </AlertDialogContent>
       </AlertDialog>
       <div className="flex gap-6 h-full w-full">
-        <Card className="p-4 w-[250px] flex-shrink-0 flex flex-col">
+        <div className="w-[250px] flex-shrink-0 flex flex-col">
             <div className="relative flex-1 min-h-0">
                 <ScrollArea className="absolute inset-0 pr-2 custom-scrollbar">
                     <nav className="grid gap-1 text-sm">
@@ -978,10 +990,11 @@ const handleDeleteEducation = (id: string) => {
                     </nav>
                 </ScrollArea>
             </div>
-        </Card>
+        </div>
 
-        <Card className="flex-1 flex flex-col min-h-0">
-          <CardContent className="p-6 flex-1 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 flex flex-col min-h-0">
+          <Card className="flex-1 flex flex-col min-h-0">
+            <CardContent className="p-6 flex-1 overflow-y-auto custom-scrollbar">
                 {activeSection === 'profile-details' && (
                   <form action={profileDetailsAction}>
                     <input type="hidden" name="userId" value={session?.uid} />
@@ -1124,7 +1137,7 @@ const handleDeleteEducation = (id: string) => {
                         {isResumePending ? (
                            <Card className="relative flex flex-col items-center justify-center p-6 text-center h-48">
                                 <p className="mb-4 text-sm font-medium">Uploading...</p>
-                                <Progress value={0} className="w-full" />
+                                <Progress value={uploadProgress} className="w-full" />
                             </Card>
                         ) : profile.hasResume && !selectedFile ? (
                           <Card className="relative flex flex-col items-center justify-center p-6 text-center">
