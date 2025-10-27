@@ -3,15 +3,15 @@
 'use client';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CheckCircle, Edit, XCircle, Building, Globe, Linkedin, Phone, Mail, Briefcase, Building2, UserCog, Shield, Info, ChevronDown, ChevronUp, Calendar, Hash, User, Github } from 'lucide-react';
-import type { CompanySize, Socials } from '@/lib/types';
+import { CheckCircle, Edit, XCircle, Building, Globe, Linkedin, Phone, Mail, Briefcase, Building2, UserCog, Shield, Info, ChevronDown, ChevronUp, Calendar, Hash, User, Github, FileText, Download, Languages, MapPin, Cake, UserSquare } from 'lucide-react';
+import type { CompanySize, Socials, UserProfile } from '@/lib/types';
 import Link from 'next/link';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { allBenefits } from '@/lib/benefits';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import type { UserProfile } from '../page';
+import { format, formatDistanceToNow, differenceInMonths } from 'date-fns';
 
 const Twitter = (props: React.SVGProps<SVGSVGElement>) => (
     <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24" {...props}>
@@ -46,6 +46,25 @@ const getWebsiteUrl = (url?: string) => {
     }
     return `https://${url}`;
 };
+
+const calculateDuration = (startDate: string, endDate: string | null, isCurrent: boolean) => {
+    const start = new Date(startDate);
+    const end = isCurrent ? new Date() : endDate ? new Date(endDate) : new Date();
+    const months = differenceInMonths(end, start);
+    const years = Math.floor(months / 12);
+    const remainingMonths = months % 12;
+    
+    if (years === 0 && remainingMonths === 0) return "Less than a month";
+    
+    let result = '';
+    if (years > 0) result += `${years} year${years > 1 ? 's' : ''}`;
+    if (remainingMonths > 0) {
+        if (years > 0) result += ', ';
+        result += `${remainingMonths} month${remainingMonths > 1 ? 's' : ''}`;
+    }
+    return result;
+};
+
 
 export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps) {
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
@@ -111,6 +130,48 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
            
             {profile.role === 'candidate' && (
                 <>
+                {/* Career Profile */}
+                <div id="career-profile" className="space-y-4 pt-6 border-t">
+                    <h3 className="font-semibold text-lg">Career Profile</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="space-y-1">
+                            <p className="text-sm text-muted-foreground">Current Job Title</p>
+                            <p className="font-medium">{profile.jobTitle || 'Not specified'}</p>
+                        </div>
+                         <div className="space-y-1">
+                            <p className="text-sm text-muted-foreground">Current Company</p>
+                            <p className="font-medium">{profile.currentCompany || 'Not specified'}</p>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-sm text-muted-foreground">Total Experience</p>
+                            <p className="font-medium">{profile.experience || 'Not specified'}</p>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-sm text-muted-foreground">Notice Period</p>
+                            <p className="font-medium">{profile.noticePeriod || 'Not specified'}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Resume */}
+                {profile.hasResume && profile.resume && (
+                     <div id="resume" className="space-y-4 pt-6 border-t">
+                        <h3 className="font-semibold text-lg">Resume</h3>
+                         <div className="flex items-center gap-4 p-4 border rounded-lg bg-secondary">
+                             <FileText className="h-8 w-8 text-muted-foreground" />
+                             <div className="flex-1">
+                                 <p className="font-medium">{profile.resume.name}</p>
+                                 <p className="text-xs text-muted-foreground">Last updated: {formatDistanceToNow(profile.resume.updatedAt.toDate(), { addSuffix: true })}</p>
+                             </div>
+                             <Button variant="outline" size="sm" asChild>
+                                 <a href={profile.resume.data} download={profile.resume.name}>
+                                     <Download className="mr-2 h-4 w-4" /> Download
+                                 </a>
+                             </Button>
+                         </div>
+                     </div>
+                )}
+
                  {/* Key Skills */}
                 {profile.keySkills && profile.keySkills.length > 0 && (
                 <div id="key-skills" className="space-y-4 pt-6 border-t">
@@ -120,6 +181,88 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                     </div>
                 </div>
                 )}
+                {/* Employment */}
+                {profile.employment && profile.employment.length > 0 && (
+                     <div id="employment" className="space-y-4 pt-6 border-t">
+                        <h3 className="font-semibold text-lg">Employment</h3>
+                        <div className="space-y-4">
+                            {profile.employment.map(emp => (
+                                <Card key={emp.id} className="p-4">
+                                     <div>
+                                        <p className="font-semibold">{emp.designation}</p>
+                                        <p className="text-sm text-muted-foreground">{emp.company} &bull; {emp.employmentType}</p>
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                          {format(new Date(emp.startDate), 'MMM yyyy')} - {emp.isCurrent ? 'Present' : emp.endDate ? format(new Date(emp.endDate), 'MMM yyyy') : 'N/A'}
+                                          <span className="mx-2 text-gray-400">&bull;</span>
+                                          {calculateDuration(emp.startDate, emp.endDate, emp.isCurrent)}
+                                        </p>
+                                        <p className="text-sm mt-2">{emp.jobProfile}</p>
+                                    </div>
+                                </Card>
+                            ))}
+                        </div>
+                    </div>
+                )}
+                
+                {/* Education */}
+                {profile.education && profile.education.length > 0 && (
+                     <div id="education" className="space-y-4 pt-6 border-t">
+                        <h3 className="font-semibold text-lg">Education</h3>
+                        <div className="space-y-4">
+                            {profile.education.map(edu => (
+                                <Card key={edu.id} className="p-4">
+                                    <div>
+                                        {edu.level === 'Class 10th' || edu.level === 'Class 12th' ? (
+                                            <>
+                                                <p className="font-semibold">{edu.level}</p>
+                                                <p className="text-sm text-muted-foreground">{edu.board} &bull; {edu.school}</p>
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    Passed in {edu.passingYear}
+                                                </p>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <p className="font-semibold">{edu.course} in {edu.specialization}</p>
+                                                <p className="text-sm text-muted-foreground">{edu.university}</p>
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    {edu.startYear} - {edu.endYear} &bull; {edu.courseType}
+                                                </p>
+                                            </>
+                                        )}
+                                    </div>
+                                </Card>
+                            ))}
+                        </div>
+                    </div>
+                )}
+                
+                {/* Projects */}
+                {profile.projects && profile.projects.length > 0 && (
+                     <div id="projects" className="space-y-4 pt-6 border-t">
+                        <h3 className="font-semibold text-lg">Projects</h3>
+                        <div className="space-y-4">
+                            {profile.projects.map(proj => (
+                                 <Card key={proj.id} className="p-4">
+                                     <div>
+                                        <div className="flex justify-between items-start">
+                                            <p className="font-semibold">{proj.projectTitle}</p>
+                                            <Badge variant="outline" className="capitalize">{proj.projectStatus}</Badge>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">{proj.clientName || 'Personal Project'}</p>
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                            {format(new Date(proj.workedFrom.year, proj.workedFrom.month - 1), 'MMM yyyy')} - 
+                                            {proj.projectStatus === 'finished' && proj.workedTill ? ` ${format(new Date(proj.workedTill.year, proj.workedTill.month - 1), 'MMM yyyy')}` : ' Present'}
+                                        </p>
+                                        {proj.projectUrl && <a href={getWebsiteUrl(proj.projectUrl)} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline mt-1 flex items-center gap-1"><Link className="h-3 w-3" /> Link to project</a>}
+                                        <p className="text-sm mt-2">{proj.projectDetails}</p>
+                                    </div>
+                                </Card>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+
                  <div className="space-y-4 pt-4 border-t">
                     <h3 className="font-semibold text-lg">Online Profiles</h3>
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
@@ -197,6 +340,36 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                                     <Link href={getWebsiteUrl(profile.portfolio)} target="_blank" rel="noopener noreferrer" className="font-medium text-dash-primary hover:underline break-all">
                                         {profile.portfolio}
                                     </Link>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+                {/* Personal Details */}
+                 <div id="personal-details" className="space-y-4 pt-6 border-t">
+                    <h3 className="font-semibold text-lg">Personal Details</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="space-y-1">
+                            <p className="text-sm text-muted-foreground flex items-center gap-2"><Cake className="h-4 w-4" /> Date of Birth</p>
+                            <p className="font-medium">{profile.dob ? format(new Date(profile.dob), 'PPP') : 'Not specified'}</p>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-sm text-muted-foreground flex items-center gap-2"><UserSquare className="h-4 w-4" /> Gender</p>
+                            <p className="font-medium">{profile.gender || 'Not specified'}</p>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-sm text-muted-foreground flex items-center gap-2"><Hash className="h-4 w-4" /> Marital Status</p>
+                            <p className="font-medium">{profile.maritalStatus || 'Not specified'}</p>
+                        </div>
+                         <div className="space-y-1 col-span-2">
+                            <p className="text-sm text-muted-foreground flex items-center gap-2"><MapPin className="h-4 w-4" /> Address</p>
+                            <p className="font-medium whitespace-pre-line">{profile.permanentAddress ? `${profile.permanentAddress.address}\n${profile.permanentAddress.city}, ${profile.permanentAddress.state} - ${profile.permanentAddress.pincode}` : 'Not specified'}</p>
+                        </div>
+                         {profile.languages && profile.languages.length > 0 && (
+                            <div className="space-y-2 col-span-2">
+                                <p className="text-sm text-muted-foreground flex items-center gap-2"><Languages className="h-4 w-4" /> Languages</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {profile.languages.map((lang, index) => <Badge key={index} variant="secondary">{lang.language} ({lang.proficiency})</Badge>)}
                                 </div>
                             </div>
                         )}
