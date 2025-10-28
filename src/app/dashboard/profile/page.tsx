@@ -102,13 +102,11 @@ export default function ProfilePage() {
     }
   }, [session, sessionLoading]);
   
-  const handleSetEditing = (editing: boolean) => {
+  const handleSetEditing = (editing: boolean, section?: string) => {
     const params = new URLSearchParams(searchParams.toString());
     if (editing) {
       params.set('edit', 'true');
-      if (!params.has('editTab')) {
-        params.set('editTab', 'profile-details');
-      }
+      params.set('editTab', section || 'profile-details');
     } else {
       params.delete('edit');
       params.delete('editTab');
@@ -201,7 +199,7 @@ export default function ProfilePage() {
                  ) : (
                     <ProfileDisplayCard
                         profile={userProfile}
-                        onEdit={() => handleSetEditing(true)}
+                        onEdit={(section) => handleSetEditing(true, section)}
                     />
                  )}
             </div>

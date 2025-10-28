@@ -2,8 +2,8 @@
 'use client';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CheckCircle, Edit, XCircle, Building, Globe, Linkedin, Phone, Mail, Briefcase, Building2, UserCog, Shield, Info, ChevronDown, ChevronUp, Calendar, Hash, User, Github, FileText, Download, Languages, MapPin, Cake, UserSquare, Link as LinkIcon } from 'lucide-react';
-import type { CompanySize, Socials, UserProfile, Employment, Education } from '@/lib/types';
+import { CheckCircle, Edit, XCircle, Building, Globe, Linkedin, Phone, Mail, Briefcase, Building2, UserCog, Shield, Info, ChevronDown, ChevronUp, Calendar, Hash, User, Github, FileText, Download, Languages, MapPin, Cake, UserSquare, Link as LinkIcon, Pen } from 'lucide-react';
+import type { CompanySize, Socials, UserProfile, Employment, Education, Project } from '@/lib/types';
 import Link from 'next/link';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -21,7 +21,7 @@ const Twitter = (props: React.SVGProps<SVGSVGElement>) => (
 
 interface ProfileDisplayCardProps {
     profile: UserProfile;
-    onEdit: () => void;
+    onEdit: (section?: string) => void;
 }
 
 const getInitials = (name: string) => {
@@ -97,6 +97,15 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
   
   const latestEducation = sortedEducation[0] || null;
   
+  const SectionHeader = ({ title, sectionId }: { title: string, sectionId: string }) => (
+    <div className="flex items-center gap-2">
+        <h3 className="font-semibold text-lg">{title}</h3>
+        <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground" onClick={() => onEdit(sectionId)}>
+            <Pen className="h-4 w-4" />
+        </Button>
+    </div>
+  );
+  
   return (
     <Card className="h-full flex flex-col">
         <CardHeader>
@@ -105,7 +114,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                     <CardTitle className="font-headline text-2xl">Profile Information</CardTitle>
                     <CardDescription>Your personal details and contact information.</CardDescription>
                 </div>
-                <Button variant="outline" onClick={onEdit}>
+                <Button variant="outline" onClick={() => onEdit()}>
                     <Edit className="h-4 w-4 mr-2" />
                     Edit Profile
                 </Button>
@@ -158,8 +167,8 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
             {profile.role === 'candidate' && (
                 <>
                 {/* Career Profile */}
-                <div id="career-profile" className="space-y-4 pt-6 border-t">
-                    <h3 className="font-semibold text-lg">Career Profile</h3>
+                <div className="space-y-4 pt-6 border-t">
+                    <SectionHeader title="Career Profile" sectionId="career-profile" />
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="space-y-1">
                             <p className="text-sm text-muted-foreground">Current Job Title</p>
@@ -182,8 +191,8 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
 
                 {/* Resume */}
                 {profile.hasResume && profile.resume && (
-                     <div id="resume" className="space-y-4 pt-6 border-t">
-                        <h3 className="font-semibold text-lg">Resume</h3>
+                     <div className="space-y-4 pt-6 border-t">
+                        <SectionHeader title="Resume" sectionId="resume" />
                          <div className="flex items-center gap-4 p-4 border rounded-lg bg-secondary">
                              <FileText className="h-8 w-8 text-muted-foreground" />
                              <div className="flex-1">
@@ -201,8 +210,8 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
 
                  {/* Key Skills */}
                 {profile.keySkills && profile.keySkills.length > 0 && (
-                <div id="key-skills" className="space-y-4 pt-6 border-t">
-                    <h3 className="font-semibold text-lg">Key Skills</h3>
+                <div className="space-y-4 pt-6 border-t">
+                    <SectionHeader title="Key Skills" sectionId="key-skills" />
                     <div className="flex flex-wrap items-center gap-2">
                         {profile.keySkills?.map(skill => <Badge key={skill} variant="secondary">{skill}</Badge>)}
                     </div>
@@ -210,8 +219,8 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                 )}
                 {/* Employment */}
                 {sortedEmployment.length > 0 && (
-                     <div id="employment" className="space-y-4 pt-6 border-t">
-                        <h3 className="font-semibold text-lg">Recent Employment</h3>
+                     <div className="space-y-4 pt-6 border-t">
+                        <SectionHeader title="Recent Employment" sectionId="employment" />
                         <div className="space-y-4">
                              {(showAllEmployment ? sortedEmployment : [latestEmployment]).map(employment => (
                                 <Card key={employment.id} className="p-4">
@@ -238,8 +247,8 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                 
                 {/* Education */}
                 {sortedEducation.length > 0 && (
-                     <div id="education" className="space-y-4 pt-6 border-t">
-                        <h3 className="font-semibold text-lg">Highest Education</h3>
+                     <div className="space-y-4 pt-6 border-t">
+                        <SectionHeader title="Highest Education" sectionId="education" />
                         <div className="space-y-4">
                             {(showAllEducation ? sortedEducation : [latestEducation]).map(education => (
                                 <Card key={education.id} className="p-4">
@@ -275,8 +284,8 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                 
                 {/* Projects */}
                 {profile.projects && profile.projects.length > 0 && (
-                     <div id="projects" className="space-y-4 pt-6 border-t">
-                        <h3 className="font-semibold text-lg">Projects</h3>
+                     <div className="space-y-4 pt-6 border-t">
+                        <SectionHeader title="Projects" sectionId="projects" />
                         <div className="space-y-4">
                             {profile.projects.map(proj => (
                                  <Card key={proj.id} className="p-4">
@@ -301,7 +310,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
 
 
                  <div className="space-y-4 pt-4 border-t">
-                    <h3 className="font-semibold text-lg">Online Profiles</h3>
+                    <SectionHeader title="Online Profiles" sectionId="online-profiles" />
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                         {profile.socials?.github && (
                             <div className="flex items-start gap-3 text-sm">
@@ -383,8 +392,8 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                     </div>
                 </div>
                 {/* Personal Details */}
-                 <div id="personal-details" className="space-y-4 pt-6 border-t">
-                    <h3 className="font-semibold text-lg">Personal Details</h3>
+                 <div className="space-y-4 pt-6 border-t">
+                    <SectionHeader title="Personal Details" sectionId="personal-details" />
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="space-y-1">
                             <p className="text-sm text-muted-foreground flex items-center gap-2"><Cake className="h-4 w-4" /> Date of Birth</p>
@@ -419,7 +428,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                 <>
                 {/* Section 2: About & Core Details */}
                 <div className="space-y-4 pt-4 border-t">
-                    <h3 className="font-semibold">Company Details</h3>
+                    <SectionHeader title="Company Details" sectionId="profile-details" />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex items-start gap-3 text-sm">
                             <Building className="h-5 w-5 text-muted-foreground mt-1 shrink-0" />
@@ -461,7 +470,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                 </div>
                 {profile.aboutCompany && (
                     <div className="space-y-4 pt-4 border-t">
-                        <h3 className="font-semibold">About Company</h3>
+                        <SectionHeader title="About Company" sectionId="profile-details" />
                         <div className="text-sm text-muted-foreground space-y-2">
                             <p className={cn(!isAboutExpanded && "line-clamp-3")}>
                                 {profile.aboutCompany}
@@ -475,7 +484,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                 )}
                 {selectedBenefits.length > 0 && (
                     <div className="space-y-4 pt-4 border-t">
-                        <h3 className="font-semibold">Benefits</h3>
+                         <SectionHeader title="Benefits" sectionId="profile-details" />
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                             {selectedBenefits.map(benefit => (
                                 <Card key={benefit.id} className="p-4 flex flex-col items-center justify-center text-center gap-2">
@@ -488,7 +497,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                 )}
                 {/* Section 3: Company Links */}
                 <div className="space-y-4 pt-4 border-t">
-                    <h3 className="font-semibold">Company Links</h3>
+                    <SectionHeader title="Company Links" sectionId="online-profiles" />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {profile.socials?.linkedin && (
                             <div className="flex items-start gap-3 text-sm">
@@ -538,7 +547,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                 </div>
                 {/* Section 4: Company Contact */}
                 <div className="space-y-4 pt-4 border-t">
-                    <h3 className="font-semibold">Company Contact</h3>
+                    <SectionHeader title="Company Contact" sectionId="profile-details" />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex items-start gap-3 text-sm">
                             <Phone className="h-5 w-5 text-muted-foreground mt-1 shrink-0" />
