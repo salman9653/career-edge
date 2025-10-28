@@ -429,7 +429,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                 </>
             )}
 
-            {profile.role === 'company' && (
+            {(profile.role === 'company' || profile.role === 'manager') && (
                 <>
                 {/* Section 2: About & Core Details */}
                 <div className="group space-y-4 pt-4 border-t">
@@ -572,6 +572,13 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                 </div>
                 </>
             )}
+
+             {profile.role === 'admin' && (
+                <div className="group space-y-4 pt-6 border-t">
+                    <p className="text-sm text-muted-foreground">Admin profile view is simple and does not contain extra sections.</p>
+                </div>
+             )}
+
         </CardContent>
     </Card>
   );

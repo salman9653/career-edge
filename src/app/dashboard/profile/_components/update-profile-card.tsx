@@ -996,7 +996,11 @@ useEffect(() => {
     { id: 'company-contact', label: 'Company Contact' },
   ];
   
-  const navItems = role === 'company' ? companyNavItems : candidateNavItems;
+  const adminNavItems = [
+      { id: 'profile-details', label: 'Admin Details' }
+  ];
+
+  const navItems = role === 'company' ? companyNavItems : (role === 'admin' ? adminNavItems : candidateNavItems);
   
   const autocompleteSkills = skillsData.filter(skill => {
     if (skills.includes(skill.name)) return false;
@@ -1157,6 +1161,58 @@ const handleDeleteEducation = (id: string) => {
     }
     return result;
   };
+  
+  if (role === 'admin') {
+      return (
+          <form action={profileDetailsAction}>
+            <input type="hidden" name="userId" value={session?.uid} />
+            <section className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold">Admin Profile</h3>
+                <p className="text-sm text-muted-foreground">Update your administrator profile.</p>
+              </div>
+              <div className="flex items-center gap-6">
+                <div className="relative">
+                  <Avatar className="h-24 w-24">
+                    <AvatarImage src={profile.displayImageUrl ?? undefined} />
+                    <AvatarFallback className="text-3xl bg-dash-primary text-dash-primary-foreground">{getInitials(profile.name)}</AvatarFallback>
+                  </Avatar>
+                  {isAvatarPending && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
+                      <Loader2 className="h-8 w-8 animate-spin text-white" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/png, image/jpeg, image/gif" />
+                  <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isAvatarPending}>
+                    <Upload className="mr-2 h-4 w-4" /> {profile.displayImageUrl ? 'Change' : 'Add'} Picture
+                  </Button>
+                  {profile.displayImageUrl && (
+                    <Button type="button" variant="destructive" size="sm" onClick={handleRemoveAvatar} disabled={isAvatarPending}>
+                      <Trash2 className="mr-2 h-4 w-4" /> Remove
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="name">Name</Label>
+                  <Input id="name" name="name" defaultValue={profile.name ?? ''} required />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input id="phone" name="phone" defaultValue={profile.phone ?? ''} type="tel" />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-6 border-t mt-6">
+                 <Button variant="ghost" type="button" onClick={onCancel}>Cancel</Button>
+                 <SubmitButton />
+              </div>
+            </section>
+          </form>
+      )
+  }
 
   return (
     <div className="flex gap-6 h-full w-full">

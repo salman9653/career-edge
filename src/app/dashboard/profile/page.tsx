@@ -106,7 +106,9 @@ export default function ProfilePage() {
     const params = new URLSearchParams(searchParams.toString());
     if (editing) {
       params.set('edit', 'true');
-      const defaultTab = session?.role === 'company' ? 'company-details' : 'profile-details';
+      let defaultTab = 'profile-details';
+      if (session?.role === 'company') defaultTab = 'company-details';
+      if (session?.role === 'admin') defaultTab = 'profile-details';
       params.set('editTab', section || defaultTab);
     } else {
       params.delete('edit');
