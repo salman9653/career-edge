@@ -100,7 +100,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
   const SectionHeader = ({ title, sectionId }: { title: string, sectionId: string }) => (
     <div className="flex items-center gap-2">
         <h3 className="font-semibold text-lg">{title}</h3>
-        <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground" onClick={() => onEdit(sectionId)}>
+        <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => onEdit(sectionId)}>
             <Pen className="h-4 w-4" />
         </Button>
     </div>
@@ -122,13 +122,18 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
         </CardHeader>
         <CardContent className="flex-1 space-y-8 overflow-y-auto custom-scrollbar">
             {/* Section 1: Basic Info */}
-            <div id="profile-summary" className="flex items-start gap-6">
+            <div id="profile-summary" className="group flex items-start gap-6">
                 <Avatar className="h-24 w-24">
                     <AvatarImage src={profile.displayImageUrl ?? undefined} />
                     <AvatarFallback className="text-3xl bg-dash-primary text-dash-primary-foreground">{getInitials(profile.name)}</AvatarFallback>
                 </Avatar>
                 <div className="grid gap-2 flex-1">
-                    <h2 className="text-2xl font-bold">{profile.name}</h2>
+                    <div className="flex items-center gap-2">
+                         <h2 className="text-2xl font-bold">{profile.name}</h2>
+                         <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => onEdit('profile-details')}>
+                            <Pen className="h-4 w-4" />
+                        </Button>
+                    </div>
                     <div className="flex items-center gap-2">
                         <p className="text-muted-foreground">{profile.email}</p>
                         {profile.emailVerified ? (
@@ -167,7 +172,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
             {profile.role === 'candidate' && (
                 <>
                 {/* Career Profile */}
-                <div className="space-y-4 pt-6 border-t">
+                <div className="group space-y-4 pt-6 border-t">
                     <SectionHeader title="Career Profile" sectionId="career-profile" />
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="space-y-1">
@@ -191,7 +196,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
 
                 {/* Resume */}
                 {profile.hasResume && profile.resume && (
-                     <div className="space-y-4 pt-6 border-t">
+                     <div className="group space-y-4 pt-6 border-t">
                         <SectionHeader title="Resume" sectionId="resume" />
                          <div className="flex items-center gap-4 p-4 border rounded-lg bg-secondary">
                              <FileText className="h-8 w-8 text-muted-foreground" />
@@ -210,7 +215,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
 
                  {/* Key Skills */}
                 {profile.keySkills && profile.keySkills.length > 0 && (
-                <div className="space-y-4 pt-6 border-t">
+                <div className="group space-y-4 pt-6 border-t">
                     <SectionHeader title="Key Skills" sectionId="key-skills" />
                     <div className="flex flex-wrap items-center gap-2">
                         {profile.keySkills?.map(skill => <Badge key={skill} variant="secondary">{skill}</Badge>)}
@@ -219,7 +224,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                 )}
                 {/* Employment */}
                 {sortedEmployment.length > 0 && (
-                     <div className="space-y-4 pt-6 border-t">
+                     <div className="group space-y-4 pt-6 border-t">
                         <SectionHeader title="Recent Employment" sectionId="employment" />
                         <div className="space-y-4">
                              {(showAllEmployment ? sortedEmployment : [latestEmployment]).map(employment => (
@@ -247,7 +252,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                 
                 {/* Education */}
                 {sortedEducation.length > 0 && (
-                     <div className="space-y-4 pt-6 border-t">
+                     <div className="group space-y-4 pt-6 border-t">
                         <SectionHeader title="Highest Education" sectionId="education" />
                         <div className="space-y-4">
                             {(showAllEducation ? sortedEducation : [latestEducation]).map(education => (
@@ -284,7 +289,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                 
                 {/* Projects */}
                 {profile.projects && profile.projects.length > 0 && (
-                     <div className="space-y-4 pt-6 border-t">
+                     <div className="group space-y-4 pt-6 border-t">
                         <SectionHeader title="Projects" sectionId="projects" />
                         <div className="space-y-4">
                             {profile.projects.map(proj => (
@@ -309,7 +314,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                 )}
 
 
-                 <div className="space-y-4 pt-4 border-t">
+                 <div className="group space-y-4 pt-4 border-t">
                     <SectionHeader title="Online Profiles" sectionId="online-profiles" />
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                         {profile.socials?.github && (
@@ -392,7 +397,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                     </div>
                 </div>
                 {/* Personal Details */}
-                 <div className="space-y-4 pt-6 border-t">
+                 <div className="group space-y-4 pt-6 border-t">
                     <SectionHeader title="Personal Details" sectionId="personal-details" />
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="space-y-1">
@@ -427,7 +432,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
             {profile.role === 'company' && (
                 <>
                 {/* Section 2: About & Core Details */}
-                <div className="space-y-4 pt-4 border-t">
+                <div className="group space-y-4 pt-4 border-t">
                     <SectionHeader title="Company Details" sectionId="profile-details" />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex items-start gap-3 text-sm">
@@ -469,7 +474,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                     </div>
                 </div>
                 {profile.aboutCompany && (
-                    <div className="space-y-4 pt-4 border-t">
+                    <div className="group space-y-4 pt-4 border-t">
                         <SectionHeader title="About Company" sectionId="profile-details" />
                         <div className="text-sm text-muted-foreground space-y-2">
                             <p className={cn(!isAboutExpanded && "line-clamp-3")}>
@@ -483,7 +488,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                     </div>
                 )}
                 {selectedBenefits.length > 0 && (
-                    <div className="space-y-4 pt-4 border-t">
+                    <div className="group space-y-4 pt-4 border-t">
                          <SectionHeader title="Benefits" sectionId="profile-details" />
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                             {selectedBenefits.map(benefit => (
@@ -496,7 +501,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                     </div>
                 )}
                 {/* Section 3: Company Links */}
-                <div className="space-y-4 pt-4 border-t">
+                <div className="group space-y-4 pt-4 border-t">
                     <SectionHeader title="Company Links" sectionId="online-profiles" />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {profile.socials?.linkedin && (
@@ -546,7 +551,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                     </div>
                 </div>
                 {/* Section 4: Company Contact */}
-                <div className="space-y-4 pt-4 border-t">
+                <div className="group space-y-4 pt-4 border-t">
                     <SectionHeader title="Company Contact" sectionId="profile-details" />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex items-start gap-3 text-sm">
