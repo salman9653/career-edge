@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { allBenefits } from '@/lib/benefits';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { format, formatDistanceToNow, differenceInMonths } from 'date-fns';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 const Twitter = (props: React.SVGProps<SVGSVGElement>) => (
     <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24" {...props}>
@@ -138,6 +138,9 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                             </div>
                         </DialogTrigger>
                         <DialogContent className="p-0 border-0 max-w-2xl bg-transparent" showClose={false}>
+                             <DialogHeader>
+                                <DialogTitle className="sr-only">{profile.name}'s profile picture</DialogTitle>
+                            </DialogHeader>
                             <img src={profile.displayImageUrl || ''} alt={profile.name} className="rounded-lg w-full h-auto" />
                         </DialogContent>
                     </Dialog>
