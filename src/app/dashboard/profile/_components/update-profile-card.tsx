@@ -1,5 +1,4 @@
 
-
 'use client';
 import { useActionState, useEffect, useRef, useState, useTransition, type DragEvent } from 'react';
 import { useFormStatus } from 'react-dom';
@@ -37,7 +36,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { skillsData, type Skill } from '@/lib/skills-data';
-import { allCompanyFeatures, allCandidateFeatures, allBenefits } from '@/lib/features';
+import { allBenefits } from '@/lib/benefits';
 import { Checkbox } from '@/components/ui/checkbox';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Switch } from '@/components/ui/switch';
@@ -647,6 +646,9 @@ export function UpdateProfileCard({
   
   const [profileDetailsState, profileDetailsAction] = useActionState(updateUserProfileAction, initialState);
   const [keySkillsState, keySkillsAction] = useActionState(updateUserProfileAction, initialState);
+  const [onlineProfilesState, onlineProfilesAction] = useActionState(updateUserProfileAction, initialState);
+  const [personalDetailsState, personalDetailsAction] = useActionState(updateUserProfileAction, initialState);
+  const [careerProfileState, careerProfileAction] = useActionState(updateUserProfileAction, initialState);
   const [employmentState, employmentAction] = useActionState(updateUserProfileAction, initialState);
   const [educationState, educationAction] = useActionState(updateUserProfileAction, initialState);
   const [projectState, projectAction] = useActionState(updateUserProfileAction, initialState);
@@ -1950,7 +1952,7 @@ const handleDeleteEducation = (id: string) => {
                       <Input id="phone" name="phone" defaultValue={profile.phone ?? ''} type="tel" />
                     </div>
                     <div className="grid gap-2">
-                      <Label htmlFor="companySize">Company Size</Label>
+                      <Label htmlFor="companySize.size">Company Size</Label>
                       <Select name="companySize.size" defaultValue={profile.companySize?.size}>
                         <SelectTrigger><SelectValue placeholder="Select size..." /></SelectTrigger>
                         <SelectContent>
