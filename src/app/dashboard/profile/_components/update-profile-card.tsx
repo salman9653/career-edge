@@ -41,6 +41,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Switch } from '@/components/ui/switch';
 import { Progress } from '@/components/ui/progress';
+import { RichTextEditor } from '@/components/ui/rich-text-editor';
 
 const Twitter = (props: React.SVGProps<SVGSVGElement>) => (
     <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24" {...props}>
@@ -712,6 +713,8 @@ export function UpdateProfileCard({
   const [isProjectDeleteDialogOpen, setIsProjectDeleteDialogOpen] = useState(false);
 
   const [selectedBenefits, setSelectedBenefits] = useState<string[]>(profile.benefits || []);
+
+  const [aboutCompanyContent, setAboutCompanyContent] = useState(profile.aboutCompany || '');
 
   const handleBenefitChange = (benefitId: string, isChecked: boolean) => {
       setSelectedBenefits(prev => isChecked ? [...prev, benefitId] : prev.filter(id => id !== benefitId));
@@ -1913,6 +1916,7 @@ const handleDeleteEducation = (id: string) => {
             {activeSection === 'company-details' && role === 'company' && (
               <form action={profileDetailsAction}>
                 <input type="hidden" name="userId" value={session?.uid} />
+                <input type="hidden" name="aboutCompany" value={aboutCompanyContent} />
                 <section className="space-y-6">
                   <div>
                     <h3 className="text-lg font-semibold">Company Details</h3>
@@ -1973,7 +1977,7 @@ const handleDeleteEducation = (id: string) => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="aboutCompany">About Company</Label>
-                    <Textarea name="aboutCompany" id="aboutCompany" defaultValue={profile.aboutCompany} placeholder="A brief description of your company..." className="min-h-32" />
+                    <RichTextEditor value={aboutCompanyContent} onChange={setAboutCompanyContent} />
                   </div>
                   <div className="flex justify-end gap-2 pt-6 border-t mt-6">
                     <SubmitButton />
