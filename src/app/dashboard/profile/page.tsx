@@ -188,13 +188,14 @@ export default function ProfilePage() {
             <h1 className="font-headline text-xl font-semibold md:ml-0 ml-12">{isEditing ? 'Edit Profile' : getProfileTitle(userProfile?.role)}</h1>
             <MobileSearch />
         </header>
-        <main className="flex flex-1 flex-col gap-4 p-4 md:gap-6 md:p-6 overflow-hidden">
+        <main className="flex flex-1 flex-col gap-4 p-4 md:p-6 overflow-hidden">
             <div className="mx-auto w-full max-w-6xl flex-1 flex flex-col min-h-0">
                  {isEditing ? (
                     <UpdateProfileCard
                         profile={userProfile}
                         onCancel={() => handleSetEditing(false)}
                         onAvatarChange={handleAvatarUpdate}
+                        role={session.role}
                     />
                  ) : (
                     <ProfileDisplayCard
