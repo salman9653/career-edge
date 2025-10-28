@@ -98,7 +98,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
   const latestEducation = sortedEducation[0] || null;
   
   const SectionHeader = ({ title, sectionId }: { title: string, sectionId: string }) => (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 group">
         <h3 className="font-semibold text-lg">{title}</h3>
         <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => onEdit(sectionId)}>
             <Pen className="h-4 w-4" />
@@ -185,7 +185,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                         </div>
                         <div className="space-y-1">
                             <p className="text-sm text-muted-foreground">Total Experience</p>
-                            <p className="font-medium">{profile.experience || 'Not specified'}</p>
+                            <p className="font-medium">{profile.experience ? `${profile.experience} years` : 'Not specified'}</p>
                         </div>
                         <div className="space-y-1">
                             <p className="text-sm text-muted-foreground">Notice Period</p>
