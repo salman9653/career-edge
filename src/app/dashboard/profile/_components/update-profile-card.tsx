@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload, FileText, X, Plus, CalendarIcon, UploadCloud, Download, RefreshCw, Github, FolderKanban, AlertTriangle, GraduationCap, ArrowLeft, Link as LinkIcon } from 'lucide-react';
+import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload, FileText, X, Plus, CalendarIcon, UploadCloud, Download, RefreshCw, Github, FolderKanban, AlertTriangle, GraduationCap, ArrowLeft, Link as LinkIcon, Pen, Building } from 'lucide-react';
 import { FaFilePdf, FaFileWord, FaFileImage } from 'react-icons/fa';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -37,6 +37,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { skillsData, type Skill } from '@/lib/skills-data';
+import { allCompanyFeatures, allCandidateFeatures, allBenefits } from '@/lib/features';
 import { Checkbox } from '@/components/ui/checkbox';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Switch } from '@/components/ui/switch';
@@ -633,19 +634,18 @@ const ProjectForm = ({ project, onSave, onCancel, employments, educationRecords 
 export function UpdateProfileCard({ 
     profile,
     onCancel,
-    onAvatarChange
+    onAvatarChange,
+    role
 }: { 
     profile: UserProfile,
     onCancel: () => void ,
-    onAvatarChange: (url: string | null) => void
+    onAvatarChange: (url: string | null) => void,
+    role: string
 }) {
   const { session, updateSession } = useSession();
   const { toast } = useToast();
   
   const [profileDetailsState, profileDetailsAction] = useActionState(updateUserProfileAction, initialState);
-  const [careerProfileState, careerProfileAction] = useActionState(updateUserProfileAction, initialState);
-  const [onlineProfilesState, onlineProfilesAction] = useActionState(updateUserProfileAction, initialState);
-  const [personalDetailsState, personalDetailsAction] = useActionState(updateUserProfileAction, initialState);
   const [keySkillsState, keySkillsAction] = useActionState(updateUserProfileAction, initialState);
   const [employmentState, employmentAction] = useActionState(updateUserProfileAction, initialState);
   const [educationState, educationAction] = useActionState(updateUserProfileAction, initialState);
@@ -669,7 +669,7 @@ export function UpdateProfileCard({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const activeSection = searchParams.get('editTab') || 'profile-details';
+  const activeSection = searchParams.get('editTab') || (role === 'company' ? 'company-details' : 'profile-details');
 
   const setActiveSection = (section: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -708,6 +708,12 @@ export function UpdateProfileCard({
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
   const [isProjectDeleteDialogOpen, setIsProjectDeleteDialogOpen] = useState(false);
+
+  const [selectedBenefits, setSelectedBenefits] = useState<string[]>(profile.benefits || []);
+
+  const handleBenefitChange = (benefitId: string, isChecked: boolean) => {
+      setSelectedBenefits(prev => isChecked ? [...prev, benefitId] : prev.filter(id => id !== benefitId));
+  }
 
   useEffect(() => {
     if (employmentState.success) {
@@ -966,7 +972,7 @@ useEffect(() => {
     return <FileText className="h-12 w-12 text-muted-foreground" />;
   }
 
-  const navItems = [
+  const candidateNavItems = [
     { id: 'profile-details', label: 'Profile Details' },
     { id: 'career-profile', label: 'Career Profile' },
     { id: 'resume', label: 'Resume' },
@@ -977,6 +983,15 @@ useEffect(() => {
     { id: 'online-profiles', label: 'Online Profiles' },
     { id: 'personal-details', label: 'Personal Details' },
   ];
+  
+  const companyNavItems = [
+    { id: 'company-details', label: 'Company Details' },
+    { id: 'benefits', label: 'Benefits' },
+    { id: 'company-links', label: 'Company Links' },
+    { id: 'company-contact', label: 'Company Contact' },
+  ];
+  
+  const navItems = role === 'company' ? companyNavItems : candidateNavItems;
   
   const autocompleteSkills = skillsData.filter(skill => {
     if (skills.includes(skill.name)) return false;
@@ -1232,7 +1247,8 @@ const handleDeleteEducation = (id: string) => {
       <div className="flex-1 overflow-hidden">
         <Card className="h-full flex flex-col">
           <CardContent className="p-6 flex-1 overflow-y-auto custom-scrollbar">
-            {activeSection === 'profile-details' && (
+            {/* Candidate: Profile Details */}
+            {activeSection === 'profile-details' && role === 'candidate' && (
               <form action={profileDetailsAction}>
                 <input type="hidden" name="userId" value={session?.uid} />
                 <section className="space-y-6">
@@ -1295,7 +1311,8 @@ const handleDeleteEducation = (id: string) => {
               </form>
             )}
 
-            {activeSection === 'career-profile' && (
+            {/* Candidate: Career Profile */}
+            {activeSection === 'career-profile' && role === 'candidate' && (
               <form action={careerProfileAction}>
                 <input type="hidden" name="userId" value={session?.uid} />
                 <section className="space-y-6">
@@ -1351,7 +1368,8 @@ const handleDeleteEducation = (id: string) => {
               </form>
             )}
 
-            {activeSection === 'resume' && (
+            {/* Candidate: Resume */}
+            {activeSection === 'resume' && role === 'candidate' && (
               <form action={resumeAction}>
                 <input type="hidden" name="userId" value={session?.uid} />
                 <section className="space-y-6">
@@ -1452,7 +1470,8 @@ const handleDeleteEducation = (id: string) => {
               </form>
             )}
 
-            {activeSection === 'key-skills' && (
+            {/* Candidate: Key Skills */}
+            {activeSection === 'key-skills' && role === 'candidate' && (
               <form action={keySkillsAction}>
                 <input type="hidden" name="userId" value={session?.uid} />
                 <input type="hidden" name="keySkills" value={JSON.stringify(skills)} />
@@ -1520,7 +1539,8 @@ const handleDeleteEducation = (id: string) => {
               </form>
             )}
 
-            {activeSection === 'employment' && (
+            {/* Candidate: Employment */}
+            {activeSection === 'employment' && role === 'candidate' && (
               <section className="space-y-6">
                 <div>
                   <h3 className="text-lg font-semibold">Employment</h3>
@@ -1575,7 +1595,8 @@ const handleDeleteEducation = (id: string) => {
               </section>
             )}
 
-            {activeSection === 'education' && (
+            {/* Candidate: Education */}
+            {activeSection === 'education' && role === 'candidate' && (
               <section className="space-y-6">
                 <div>
                   <h3 className="text-lg font-semibold">Education</h3>
@@ -1640,7 +1661,8 @@ const handleDeleteEducation = (id: string) => {
               </section>
             )}
 
-            {activeSection === 'projects' && (
+            {/* Candidate: Projects */}
+            {activeSection === 'projects' && role === 'candidate' && (
               <section className="space-y-6">
                 <div>
                     <h3 className="text-lg font-semibold">Projects</h3>
@@ -1695,7 +1717,8 @@ const handleDeleteEducation = (id: string) => {
             </section>
             )}
 
-            {activeSection === 'online-profiles' && (
+            {/* Candidate: Online Profiles */}
+            {activeSection === 'online-profiles' && role === 'candidate' && (
               <form action={onlineProfilesAction}>
                 <input type="hidden" name="userId" value={session?.uid} />
                 <section className="space-y-6">
@@ -1761,7 +1784,8 @@ const handleDeleteEducation = (id: string) => {
               </form>
             )}
 
-            {activeSection === 'personal-details' && (
+            {/* Candidate: Personal Details */}
+            {activeSection === 'personal-details' && role === 'candidate' && (
               <form action={personalDetailsAction}>
                 <input type="hidden" name="userId" value={session?.uid} />
                 <input type="hidden" name="languages" value={JSON.stringify(languages)} />
@@ -1882,6 +1906,187 @@ const handleDeleteEducation = (id: string) => {
                 </section>
               </form>
             )}
+
+            {/* Company: Company Details */}
+            {activeSection === 'company-details' && role === 'company' && (
+              <form action={profileDetailsAction}>
+                <input type="hidden" name="userId" value={session?.uid} />
+                <section className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold">Company Details</h3>
+                    <p className="text-sm text-muted-foreground">Your company's public information.</p>
+                  </div>
+                  <div className="flex items-center gap-6">
+                    <div className="relative">
+                      <Avatar className="h-24 w-24">
+                        <AvatarImage src={profile.displayImageUrl ?? undefined} />
+                        <AvatarFallback className="text-3xl bg-dash-primary text-dash-primary-foreground">{getInitials(profile.name)}</AvatarFallback>
+                      </Avatar>
+                      {isAvatarPending && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
+                          <Loader2 className="h-8 w-8 animate-spin text-white" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/png, image/jpeg, image/gif" />
+                      <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isAvatarPending}>
+                        <Upload className="mr-2 h-4 w-4" /> {profile.displayImageUrl ? 'Change' : 'Upload'} Logo
+                      </Button>
+                      {profile.displayImageUrl && (
+                        <Button type="button" variant="destructive" size="sm" onClick={handleRemoveAvatar} disabled={isAvatarPending}>
+                          <Trash2 className="mr-2 h-4 w-4" /> Remove
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="name">Company Name</Label>
+                      <Input id="name" name="name" defaultValue={profile.name ?? ''} required />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="phone">Company Phone</Label>
+                      <Input id="phone" name="phone" defaultValue={profile.phone ?? ''} type="tel" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="companySize">Company Size</Label>
+                      <Select name="companySize.size" defaultValue={profile.companySize?.size}>
+                        <SelectTrigger><SelectValue placeholder="Select size..." /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Startup">Startup (1-100 employees)</SelectItem>
+                          <SelectItem value="Growth">Growth (100-500 employees)</SelectItem>
+                          <SelectItem value="Enterprise">Enterprise (500+ employees)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="foundedYear">Founded Year</Label>
+                      <Input id="foundedYear" name="foundedYear" defaultValue={profile.foundedYear} type="number" placeholder="e.g. 2015" />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="companyType">Company Type</Label>
+                      <Input id="companyType" name="companyType" defaultValue={profile.companyType} placeholder="e.g. B2B SaaS" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="aboutCompany">About Company</Label>
+                    <Textarea name="aboutCompany" id="aboutCompany" defaultValue={profile.aboutCompany} placeholder="A brief description of your company..." className="min-h-32" />
+                  </div>
+                  <div className="flex justify-end gap-2 pt-6 border-t mt-6">
+                    <SubmitButton />
+                  </div>
+                </section>
+              </form>
+            )}
+
+            {/* Company: Benefits */}
+            {activeSection === 'benefits' && role === 'company' && (
+              <form action={profileDetailsAction}>
+                 <input type="hidden" name="userId" value={session?.uid} />
+                 {selectedBenefits.map(benefit => (
+                    <input key={benefit} type="hidden" name="benefits" value={benefit} />
+                 ))}
+                <section className="space-y-6">
+                   <div>
+                    <h3 className="text-lg font-semibold">Benefits & Perks</h3>
+                    <p className="text-sm text-muted-foreground">Select the benefits your company offers.</p>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {allBenefits.map(benefit => (
+                        <Card key={benefit.id} className={cn("p-4 flex flex-col items-center justify-center text-center gap-2 cursor-pointer transition-all", selectedBenefits.includes(benefit.id) && "ring-2 ring-dash-primary bg-accent")}>
+                           <Checkbox id={benefit.id} checked={selectedBenefits.includes(benefit.id)} onCheckedChange={(checked) => handleBenefitChange(benefit.id, !!checked)} className="absolute top-2 right-2 h-5 w-5" />
+                            <benefit.icon className="h-8 w-8 text-muted-foreground" />
+                            <p className="text-sm font-medium">{benefit.label}</p>
+                        </Card>
+                      ))}
+                  </div>
+                  <div className="flex justify-end gap-2 pt-6 border-t mt-6">
+                    <SubmitButton />
+                  </div>
+                </section>
+              </form>
+            )}
+
+            {/* Company: Company Links */}
+            {activeSection === 'company-links' && role === 'company' && (
+              <form action={profileDetailsAction}>
+                <input type="hidden" name="userId" value={session?.uid} />
+                <section className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold">Company Links</h3>
+                    <p className="text-sm text-muted-foreground">Add links to your company's website and social profiles.</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                     <div className="grid gap-2">
+                      <Label htmlFor="website">Website</Label>
+                      <div className="relative">
+                        <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input id="website" name="website" defaultValue={profile.website} placeholder="https://company.com" className="pl-9" />
+                      </div>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="socials.linkedin">LinkedIn</Label>
+                      <div className="relative">
+                        <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input id="socials.linkedin" name="socials.linkedin" defaultValue={profile.socials?.linkedin} placeholder="https://linkedin.com/company/..." className="pl-9" />
+                      </div>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="socials.twitter">Twitter / X</Label>
+                      <div className="relative">
+                        <Twitter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input id="socials.twitter" name="socials.twitter" defaultValue={profile.socials?.twitter} placeholder="https://x.com/..." className="pl-9" />
+                      </div>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="socials.naukri">Naukri.com</Label>
+                      <div className="relative">
+                        <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input id="socials.naukri" name="socials.naukri" defaultValue={profile.socials?.naukri} placeholder="https://naukri.com/..." className="pl-9" />
+                      </div>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="socials.glassdoor">Glassdoor</Label>
+                      <div className="relative">
+                        <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input id="socials.glassdoor" name="socials.glassdoor" defaultValue={profile.socials?.glassdoor} placeholder="https://glassdoor.com/..." className="pl-9" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-6 border-t mt-6">
+                    <SubmitButton />
+                  </div>
+                </section>
+              </form>
+            )}
+
+            {/* Company: Company Contact */}
+            {activeSection === 'company-contact' && role === 'company' && (
+              <form action={profileDetailsAction}>
+                <input type="hidden" name="userId" value={session?.uid} />
+                <section className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-semibold">Company Contact</h3>
+                    <p className="text-sm text-muted-foreground">Public contact details for candidates.</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     <div className="grid gap-2">
+                      <Label htmlFor="helplinePhone">Contact Phone</Label>
+                      <Input id="helplinePhone" name="helplinePhone" defaultValue={profile.helplinePhone} />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="helplineEmail">Contact Email</Label>
+                      <Input id="helplineEmail" name="helplineEmail" type="email" defaultValue={profile.helplineEmail} />
+                    </div>
+                  </div>
+                   <div className="flex justify-end gap-2 pt-6 border-t mt-6">
+                    <SubmitButton />
+                  </div>
+                </section>
+              </form>
+            )}
+
           </CardContent>
         </Card>
       </div>
