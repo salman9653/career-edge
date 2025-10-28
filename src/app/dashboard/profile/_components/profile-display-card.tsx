@@ -433,7 +433,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                 <>
                 {/* Section 2: About & Core Details */}
                 <div className="group space-y-4 pt-4 border-t">
-                    <SectionHeader title="Company Details" sectionId="profile-details" />
+                    <SectionHeader title="Company Details" sectionId="company-details" />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex items-start gap-3 text-sm">
                             <Building className="h-5 w-5 text-muted-foreground mt-1 shrink-0" />
@@ -475,7 +475,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                 </div>
                 {profile.aboutCompany && (
                     <div className="group space-y-4 pt-4 border-t">
-                        <SectionHeader title="About Company" sectionId="profile-details" />
+                        <SectionHeader title="About Company" sectionId="company-details" />
                         <div className="text-sm text-muted-foreground space-y-2">
                             <p className={cn(!isAboutExpanded && "line-clamp-3")}>
                                 {profile.aboutCompany}
@@ -489,7 +489,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                 )}
                 {selectedBenefits.length > 0 && (
                     <div className="group space-y-4 pt-4 border-t">
-                         <SectionHeader title="Benefits" sectionId="profile-details" />
+                         <SectionHeader title="Benefits" sectionId="benefits" />
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                             {selectedBenefits.map(benefit => (
                                 <Card key={benefit.id} className="p-4 flex flex-col items-center justify-center text-center gap-2">
@@ -502,7 +502,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                 )}
                 {/* Section 3: Company Links */}
                 <div className="group space-y-4 pt-4 border-t">
-                    <SectionHeader title="Company Links" sectionId="online-profiles" />
+                    <SectionHeader title="Company Links" sectionId="company-links" />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {profile.socials?.linkedin && (
                             <div className="flex items-start gap-3 text-sm">
@@ -552,7 +552,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                 </div>
                 {/* Section 4: Company Contact */}
                 <div className="group space-y-4 pt-4 border-t">
-                    <SectionHeader title="Company Contact" sectionId="profile-details" />
+                    <SectionHeader title="Company Contact" sectionId="company-contact" />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex items-start gap-3 text-sm">
                             <Phone className="h-5 w-5 text-muted-foreground mt-1 shrink-0" />
