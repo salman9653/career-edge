@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { CheckCircle, Edit, XCircle, Building, Globe, Linkedin, Phone, Mail, Briefcase, Building2, UserCog, Shield, Info, ChevronDown, ChevronUp, Calendar, Hash, User, Github, FileText, Download, Languages, MapPin, Cake, UserSquare, Link as LinkIcon } from 'lucide-react';
-import type { CompanySize, Socials, UserProfile } from '@/lib/types';
+import type { CompanySize, Socials, UserProfile, Employment, Education } from '@/lib/types';
 import Link from 'next/link';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -68,6 +68,25 @@ const calculateDuration = (startDate: string, endDate: string | null, isCurrent:
 export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps) {
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
   const selectedBenefits = allBenefits.filter(b => profile.benefits?.includes(b.id));
+
+  const latestEmployment = (profile.employment && profile.employment.length > 0)
+    ? profile.employment.find(e => e.isCurrent) || 
+      [...profile.employment].sort((a, b) => new Date(b.endDate || 0).getTime() - new Date(a.endDate || 0).getTime())[0]
+    : null;
+
+  const educationOrder: Education['level'][] = ['Doctorate/PhD', 'Masters/Post-Graduations', 'Graduation/Diploma', 'Class 12th', 'Class 10th'];
+  const latestEducation = (profile.education && profile.education.length > 0)
+    ? [...profile.education].sort((a, b) => {
+        const aLevel = educationOrder.indexOf(a.level);
+        const bLevel = educationOrder.indexOf(b.level);
+        if (aLevel !== bLevel) {
+            return aLevel - bLevel;
+        }
+        const aYear = a.endYear || a.passingYear || 0;
+        const bYear = b.endYear || b.passingYear || 0;
+        return bYear - aYear;
+      })[0]
+    : null;
   
   return (
     <Card className="h-full flex flex-col">
@@ -181,56 +200,52 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                 </div>
                 )}
                 {/* Employment */}
-                {profile.employment && profile.employment.length > 0 && (
+                {latestEmployment && (
                      <div id="employment" className="space-y-4 pt-6 border-t">
-                        <h3 className="font-semibold text-lg">Employment</h3>
+                        <h3 className="font-semibold text-lg">Current/Most Recent Employment</h3>
                         <div className="space-y-4">
-                            {profile.employment.map(emp => (
-                                <Card key={emp.id} className="p-4">
-                                     <div>
-                                        <p className="font-semibold">{emp.designation}</p>
-                                        <p className="text-sm text-muted-foreground">{emp.company} &bull; {emp.employmentType}</p>
-                                        <p className="text-xs text-muted-foreground mt-1">
-                                          {format(new Date(emp.startDate), 'MMM yyyy')} - {emp.isCurrent ? 'Present' : emp.endDate ? format(new Date(emp.endDate), 'MMM yyyy') : 'N/A'}
-                                          <span className="mx-2 text-gray-400">&bull;</span>
-                                          {calculateDuration(emp.startDate, emp.endDate, emp.isCurrent)}
-                                        </p>
-                                        <p className="text-sm mt-2">{emp.jobProfile}</p>
-                                    </div>
-                                </Card>
-                            ))}
+                            <Card className="p-4">
+                                <div>
+                                    <p className="font-semibold">{latestEmployment.designation}</p>
+                                    <p className="text-sm text-muted-foreground">{latestEmployment.company} &bull; {latestEmployment.employmentType}</p>
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                        {format(new Date(latestEmployment.startDate), 'MMM yyyy')} - {latestEmployment.isCurrent ? 'Present' : latestEmployment.endDate ? format(new Date(latestEmployment.endDate), 'MMM yyyy') : 'N/A'}
+                                        <span className="mx-2 text-gray-400">&bull;</span>
+                                        {calculateDuration(latestEmployment.startDate, latestEmployment.endDate, latestEmployment.isCurrent)}
+                                    </p>
+                                    <p className="text-sm mt-2">{latestEmployment.jobProfile}</p>
+                                </div>
+                            </Card>
                         </div>
                     </div>
                 )}
                 
                 {/* Education */}
-                {profile.education && profile.education.length > 0 && (
+                {latestEducation && (
                      <div id="education" className="space-y-4 pt-6 border-t">
-                        <h3 className="font-semibold text-lg">Education</h3>
+                        <h3 className="font-semibold text-lg">Highest Education</h3>
                         <div className="space-y-4">
-                            {profile.education.map(edu => (
-                                <Card key={edu.id} className="p-4">
-                                    <div>
-                                        {edu.level === 'Class 10th' || edu.level === 'Class 12th' ? (
-                                            <>
-                                                <p className="font-semibold">{edu.level}</p>
-                                                <p className="text-sm text-muted-foreground">{edu.board} &bull; {edu.school}</p>
-                                                <p className="text-xs text-muted-foreground mt-1">
-                                                    Passed in {edu.passingYear}
-                                                </p>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <p className="font-semibold">{edu.course} in {edu.specialization}</p>
-                                                <p className="text-sm text-muted-foreground">{edu.university}</p>
-                                                <p className="text-xs text-muted-foreground mt-1">
-                                                    {edu.startYear} - {edu.endYear} &bull; {edu.courseType}
-                                                </p>
-                                            </>
-                                        )}
-                                    </div>
-                                </Card>
-                            ))}
+                            <Card className="p-4">
+                                <div>
+                                    {latestEducation.level === 'Class 10th' || latestEducation.level === 'Class 12th' ? (
+                                        <>
+                                            <p className="font-semibold">{latestEducation.level}</p>
+                                            <p className="text-sm text-muted-foreground">{latestEducation.board} &bull; {latestEducation.school}</p>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                Passed in {latestEducation.passingYear}
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <p className="font-semibold">{latestEducation.course} in {latestEducation.specialization}</p>
+                                            <p className="text-sm text-muted-foreground">{latestEducation.university}</p>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                {latestEducation.startYear} - {latestEducation.endYear} &bull; {latestEducation.courseType}
+                                            </p>
+                                        </>
+                                    )}
+                                </div>
+                            </Card>
                         </div>
                     </div>
                 )}
