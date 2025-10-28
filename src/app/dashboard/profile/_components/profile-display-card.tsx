@@ -2,7 +2,7 @@
 'use client';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CheckCircle, Edit, XCircle, Building, Globe, Linkedin, Phone, Mail, Briefcase, Building2, UserCog, Shield, Info, ChevronDown, ChevronUp, Calendar, Hash, User, Github, FileText, Download, Languages, MapPin, Cake, UserSquare, Link as LinkIcon, Pen } from 'lucide-react';
+import { CheckCircle, Edit, XCircle, Building, Globe, Linkedin, Phone, Mail, Briefcase, Building2, UserCog, Shield, Info, ChevronDown, ChevronUp, Calendar, Hash, User, Github, FileText, Download, Languages, MapPin, Cake, UserSquare, Link as LinkIcon, Pen, Eye } from 'lucide-react';
 import type { CompanySize, Socials, UserProfile, Employment, Education, Project } from '@/lib/types';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { allBenefits } from '@/lib/benefits';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { format, formatDistanceToNow, differenceInMonths } from 'date-fns';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 const Twitter = (props: React.SVGProps<SVGSVGElement>) => (
     <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24" {...props}>
@@ -123,10 +124,24 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
         <CardContent className="flex-1 space-y-8 overflow-y-auto custom-scrollbar">
             {/* Section 1: Basic Info */}
             <div id="profile-summary" className="group flex items-start gap-6">
-                <Avatar className="h-24 w-24">
-                    <AvatarImage src={profile.displayImageUrl ?? undefined} />
-                    <AvatarFallback className="text-3xl bg-dash-primary text-dash-primary-foreground">{getInitials(profile.name)}</AvatarFallback>
-                </Avatar>
+                <Dialog>
+                    <DialogTrigger asChild disabled={!profile.displayImageUrl}>
+                        <div className="relative group cursor-pointer">
+                            <Avatar className="h-24 w-24">
+                                <AvatarImage src={profile.displayImageUrl ?? undefined} />
+                                <AvatarFallback className="text-3xl bg-dash-primary text-dash-primary-foreground">{getInitials(profile.name)}</AvatarFallback>
+                            </Avatar>
+                             {profile.displayImageUrl && (
+                                <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Eye className="h-8 w-8 text-white" />
+                                </div>
+                            )}
+                        </div>
+                    </DialogTrigger>
+                    <DialogContent className="p-0 border-0 max-w-2xl bg-transparent" showClose={false}>
+                        <img src={profile.displayImageUrl || ''} alt={profile.name} className="rounded-lg w-full h-auto" />
+                    </DialogContent>
+                </Dialog>
                 <div className="grid gap-2 flex-1">
                     <div className="flex items-center gap-2">
                          <h2 className="text-2xl font-bold">{profile.name}</h2>
