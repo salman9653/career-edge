@@ -124,24 +124,28 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
         <CardContent className="flex-1 space-y-8 overflow-y-auto custom-scrollbar">
             {/* Section 1: Basic Info */}
             <div id="profile-summary" className="group flex items-start gap-6">
-                <Dialog>
-                    <DialogTrigger asChild disabled={!profile.displayImageUrl}>
-                         <div className={cn("relative", profile.displayImageUrl && "cursor-pointer group")}>
-                            <Avatar className="h-24 w-24">
-                                <AvatarImage src={profile.displayImageUrl ?? undefined} />
-                                <AvatarFallback className="text-3xl bg-dash-primary text-dash-primary-foreground">{getInitials(profile.name)}</AvatarFallback>
-                            </Avatar>
-                             {profile.displayImageUrl && (
+                {profile.displayImageUrl ? (
+                     <Dialog>
+                        <DialogTrigger asChild>
+                            <div className="relative cursor-pointer group">
+                                <Avatar className="h-24 w-24">
+                                    <AvatarImage src={profile.displayImageUrl ?? undefined} />
+                                    <AvatarFallback className="text-3xl bg-dash-primary text-dash-primary-foreground">{getInitials(profile.name)}</AvatarFallback>
+                                </Avatar>
                                 <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                     <Eye className="h-8 w-8 text-white" />
                                 </div>
-                            )}
-                        </div>
-                    </DialogTrigger>
-                    <DialogContent className="p-0 border-0 max-w-2xl bg-transparent" showClose={false}>
-                        <img src={profile.displayImageUrl || ''} alt={profile.name} className="rounded-lg w-full h-auto" />
-                    </DialogContent>
-                </Dialog>
+                            </div>
+                        </DialogTrigger>
+                        <DialogContent className="p-0 border-0 max-w-2xl bg-transparent" showClose={false}>
+                            <img src={profile.displayImageUrl || ''} alt={profile.name} className="rounded-lg w-full h-auto" />
+                        </DialogContent>
+                    </Dialog>
+                ) : (
+                     <Avatar className="h-24 w-24">
+                        <AvatarFallback className="text-3xl bg-dash-primary text-dash-primary-foreground">{getInitials(profile.name)}</AvatarFallback>
+                    </Avatar>
+                )}
                 <div className="grid gap-2 flex-1">
                     <div className="flex items-center gap-2">
                          <h2 className="text-2xl font-bold">{profile.name}</h2>
