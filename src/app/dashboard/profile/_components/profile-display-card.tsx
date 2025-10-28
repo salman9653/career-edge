@@ -1,9 +1,8 @@
 
-
 'use client';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CheckCircle, Edit, XCircle, Building, Globe, Linkedin, Phone, Mail, Briefcase, Building2, UserCog, Shield, Info, ChevronDown, ChevronUp, Calendar, Hash, User, Github, FileText, Download, Languages, MapPin, Cake, UserSquare } from 'lucide-react';
+import { CheckCircle, Edit, XCircle, Building, Globe, Linkedin, Phone, Mail, Briefcase, Building2, UserCog, Shield, Info, ChevronDown, ChevronUp, Calendar, Hash, User, Github, FileText, Download, Languages, MapPin, Cake, UserSquare, Link as LinkIcon } from 'lucide-react';
 import type { CompanySize, Socials, UserProfile } from '@/lib/types';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -71,7 +70,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
   const selectedBenefits = allBenefits.filter(b => profile.benefits?.includes(b.id));
   
   return (
-    <Card>
+    <Card className="h-full flex flex-col">
         <CardHeader>
             <div className="flex justify-between items-start">
                 <div>
@@ -84,7 +83,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                 </Button>
             </div>
         </CardHeader>
-        <CardContent className="space-y-8">
+        <CardContent className="flex-1 space-y-8 overflow-y-auto custom-scrollbar">
             {/* Section 1: Basic Info */}
             <div id="profile-summary" className="flex items-start gap-6">
                 <Avatar className="h-24 w-24">
@@ -253,7 +252,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                                             {format(new Date(proj.workedFrom.year, proj.workedFrom.month - 1), 'MMM yyyy')} - 
                                             {proj.projectStatus === 'finished' && proj.workedTill ? ` ${format(new Date(proj.workedTill.year, proj.workedTill.month - 1), 'MMM yyyy')}` : ' Present'}
                                         </p>
-                                        {proj.projectUrl && <a href={getWebsiteUrl(proj.projectUrl)} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline mt-1 flex items-center gap-1"><Link className="h-3 w-3" /> Link to project</a>}
+                                        {proj.projectUrl && <a href={getWebsiteUrl(proj.projectUrl)} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline mt-1 flex items-center gap-1"><LinkIcon className="h-3 w-3" /> Link to project</a>}
                                         <p className="text-sm mt-2">{proj.projectDetails}</p>
                                     </div>
                                 </Card>
