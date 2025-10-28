@@ -126,7 +126,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
             <div id="profile-summary" className="group flex items-start gap-6">
                 <Dialog>
                     <DialogTrigger asChild disabled={!profile.displayImageUrl}>
-                        <div className="relative group cursor-pointer">
+                         <div className="relative group cursor-pointer">
                             <Avatar className="h-24 w-24">
                                 <AvatarImage src={profile.displayImageUrl ?? undefined} />
                                 <AvatarFallback className="text-3xl bg-dash-primary text-dash-primary-foreground">{getInitials(profile.name)}</AvatarFallback>
