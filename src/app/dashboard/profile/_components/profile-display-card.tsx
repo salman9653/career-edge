@@ -67,15 +67,22 @@ const calculateDuration = (startDate: string, endDate: string | null, isCurrent:
 
 export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps) {
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
+  const [showAllEmployment, setShowAllEmployment] = useState(false);
+  const [showAllEducation, setShowAllEducation] = useState(false);
   const selectedBenefits = allBenefits.filter(b => profile.benefits?.includes(b.id));
 
-  const latestEmployment = (profile.employment && profile.employment.length > 0)
-    ? profile.employment.find(e => e.isCurrent) || 
-      [...profile.employment].sort((a, b) => new Date(b.endDate || 0).getTime() - new Date(a.endDate || 0).getTime())[0]
-    : null;
+  const sortedEmployment = (profile.employment && profile.employment.length > 0)
+    ? [...profile.employment].sort((a, b) => {
+        if (a.isCurrent && !b.isCurrent) return -1;
+        if (!a.isCurrent && b.isCurrent) return 1;
+        return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+    })
+    : [];
+
+  const latestEmployment = sortedEmployment[0] || null;
 
   const educationOrder: Education['level'][] = ['Doctorate/PhD', 'Masters/Post-Graduations', 'Graduation/Diploma', 'Class 12th', 'Class 10th'];
-  const latestEducation = (profile.education && profile.education.length > 0)
+  const sortedEducation = (profile.education && profile.education.length > 0)
     ? [...profile.education].sort((a, b) => {
         const aLevel = educationOrder.indexOf(a.level);
         const bLevel = educationOrder.indexOf(b.level);
@@ -85,8 +92,10 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
         const aYear = a.endYear || a.passingYear || 0;
         const bYear = b.endYear || b.passingYear || 0;
         return bYear - aYear;
-      })[0]
-    : null;
+      })
+    : [];
+  
+  const latestEducation = sortedEducation[0] || null;
   
   return (
     <Card className="h-full flex flex-col">
@@ -200,52 +209,66 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                 </div>
                 )}
                 {/* Employment */}
-                {latestEmployment && (
+                {sortedEmployment.length > 0 && (
                      <div id="employment" className="space-y-4 pt-6 border-t">
-                        <h3 className="font-semibold text-lg">Current/Most Recent Employment</h3>
+                        <h3 className="font-semibold text-lg">Recent Employment</h3>
                         <div className="space-y-4">
-                            <Card className="p-4">
-                                <div>
-                                    <p className="font-semibold">{latestEmployment.designation}</p>
-                                    <p className="text-sm text-muted-foreground">{latestEmployment.company} &bull; {latestEmployment.employmentType}</p>
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                        {format(new Date(latestEmployment.startDate), 'MMM yyyy')} - {latestEmployment.isCurrent ? 'Present' : latestEmployment.endDate ? format(new Date(latestEmployment.endDate), 'MMM yyyy') : 'N/A'}
-                                        <span className="mx-2 text-gray-400">&bull;</span>
-                                        {calculateDuration(latestEmployment.startDate, latestEmployment.endDate, latestEmployment.isCurrent)}
-                                    </p>
-                                    <p className="text-sm mt-2">{latestEmployment.jobProfile}</p>
-                                </div>
-                            </Card>
+                             {(showAllEmployment ? sortedEmployment : [latestEmployment]).map(employment => (
+                                <Card key={employment.id} className="p-4">
+                                    <div>
+                                        <p className="font-semibold">{employment.designation}</p>
+                                        <p className="text-sm text-muted-foreground">{employment.company} &bull; {employment.employmentType}</p>
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                            {format(new Date(employment.startDate), 'MMM yyyy')} - {employment.isCurrent ? 'Present' : employment.endDate ? format(new Date(employment.endDate), 'MMM yyyy') : 'N/A'}
+                                            <span className="mx-2 text-gray-400">&bull;</span>
+                                            {calculateDuration(employment.startDate, employment.endDate, employment.isCurrent)}
+                                        </p>
+                                        <p className="text-sm mt-2">{employment.jobProfile}</p>
+                                    </div>
+                                </Card>
+                            ))}
+                            {sortedEmployment.length > 1 && (
+                                <Button variant="link" className="p-0 h-auto" onClick={() => setShowAllEmployment(!showAllEmployment)}>
+                                    {showAllEmployment ? 'Show less' : `+ ${sortedEmployment.length - 1} more employment`}
+                                </Button>
+                            )}
                         </div>
                     </div>
                 )}
                 
                 {/* Education */}
-                {latestEducation && (
+                {sortedEducation.length > 0 && (
                      <div id="education" className="space-y-4 pt-6 border-t">
                         <h3 className="font-semibold text-lg">Highest Education</h3>
                         <div className="space-y-4">
-                            <Card className="p-4">
-                                <div>
-                                    {latestEducation.level === 'Class 10th' || latestEducation.level === 'Class 12th' ? (
-                                        <>
-                                            <p className="font-semibold">{latestEducation.level}</p>
-                                            <p className="text-sm text-muted-foreground">{latestEducation.board} &bull; {latestEducation.school}</p>
-                                            <p className="text-xs text-muted-foreground mt-1">
-                                                Passed in {latestEducation.passingYear}
-                                            </p>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <p className="font-semibold">{latestEducation.course} in {latestEducation.specialization}</p>
-                                            <p className="text-sm text-muted-foreground">{latestEducation.university}</p>
-                                            <p className="text-xs text-muted-foreground mt-1">
-                                                {latestEducation.startYear} - {latestEducation.endYear} &bull; {latestEducation.courseType}
-                                            </p>
-                                        </>
-                                    )}
-                                </div>
-                            </Card>
+                            {(showAllEducation ? sortedEducation : [latestEducation]).map(education => (
+                                <Card key={education.id} className="p-4">
+                                    <div>
+                                        {education.level === 'Class 10th' || education.level === 'Class 12th' ? (
+                                            <>
+                                                <p className="font-semibold">{education.level}</p>
+                                                <p className="text-sm text-muted-foreground">{education.board} &bull; {education.school}</p>
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    Passed in {education.passingYear}
+                                                </p>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <p className="font-semibold">{education.course} in {education.specialization}</p>
+                                                <p className="text-sm text-muted-foreground">{education.university}</p>
+                                                <p className="text-xs text-muted-foreground mt-1">
+                                                    {education.startYear} - {education.endYear} &bull; {education.courseType}
+                                                </p>
+                                            </>
+                                        )}
+                                    </div>
+                                </Card>
+                            ))}
+                            {sortedEducation.length > 1 && (
+                                <Button variant="link" className="p-0 h-auto" onClick={() => setShowAllEducation(!showAllEducation)}>
+                                    {showAllEducation ? 'Show less' : `+ ${sortedEducation.length - 1} more education`}
+                                </Button>
+                            )}
                         </div>
                     </div>
                 )}
