@@ -1327,11 +1327,20 @@ export async function generateAtsResumeAction(prevState: any, formData: FormData
     const userId = formData.get('userId') as string;
     const existingResumeFile = formData.get('existingResume') as File | null;
     const jobDescription = formData.get('jobDescription') as string;
-    const userDetails = JSON.parse(formData.get('userDetails') as string);
+    const userDetailsString = formData.get('userDetails') as string;
     const resumeName = formData.get('resumeName') as string;
 
-    if (!userId || !jobDescription || !userDetails || !resumeName) {
+    if (!userId || !jobDescription || !resumeName) {
         return { error: 'Missing required fields.' };
+    }
+
+    let userDetails = {};
+    if (userDetailsString) {
+        try {
+            userDetails = JSON.parse(userDetailsString);
+        } catch(e) {
+            return { error: 'Invalid user details format.'}
+        }
     }
     
     let resumeDataUri: string | undefined = undefined;
@@ -1348,13 +1357,12 @@ export async function generateAtsResumeAction(prevState: any, formData: FormData
     try {
         const result = await generateAtsResume(input);
         
-        const resumeDoc: GeneratedResume = {
+        const resumeDoc: Omit<GeneratedResume, 'id'> = {
             userId,
             name: resumeName,
             markdownContent: result.markdownContent,
             jobDescription,
             createdAt: serverTimestamp(),
-            // pdfDataUri will be added later
         };
 
         const docRef = await addDoc(collection(db, `users/${userId}/generated-resumes`), resumeDoc);
@@ -1364,5 +1372,28 @@ export async function generateAtsResumeAction(prevState: any, formData: FormData
     } catch(e: any) {
         console.error('Error generating ATS resume:', e);
         return { error: e.message || "An unexpected error occurred during AI generation." };
+    }
+}
+
+export async function updateGeneratedResumeAction(prevState: any, formData: FormData) {
+    const userId = formData.get('userId') as string;
+    const resumeId = formData.get('resumeId') as string;
+    const content = formData.get('content') as string;
+
+    if (!userId || !resumeId || !content) {
+        return { error: 'Missing required information to update resume.' };
+    }
+
+    try {
+        const resumeRef = doc(db, `users/${userId}/generated-resumes`, resumeId);
+        await updateDoc(resumeRef, {
+            markdownContent: content,
+            updatedAt: serverTimestamp()
+        });
+        revalidatePath(`/dashboard/candidate/resumes/${resumeId}`);
+        return { success: true };
+    } catch (e: any) {
+        console.error('Error updating generated resume:', e);
+        return { error: e.message || 'Could not save your changes.' };
     }
 }
