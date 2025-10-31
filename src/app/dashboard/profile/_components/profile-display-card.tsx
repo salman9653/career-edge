@@ -12,6 +12,7 @@ import { allBenefits } from '@/lib/benefits';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { format, formatDistanceToNow, differenceInMonths } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { FaFilePdf, FaFileWord, FaFileImage } from 'react-icons/fa';
 
 const Twitter = (props: React.SVGProps<SVGSVGElement>) => (
     <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24" {...props}>
@@ -63,6 +64,14 @@ const calculateDuration = (startDate: string, endDate: string | null, isCurrent:
         result += `${remainingMonths} month${remainingMonths > 1 ? 's' : ''}`;
     }
     return result;
+};
+
+const getFileIcon = (fileType?: string) => {
+  if (!fileType) return <FileText className="h-8 w-8 text-muted-foreground" />;
+  if (fileType.includes('pdf')) return <FaFilePdf className="h-8 w-8 text-red-500" />;
+  if (fileType.includes('word')) return <FaFileWord className="h-8 w-8 text-blue-500" />;
+  if (fileType.startsWith('image')) return <FaFileImage className="h-8 w-8 text-green-500" />;
+  return <FileText className="h-8 w-8 text-muted-foreground" />;
 };
 
 
@@ -221,11 +230,24 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                      <div className="group space-y-4 pt-6 border-t">
                         <SectionHeader title="Resume" sectionId="resume" />
                          <div className="flex items-center gap-4 p-4 border rounded-lg bg-secondary">
-                             <FileText className="h-8 w-8 text-muted-foreground" />
+                             {getFileIcon(profile.resume.type)}
                              <div className="flex-1">
                                  <p className="font-medium">{profile.resume.name}</p>
                                  <p className="text-xs text-muted-foreground">Last updated: {formatDistanceToNow(profile.resume.updatedAt.toDate(), { addSuffix: true })}</p>
                              </div>
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                   <Button variant="outline" size="sm"><Eye className="mr-2 h-4 w-4" /> View</Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-4xl h-[90vh]">
+                                    <DialogHeader>
+                                        <DialogTitle>{profile.resume.name}</DialogTitle>
+                                    </DialogHeader>
+                                    <div className="h-full w-full">
+                                        <iframe src={profile.resume.data} width="100%" height="100%" />
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
                              <Button variant="outline" size="sm" asChild>
                                  <a href={profile.resume.data} download={profile.resume.name}>
                                      <Download className="mr-2 h-4 w-4" /> Download
