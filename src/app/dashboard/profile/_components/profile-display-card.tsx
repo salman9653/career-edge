@@ -74,6 +74,11 @@ const getFileIcon = (fileType?: string) => {
   return <FileText className="h-8 w-8 text-muted-foreground" />;
 };
 
+const isFileTypeViewable = (fileType?: string) => {
+    if (!fileType) return false;
+    return fileType.includes('pdf') || fileType.startsWith('image');
+}
+
 
 export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps) {
   const [isAboutExpanded, setIsAboutExpanded] = useState(false);
@@ -147,7 +152,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                             </div>
                         </DialogTrigger>
                         <DialogContent className="p-0 border-0 max-w-2xl bg-transparent" showClose={false}>
-                            <DialogHeader>
+                             <DialogHeader>
                                 <DialogTitle className="sr-only">{profile.name}'s profile picture</DialogTitle>
                             </DialogHeader>
                             <img src={profile.displayImageUrl || ''} alt={profile.name} className="rounded-lg w-full h-auto" />
@@ -237,14 +242,20 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                              </div>
                               <Dialog>
                                 <DialogTrigger asChild>
-                                   <Button variant="outline" size="sm"><Eye className="mr-2 h-4 w-4" /> View</Button>
+                                   <Button variant="outline" size="sm" disabled={!isFileTypeViewable(profile.resume.type)}>
+                                        <Eye className="mr-2 h-4 w-4" /> View
+                                   </Button>
                                 </DialogTrigger>
-                                <DialogContent className="max-w-4xl h-[90vh] p-0 flex flex-col">
+                                <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0 gap-0">
                                     <DialogHeader className="p-4 border-b">
                                         <DialogTitle>{profile.resume.name}</DialogTitle>
                                     </DialogHeader>
                                     <div className="flex-1">
-                                        <iframe src={profile.resume.data} className="w-full h-full border-0" />
+                                        {profile.resume.type.includes('pdf') ? (
+                                             <iframe src={profile.resume.data} className="w-full h-full border-0" />
+                                        ) : (
+                                            <img src={profile.resume.data} alt="Resume Preview" className="w-full h-full object-contain" />
+                                        )}
                                     </div>
                                 </DialogContent>
                             </Dialog>
