@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { GradientButton } from '@/components/ui/gradient-button';
 import { cn } from '@/lib/utils';
 import type { DragEvent } from 'react';
+import { Switch } from '@/components/ui/switch';
 
 const initialState = {
     error: null,
@@ -42,6 +43,7 @@ export default function NewResumePage() {
     const [existingResume, setExistingResume] = useState<File | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [useProfileData, setUseProfileData] = useState(true);
 
     if (state.success && state.resumeId) {
         toast({ title: 'Resume Generated!', description: 'Your new resume is ready.' });
@@ -72,6 +74,17 @@ export default function NewResumePage() {
     const handleDragOver = (e: DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); };
     const handleDragLeave = (e: DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); };
     const handleButtonClick = () => fileInputRef.current?.click();
+    
+    // Create a userDetails object from session to pass to the action
+    const userDetailsFromProfile = session ? {
+        name: session.displayName,
+        email: session.email,
+        phone: session.phone,
+        skills: session.keySkills,
+        experience: session.employment,
+        education: session.education,
+        projects: session.projects,
+    } : {};
 
     return (
         <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
@@ -86,6 +99,12 @@ export default function NewResumePage() {
                 <main className="flex flex-1 flex-col gap-4 p-4 md:gap-6 md:p-6 custom-scrollbar">
                     <form action={formAction} className="max-w-4xl mx-auto w-full">
                         <input type="hidden" name="userId" value={session?.uid} />
+                        {/* Conditionally pass userDetails based on the switch */}
+                        <input 
+                            type="hidden" 
+                            name="userDetails" 
+                            value={useProfileData ? JSON.stringify(userDetailsFromProfile) : ''} 
+                        />
                         <Card>
                             <CardHeader>
                                 <CardTitle>AI Resume Generator</CardTitle>
@@ -95,11 +114,6 @@ export default function NewResumePage() {
                                 <div className="space-y-2">
                                     <Label htmlFor="resumeName">Resume Name</Label>
                                     <Input id="resumeName" name="resumeName" placeholder="e.g., Resume for Google SWE" required/>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="userDetails">Your Details (JSON format)</Label>
-                                    <Textarea id="userDetails" name="userDetails" placeholder='{ "name": "John Doe", "email": "john@email.com", "phone": "123-456-7890", "skills": ["React", "TypeScript"], "experience": [{ "title": "Software Engineer", "company": "Tech Corp", "duration": "2020-Present", "responsibilities": ["Developed features...", "Mentored junior devs..."] }] }' required className="min-h-40 font-mono text-xs" />
-                                    <p className="text-xs text-muted-foreground">Provide your details in JSON format. You can include sections like name, contact, summary, skills, experience, education, projects, etc.</p>
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="existingResume">Upload Existing Resume (Optional)</Label>
@@ -121,6 +135,20 @@ export default function NewResumePage() {
                                         )}
                                     </div>
                                 </div>
+
+                                <div className="flex items-center space-x-2">
+                                    <Switch id="use-profile-data" checked={useProfileData} onCheckedChange={setUseProfileData} />
+                                    <Label htmlFor="use-profile-data">Use details from my profile</Label>
+                                </div>
+                                
+                                {!useProfileData && (
+                                    <div className="space-y-2">
+                                        <Label htmlFor="userDetailsManual">Your Details (JSON format)</Label>
+                                        <Textarea id="userDetailsManual" name="userDetails" placeholder='{ "name": "John Doe", "email": "john@email.com", "phone": "123-456-7890", "skills": ["React", "TypeScript"], "experience": [{ "title": "Software Engineer", "company": "Tech Corp", "duration": "2020-Present", "responsibilities": ["Developed features...", "Mentored junior devs..."] }] }' required className="min-h-40 font-mono text-xs" />
+                                        <p className="text-xs text-muted-foreground">Provide your details in JSON format. You can include sections like name, contact, summary, skills, experience, education, projects, etc.</p>
+                                    </div>
+                                )}
+                                
                                 <div className="space-y-2">
                                     <Label htmlFor="jobDescription">Target Job Description</Label>
                                     <Textarea id="jobDescription" name="jobDescription" placeholder="Paste the job description you are targeting..." required className="min-h-40" />
