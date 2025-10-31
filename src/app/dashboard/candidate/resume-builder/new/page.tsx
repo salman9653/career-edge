@@ -17,6 +17,7 @@ import { GradientButton } from '@/components/ui/gradient-button';
 import { cn } from '@/lib/utils';
 import type { DragEvent } from 'react';
 import { Switch } from '@/components/ui/switch';
+import { useFormStatus } from 'react-dom';
 
 const initialState = {
     error: null,
@@ -25,11 +26,11 @@ const initialState = {
 };
 
 function SubmitButton() {
-    const { pending } = useActionState();
+    const { pending } = useFormStatus();
     return (
         <GradientButton type="submit" disabled={pending} size="lg">
             {pending ? <Loader2 className="animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-            Generate My Resume
+            {pending ? 'Generating...' : 'Generate My Resume'}
         </GradientButton>
     )
 }
