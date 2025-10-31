@@ -134,7 +134,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
             {/* Section 1: Basic Info */}
             <div id="profile-summary" className="group flex items-start gap-6">
                 {profile.displayImageUrl ? (
-                     <Dialog>
+                    <Dialog>
                         <DialogTrigger asChild>
                             <div className="relative cursor-pointer group">
                                 <Avatar className="h-24 w-24">
@@ -147,14 +147,14 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                             </div>
                         </DialogTrigger>
                         <DialogContent className="p-0 border-0 max-w-2xl bg-transparent" showClose={false}>
-                             <DialogHeader>
+                            <DialogHeader>
                                 <DialogTitle className="sr-only">{profile.name}'s profile picture</DialogTitle>
                             </DialogHeader>
                             <img src={profile.displayImageUrl || ''} alt={profile.name} className="rounded-lg w-full h-auto" />
                         </DialogContent>
                     </Dialog>
                 ) : (
-                     <Avatar className="h-24 w-24">
+                    <Avatar className="h-24 w-24">
                         <AvatarFallback className="text-3xl bg-dash-primary text-dash-primary-foreground">{getInitials(profile.name)}</AvatarFallback>
                     </Avatar>
                 )}
@@ -239,12 +239,12 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                                 <DialogTrigger asChild>
                                    <Button variant="outline" size="sm"><Eye className="mr-2 h-4 w-4" /> View</Button>
                                 </DialogTrigger>
-                                <DialogContent className="max-w-4xl h-[90vh]">
-                                    <DialogHeader>
+                                <DialogContent className="max-w-4xl h-[90vh] p-0 flex flex-col">
+                                    <DialogHeader className="p-4 border-b">
                                         <DialogTitle>{profile.resume.name}</DialogTitle>
                                     </DialogHeader>
-                                    <div className="h-full w-full">
-                                        <iframe src={profile.resume.data} width="100%" height="100%" />
+                                    <div className="flex-1">
+                                        <iframe src={profile.resume.data} className="w-full h-full border-0" />
                                     </div>
                                 </DialogContent>
                             </Dialog>
