@@ -131,26 +131,26 @@ export default function GeneratedResumePage() {
                         </Button>
                         <h1 className="font-headline text-xl font-semibold">{resume.name}</h1>
                     </div>
-                     <div className="flex items-center gap-2">
-                        {isEditing ? (
-                            <>
-                                <Button variant="ghost" type="button" onClick={() => setIsEditing(false)}>Cancel</Button>
-                                <SubmitButton />
-                            </>
-                        ) : (
-                            <>
-                                <Button variant="outline" size="sm" type="button" onClick={() => setIsEditing(true)}>
-                                    <Edit className="mr-2 h-4 w-4" /> Edit
-                                </Button>
-                                <Button variant="outline" size="sm" type="button" disabled>
-                                    <Download className="mr-2 h-4 w-4" /> Download PDF
-                                </Button>
-                            </>
-                        )}
-                    </div>
                 </header>
                 <main className="flex-1 overflow-auto custom-scrollbar p-4 md:p-8 bg-secondary">
                     <Card className="max-w-[8.5in] min-h-[11in] mx-auto bg-card shadow-lg relative group">
+                        <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                             {isEditing ? (
+                                <>
+                                    <Button variant="ghost" type="button" onClick={() => setIsEditing(false)}>Cancel</Button>
+                                    <SubmitButton />
+                                </>
+                            ) : (
+                                <>
+                                    <Button variant="outline" size="sm" type="button" onClick={() => setIsEditing(true)}>
+                                        <Edit className="mr-2 h-4 w-4" /> Edit
+                                    </Button>
+                                    <Button variant="outline" size="sm" type="button" disabled>
+                                        <Download className="mr-2 h-4 w-4" /> Download PDF
+                                    </Button>
+                                </>
+                            )}
+                        </div>
                         <CardContent className="p-12">
                              {isEditing ? (
                                 <RichTextEditor value={editableContent} onChange={setEditableContent} />
