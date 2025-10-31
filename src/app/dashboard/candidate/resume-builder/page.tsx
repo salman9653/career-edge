@@ -61,7 +61,7 @@ export default function ResumeBuilderPage() {
                                 </TableHeader>
                                 <TableBody>
                                     {mockGeneratedResumes.map(resume => (
-                                        <TableRow key={resume.id}>
+                                        <TableRow key={resume.id} className="cursor-pointer" onClick={() => router.push(`/dashboard/candidate/resumes/${resume.id}`)}>
                                             <TableCell className="font-medium">{resume.name}</TableCell>
                                             <TableCell>{resume.jobTitle} at {resume.company}</TableCell>
                                             <TableCell>{new Date(resume.createdAt).toLocaleDateString()}</TableCell>

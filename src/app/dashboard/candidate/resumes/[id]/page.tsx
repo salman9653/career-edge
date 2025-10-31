@@ -9,8 +9,7 @@ import { db } from '@/lib/firebase/config';
 import { DashboardSidebar } from '@/components/dashboard-sidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Loader2, Edit, Trash2, Download, Sparkles, RefreshCw } from 'lucide-react';
-import { MobileSearch } from '@/components/mobile-search';
+import { ArrowLeft, Loader2, Edit, Download } from 'lucide-react';
 import type { GeneratedResume } from '@/ai/flows/generate-ats-resume-flow-types';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -50,7 +49,7 @@ export default function GeneratedResumePage() {
                         </Button>
                         <h1 className="font-headline text-xl font-semibold">Generated Resume</h1>
                     </header>
-                    <main className="flex-1 p-6 flex items-center justify-center">
+                    <main className="flex-1 p-6 flex items-center justify-center bg-secondary">
                         <Loader2 className="h-8 w-8 animate-spin" />
                     </main>
                 </div>
@@ -69,7 +68,7 @@ export default function GeneratedResumePage() {
                         </Button>
                         <h1 className="font-headline text-xl font-semibold">Generated Resume</h1>
                     </header>
-                    <main className="flex-1 p-6 flex items-center justify-center">
+                    <main className="flex-1 p-6 flex items-center justify-center bg-secondary">
                         <p>Resume not found.</p>
                     </main>
                 </div>
@@ -88,16 +87,15 @@ export default function GeneratedResumePage() {
                         </Button>
                         <h1 className="font-headline text-xl font-semibold">{resume.name}</h1>
                     </div>
-                     <div className="flex items-center gap-2">
-                        <Button variant="secondary" size="sm"><Edit className="mr-2 h-4 w-4" /> Edit</Button>
-                        <Button variant="secondary" size="sm"><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
-                        <Button size="sm"><Sparkles className="mr-2 h-4 w-4" /> Regenerate</Button>
-                    </div>
                 </header>
-                <main className="flex-1 overflow-auto custom-scrollbar p-4 md:p-6">
-                    <Card>
-                        <CardContent className="p-6">
-                            <article className="prose dark:prose-invert max-w-full">
+                <main className="flex-1 overflow-auto custom-scrollbar p-4 md:p-8 bg-secondary">
+                    <Card className="max-w-[8.5in] min-h-[11in] mx-auto bg-card shadow-lg relative group">
+                        <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <Button variant="outline" size="icon"><Edit className="h-4 w-4" /></Button>
+                            <Button variant="outline" size="icon"><Download className="h-4 w-4" /></Button>
+                        </div>
+                        <CardContent className="p-12">
+                            <article className="prose dark:prose-invert max-w-full prose-sm md:prose-base">
                                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                     {resume.markdownContent}
                                 </ReactMarkdown>

@@ -48,7 +48,7 @@ export default function NewResumePage() {
 
     if (state.success && state.resumeId) {
         toast({ title: 'Resume Generated!', description: 'Your new resume is ready.' });
-        router.push(`/dashboard/candidate/resume-builder/${state.resumeId}`);
+        router.push(`/dashboard/candidate/resumes/${state.resumeId}`);
     }
 
     const handleFileSelect = (file: File | null) => {
