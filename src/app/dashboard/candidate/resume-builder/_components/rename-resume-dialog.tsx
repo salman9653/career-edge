@@ -69,14 +69,12 @@ export function RenameResumeDialog({ open, onOpenChange, resume }: RenameResumeD
             Enter a new name for your generated resume.
           </DialogDescription>
         </DialogHeader>
-        <form action={formAction} ref={formRef}>
+        <form action={formAction} ref={formRef} className="space-y-4">
           <input type="hidden" name="userId" value={session?.uid} />
           <input type="hidden" name="resumeId" value={resume.id} />
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-                <Label htmlFor="newName">New Name</Label>
-                <Input id="newName" name="newName" defaultValue={resume.name} required />
-            </div>
+          <div className="grid gap-2">
+              <Label htmlFor="newName">New Name</Label>
+              <Input id="newName" name="newName" defaultValue={resume.name} required />
           </div>
           <DialogFooter>
             <Button variant="ghost" type="button" onClick={() => onOpenChange(false)}>Cancel</Button>

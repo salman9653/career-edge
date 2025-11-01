@@ -31,9 +31,8 @@ export function ResumesTable() {
     const [isSelectModeActive, setIsSelectModeActive] = useState(false);
     const [selectedResumes, setSelectedResumes] = useState<string[]>([]);
     const [isDeleting, startDeleteTransition] = useTransition();
-    const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<GeneratedResume | null>(null);
 
-    const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
     const [renameTarget, setRenameTarget] = useState<GeneratedResume | null>(null);
 
     const filteredResumes = useMemo(() => {
@@ -92,11 +91,6 @@ export function ResumesTable() {
         });
     }
 
-    const handleRename = (resume: GeneratedResume) => {
-        setRenameTarget(resume);
-        setIsRenameDialogOpen(true);
-    };
-
     return (
         <div className="flex flex-col h-full gap-4">
              <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
@@ -104,12 +98,12 @@ export function ResumesTable() {
                     <AlertDialogHeader>
                         <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This will permanently delete this resume. This action cannot be undone.
+                            This will permanently delete "{deleteTarget?.name}". This action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDelete([deleteTarget!])} disabled={isDeleting}>
+                        <AlertDialogAction onClick={() => handleDelete([deleteTarget!.id])} disabled={isDeleting}>
                             {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Delete
                         </AlertDialogAction>
@@ -119,8 +113,8 @@ export function ResumesTable() {
             {renameTarget && (
                 <RenameResumeDialog
                     resume={renameTarget}
-                    open={isRenameDialogOpen}
-                    onOpenChange={setIsRenameDialogOpen}
+                    open={!!renameTarget}
+                    onOpenChange={(open) => !open && setRenameTarget(null)}
                 />
             )}
 
@@ -128,7 +122,7 @@ export function ResumesTable() {
                 {isSelectModeActive ? (
                     <>
                         <div className="flex items-center gap-4 flex-1">
-                            <Checkbox
+                             <Checkbox
                                 id="select-all"
                                 checked={filteredResumes.length > 0 && selectedResumes.length === filteredResumes.length}
                                 onCheckedChange={(checked) => handleSelectAll(!!checked)}
@@ -239,7 +233,7 @@ export function ResumesTable() {
                                 </div>
                             </ContextMenuTrigger>
                              <ContextMenuContent>
-                                <ContextMenuItem onSelect={(e) => { e.preventDefault(); handleRename(resume); }}>
+                                <ContextMenuItem onSelect={() => setRenameTarget(resume)}>
                                     <Pencil className="mr-2 h-4 w-4" />
                                     Rename
                                 </ContextMenuItem>
@@ -248,7 +242,7 @@ export function ResumesTable() {
                                     Analyze
                                 </ContextMenuItem>
                                 <ContextMenuSeparator />
-                                <ContextMenuItem onSelect={() => setDeleteTarget(resume.id)} className="text-destructive focus:text-destructive">
+                                <ContextMenuItem onSelect={() => setDeleteTarget(resume)} className="text-destructive focus:text-destructive">
                                     <Trash2 className="mr-2 h-4 w-4" />
                                     Delete
                                 </ContextMenuItem>
