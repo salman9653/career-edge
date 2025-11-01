@@ -225,7 +225,7 @@ export function QuestionDetailSheet({ open, onOpenChange, question: initialQuest
                   </div>
               </div>
                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
-                   {question.libraryType === 'custom' && question.addedByName && (
+                   {(question.libraryType === 'custom' || context === 'admin') && question.addedByName && (
                     <div className="flex flex-col gap-1">
                       <span className="text-muted-foreground">Created By</span>
                       <span className="font-medium">{question.addedByName}</span>

@@ -17,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 import { File, Search, ArrowUpDown, ArrowUp, ArrowDown, ListTodo, X, PlusCircle, Trash2, UserCog, ShieldCheck, ShieldX } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -317,7 +317,7 @@ export function QuestionsTable({ questions, loading, context, showAddButton = fa
     });
   }
 
-  const displayCreatedBy = context === 'admin' || (context === 'company' && showCreatedBy);
+  const displayCreatedBy = (context === 'company' && showCreatedBy);
   const detailSheetContext = isAssessmentContext ? 'assessment' : 'question-bank';
 
   return (
@@ -601,8 +601,8 @@ export function QuestionsTable({ questions, loading, context, showAddButton = fa
                         )}
                     </TableBody>
                 </Table>
-            </div>
-        </Card>
+                </div>
+            </Card>
         {selectedQuestion && (
             <QuestionDetailSheet 
                 open={isSheetOpen}
