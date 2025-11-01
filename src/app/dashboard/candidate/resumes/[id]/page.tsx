@@ -94,7 +94,7 @@ export default function GeneratedResumePage() {
                     </div>
                 </header>
                 <main className="flex-1 overflow-auto custom-scrollbar p-4 md:p-8 bg-secondary">
-                    <div className="light">
+                    <div className="force-light">
                         <Card id="printable-resume" className="max-w-[8.5in] min-h-[11in] mx-auto bg-card shadow-lg relative group print:shadow-none print:border-none">
                             <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity print:hidden">
                                 <Button variant="outline" size="icon" className="h-8 w-8" disabled>
