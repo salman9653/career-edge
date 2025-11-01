@@ -4,7 +4,7 @@ import { useState, useMemo, useContext, useTransition } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Search, ListTodo, X, Trash2, Loader2, FileText, AlertTriangle } from 'lucide-react';
+import { PlusCircle, Search, ListTodo, X, Trash2, Loader2, FileText, AlertTriangle, Pen, Sparkles } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
@@ -18,6 +18,7 @@ import { useSession } from '@/hooks/use-session';
 import { deleteGeneratedResumeAction } from '@/app/actions';
 import { FaRegFilePdf } from 'react-icons/fa';
 import { format } from 'date-fns';
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu';
 
 export function ResumesTable() {
     const { resumes, loading } = useContext(GeneratedResumeContext);
@@ -29,6 +30,7 @@ export function ResumesTable() {
     const [isSelectModeActive, setIsSelectModeActive] = useState(false);
     const [selectedResumes, setSelectedResumes] = useState<string[]>([]);
     const [isDeleting, startDeleteTransition] = useTransition();
+    const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
     const filteredResumes = useMemo(() => {
         let items = [...resumes];
@@ -37,7 +39,6 @@ export function ResumesTable() {
                 resume.name.toLowerCase().includes(searchQuery.toLowerCase())
             );
         }
-        // Sort by creation date descending
         items.sort((a, b) => {
             if (a.createdAt?.seconds && b.createdAt?.seconds) {
                 return b.createdAt.seconds - a.createdAt.seconds;
@@ -73,21 +74,40 @@ export function ResumesTable() {
             router.push(`/dashboard/candidate/resumes/${resumeId}`);
         }
     }
-
-    const handleBulkDelete = () => {
-        if (!session?.uid || selectedResumes.length === 0) return;
+    
+    const handleDelete = (resumeIds: string[]) => {
+        if (!session?.uid || resumeIds.length === 0) return;
         startDeleteTransition(async () => {
-            for (const resumeId of selectedResumes) {
+            for (const resumeId of resumeIds) {
                 await deleteGeneratedResumeAction(resumeId, session.uid);
             }
-            toast({ title: `${selectedResumes.length} resume(s) deleted.` });
+            toast({ title: `${resumeIds.length} resume(s) deleted.` });
             setSelectedResumes([]);
             setIsSelectModeActive(false);
+            setDeleteTarget(null);
         });
     }
 
     return (
         <div className="flex flex-col h-full gap-4">
+             <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will permanently delete this resume. This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDelete([deleteTarget!])} disabled={isDeleting}>
+                            {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
             <div className="flex items-center gap-2">
                 {isSelectModeActive ? (
                     <>
@@ -119,7 +139,10 @@ export function ResumesTable() {
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleBulkDelete} disabled={isDeleting}>Delete</AlertDialogAction>
+                                    <AlertDialogAction onClick={() => handleDelete(selectedResumes)} disabled={isDeleting}>
+                                         {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                        Delete
+                                    </AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
@@ -156,7 +179,7 @@ export function ResumesTable() {
             {loading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
                     {Array.from({ length: 8 }).map((_, i) => (
-                        <Card key={i} className="p-4 h-[120px]">
+                        <Card key={i} className="h-[120px] p-4">
                             <div className="flex items-center gap-4">
                                 <Skeleton className="h-16 w-16" />
                                 <div className="space-y-2 flex-1">
@@ -170,31 +193,49 @@ export function ResumesTable() {
             ) : filteredResumes.length > 0 ? (
                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
                     {filteredResumes.map((resume) => (
-                        <div key={resume.id} onClick={() => handleCardClick(resume.id)} className="relative group">
-                            <Card className={cn(
-                                "hover:bg-accent transition-all duration-200 cursor-pointer h-[120px] flex items-center",
-                                isSelectModeActive && selectedResumes.includes(resume.id) && "ring-2 ring-dash-primary bg-accent"
-                            )}>
-                                <CardContent className="p-6 flex items-center gap-6">
-                                    <FaRegFilePdf className="h-16 w-16 text-muted-foreground flex-shrink-0" />
-                                    <div className="flex-1 min-w-0">
-                                        <p className="font-semibold truncate">{resume.name}</p>
-                                        <p className="text-sm text-muted-foreground">
-                                            {formatDate(resume.createdAt)}
-                                        </p>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                             {isSelectModeActive && (
-                                <div className="absolute top-3 left-3" onClick={(e) => e.stopPropagation()}>
-                                    <Checkbox
-                                        checked={selectedResumes.includes(resume.id)}
-                                        onCheckedChange={(checked) => handleRowSelect(resume.id, !!checked)}
-                                        className="bg-background border-dash-primary data-[state=checked]:border-dash-primary h-5 w-5"
-                                    />
+                        <ContextMenu key={resume.id}>
+                            <ContextMenuTrigger>
+                                <div onClick={() => handleCardClick(resume.id)} className="relative group">
+                                    <Card className={cn(
+                                        "hover:bg-accent transition-all duration-200 cursor-pointer h-[120px] flex items-center",
+                                        isSelectModeActive && selectedResumes.includes(resume.id) && "ring-2 ring-dash-primary bg-accent"
+                                    )}>
+                                        <CardContent className="p-6 flex items-center gap-6">
+                                            <FaRegFilePdf className="h-16 w-16 text-muted-foreground flex-shrink-0" />
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-semibold truncate">{resume.name}</p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    {formatDate(resume.createdAt)}
+                                                </p>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                    {isSelectModeActive && (
+                                        <div className="absolute top-3 left-3" onClick={(e) => e.stopPropagation()}>
+                                            <Checkbox
+                                                checked={selectedResumes.includes(resume.id)}
+                                                onCheckedChange={(checked) => handleRowSelect(resume.id, !!checked)}
+                                                className="bg-background border-dash-primary data-[state=checked]:border-dash-primary h-5 w-5"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-                        </div>
+                            </ContextMenuTrigger>
+                            <ContextMenuContent>
+                                <ContextMenuItem onSelect={() => setDeleteTarget(resume.id)} className="text-destructive focus:text-destructive">
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete
+                                </ContextMenuItem>
+                                <ContextMenuItem disabled>
+                                    <Pen className="mr-2 h-4 w-4" />
+                                    Edit
+                                </ContextMenuItem>
+                                <ContextMenuItem disabled>
+                                    <Sparkles className="mr-2 h-4 w-4" />
+                                    Analyze
+                                </ContextMenuItem>
+                            </ContextMenuContent>
+                        </ContextMenu>
                     ))}
                 </div>
             ) : (
