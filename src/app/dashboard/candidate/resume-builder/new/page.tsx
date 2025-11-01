@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useActionState, useRef } from 'react';
@@ -76,18 +77,25 @@ export default function NewResumePage() {
     const handleDragLeave = (e: DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); };
     const handleButtonClick = () => fileInputRef.current?.click();
     
+    // Construct the userDetails object from the session, which now contains the full profile
     const userDetailsFromProfile = session ? {
-        name: session.displayName,
+        name: session.name,
         email: session.email,
         phone: session.phone,
+        address: session.address,
         profileSummary: session.profileSummary,
         keySkills: session.keySkills,
         employment: session.employment,
         education: session.education,
         projects: session.projects,
         socials: session.socials,
-        portfolio: session.portfolio
+        portfolio: session.portfolio,
+        languages: session.languages,
+        dob: session.dob,
+        gender: session.gender,
+        maritalStatus: session.maritalStatus,
     } : {};
+
 
     return (
         <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">

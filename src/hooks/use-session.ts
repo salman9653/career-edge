@@ -2,7 +2,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import Cookies from 'js-cookie';
-import type { CompanySize, Socials, UserProfile } from '@/lib/types';
+import type { CompanySize, Socials, UserProfile, Resume, Employment, Education, Project } from '@/lib/types';
 import { onIdTokenChanged, type User } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase/config';
 import { doc, onSnapshot, getDoc } from 'firebase/firestore';
@@ -96,12 +96,12 @@ export function useSession() {
                     }
 
                     const sessionUpdate: Partial<UserSession> = {
+                        ...firestoreData, // Spread all fields from Firestore
                         name: firestoreData.name,
                         phone: firestoreData.phone,
                         displayImageUrl: displayImageUrl,
                         preferences: firestoreData.preferences,
                         favourite_jobs: firestoreData.favourite_jobs,
-                        // Add any other fields from Firestore that should be in the session
                     };
                     updateSessionCookie(sessionUpdate);
                 }

@@ -1,4 +1,5 @@
 
+
 /**
  * @fileOverview Types for the AI ATS-Friendly Resume Generation Flow
  */
@@ -21,11 +22,16 @@ export type GenerateAtsResumeOutput = z.infer<typeof GenerateAtsResumeOutputSche
 
 // Type for storing the generated resume in Firestore
 export interface GeneratedResume {
-    id?: string;
+    id: string;
     userId: string;
     name: string;
     markdownContent: string;
     pdfDataUri?: string; // To be generated later
     jobDescription: string;
     createdAt: any;
+    input: {
+        jobDescription: string;
+        userDetails: any;
+        hasExistingResume: boolean;
+    };
 }

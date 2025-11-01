@@ -1363,6 +1363,11 @@ export async function generateAtsResumeAction(prevState: any, formData: FormData
             markdownContent: result.markdownContent,
             jobDescription,
             createdAt: serverTimestamp(),
+            input: {
+                jobDescription,
+                userDetails,
+                hasExistingResume: !!resumeDataUri,
+            }
         };
 
         const docRef = await addDoc(collection(db, `users/${userId}/generated-resumes`), resumeDoc);
