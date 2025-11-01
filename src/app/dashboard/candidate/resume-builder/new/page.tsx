@@ -76,15 +76,17 @@ export default function NewResumePage() {
     const handleDragLeave = (e: DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); };
     const handleButtonClick = () => fileInputRef.current?.click();
     
-    // Create a userDetails object from session to pass to the action
     const userDetailsFromProfile = session ? {
         name: session.displayName,
         email: session.email,
         phone: session.phone,
-        skills: session.keySkills,
-        experience: session.employment,
+        profileSummary: session.profileSummary,
+        keySkills: session.keySkills,
+        employment: session.employment,
         education: session.education,
         projects: session.projects,
+        socials: session.socials,
+        portfolio: session.portfolio
     } : {};
 
     return (
@@ -100,7 +102,6 @@ export default function NewResumePage() {
                 <main className="flex flex-1 flex-col gap-4 p-4 md:gap-6 md:p-6 custom-scrollbar">
                     <form action={formAction} className="max-w-4xl mx-auto w-full">
                         <input type="hidden" name="userId" value={session?.uid} />
-                        {/* Conditionally pass userDetails based on the switch */}
                         <input 
                             type="hidden" 
                             name="userDetails" 
