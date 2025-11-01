@@ -9,7 +9,7 @@ import { db } from '@/lib/firebase/config';
 import { DashboardSidebar } from '@/components/dashboard-sidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Loader2, Download } from 'lucide-react';
+import { ArrowLeft, Loader2, Download, Edit } from 'lucide-react';
 import type { GeneratedResume } from '@/ai/flows/generate-ats-resume-flow-types';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -38,6 +38,10 @@ export default function GeneratedResumePage() {
             fetchResume();
         }
     }, [session, resumeId]);
+
+    const handlePrint = () => {
+        window.print();
+    };
 
     if (loading) {
         return (
@@ -90,10 +94,13 @@ export default function GeneratedResumePage() {
                     </div>
                 </header>
                 <main className="flex-1 overflow-auto custom-scrollbar p-4 md:p-8 bg-secondary">
-                    <Card className="max-w-[8.5in] min-h-[11in] mx-auto bg-card shadow-lg relative group">
-                        <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button variant="outline" size="sm" type="button" disabled>
-                                <Download className="mr-2 h-4 w-4" /> Download PDF
+                    <Card id="printable-resume" className="max-w-[8.5in] min-h-[11in] mx-auto bg-card shadow-lg relative group print:shadow-none print:border-none">
+                        <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity print:hidden">
+                            <Button variant="outline" size="icon" className="h-8 w-8" disabled>
+                                <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button variant="outline" size="icon" className="h-8 w-8" onClick={handlePrint}>
+                                <Download className="h-4 w-4" />
                             </Button>
                         </div>
                         <CardContent className="p-12">
