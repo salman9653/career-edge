@@ -1,7 +1,8 @@
+
 'use client';
 
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, getDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 
 export interface CompanySize {
@@ -41,20 +42,31 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
         const companiesCol = collection(db, 'users');
         const q = query(companiesCol, where('role', '==', 'company'));
 
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const companyList = snapshot.docs.map(doc => {
+        const unsubscribe = onSnapshot(q, async (snapshot) => {
+            const companyListPromises = snapshot.docs.map(async (doc) => {
                 const data = doc.data();
+                
+                let displayImageUrl = data.displayImageUrl;
+                if (data.hasDisplayImage) {
+                    const imageDocSnap = await getDoc(doc(db, `users/${doc.id}/uploads/displayImage`));
+                    if (imageDocSnap.exists()) {
+                        displayImageUrl = imageDocSnap.data().data;
+                    }
+                }
+
                 return {
                     id: doc.id,
                     name: data.name || 'N/A',
                     email: data.email || 'N/A',
-                    displayImageUrl: data.displayImageUrl,
+                    displayImageUrl,
                     status: data.status || 'Active',
                     plan: data.subscription || 'Free',
                     size: data.companySize || { size: 'Startup', employees: '1-100' },
                     createdAt: data.createdAt?.toDate()?.toISOString() || null
                 };
             });
+
+            const companyList = await Promise.all(companyListPromises);
             setCompanies(companyList);
             setLoading(false);
         }, (err) => {

@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, getDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 
 export interface CandidateData {
@@ -37,9 +37,18 @@ export const CandidateProvider = ({ children }: { children: ReactNode }) => {
         const candidatesCol = collection(db, 'users');
         const q = query(candidatesCol, where('role', '==', 'candidate'));
 
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const candidateList = snapshot.docs.map(doc => {
+        const unsubscribe = onSnapshot(q, async (snapshot) => {
+            const candidateListPromises = snapshot.docs.map(async (doc) => {
                 const data = doc.data();
+                
+                let avatarUrl = data.avatarUrl;
+                if (data.hasDisplayImage) {
+                    const imageDocSnap = await getDoc(doc(db, `users/${doc.id}/uploads/displayImage`));
+                    if (imageDocSnap.exists()) {
+                        avatarUrl = imageDocSnap.data().data;
+                    }
+                }
+
                 return {
                     id: doc.id,
                     name: data.name || 'N/A',
@@ -47,10 +56,12 @@ export const CandidateProvider = ({ children }: { children: ReactNode }) => {
                     status: data.status || 'Active',
                     subscription: data.subscription || 'Free',
                     applications: data.applications || 0,
-                    avatar: data.avatarUrl,
+                    avatar: avatarUrl,
                     createdAt: data.createdAt?.toDate()?.toISOString() || null
                 };
             });
+
+            const candidateList = await Promise.all(candidateListPromises);
             setCandidates(candidateList);
             setLoading(false);
         }, (err) => {
