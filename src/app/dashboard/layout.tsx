@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { DashboardThemeProvider } from '@/context/dashboard-theme-context';
 import { DashboardLayoutWrapper } from './layout-wrapper';
@@ -15,17 +15,19 @@ import { QuestionProvider } from '@/context/question-context';
 import { Loader2 } from 'lucide-react';
 import { NotificationProvider } from '@/context/notification-context';
 import { AiInterviewProvider } from '@/context/ai-interview-context';
+import { CommandMenu } from '@/components/command-menu';
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [isCommandMenuOpen, setIsCommandMenuOpen] = useState(false);
 
     useEffect(() => {
         setIsSettingsOpen(searchParams.get('settings') === 'true');
     }, [searchParams]);
 
-    const handleSettingsOpenChange = (open: boolean) => {
+     const handleSettingsOpenChange = (open: boolean) => {
         const params = new URLSearchParams(searchParams.toString());
         if (open) {
             params.set('settings', 'true');
@@ -38,6 +40,17 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
         }
         router.replace(`?${params.toString()}`, { scroll: false });
     }
+    
+    useEffect(() => {
+        const down = (e: KeyboardEvent) => {
+          if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault()
+            setIsCommandMenuOpen((open) => !open)
+          }
+        }
+        document.addEventListener("keydown", down)
+        return () => document.removeEventListener("keydown", down)
+      }, []);
 
     return (
         <DashboardThemeProvider>
@@ -50,6 +63,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                                   <AiInterviewProvider>
                                     <NotificationProvider>
                                       <SettingsDialog open={isSettingsOpen} onOpenChange={handleSettingsOpenChange} initialTab={searchParams.get('tab') || 'Account'} />
+                                      <CommandMenu open={isCommandMenuOpen} onOpenChange={setIsCommandMenuOpen} />
                                       {children}
                                       <Toaster />
                                     </NotificationProvider>

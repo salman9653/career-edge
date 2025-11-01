@@ -6,7 +6,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { Home, Package, User, Users, Users2, LineChart, Search, Settings, LogOut, Moon, Sun, Briefcase, Library, FileCheck, ClipboardList, BookUser, Book, BookCopy, CreditCard, TicketPercent, Palette, Laptop, Check, ChevronRight, HelpCircle, MessageSquare, Sparkles, PanelLeft, AppWindow, Bell, FileText as ResumeIcon, Command } from "lucide-react"
 import { useTheme as useNextTheme } from "next-themes"
-import { useState, useContext, useTransition } from "react"
+import { useState, useContext, useTransition, useEffect } from "react"
 import { useTheme } from "@/context/dashboard-theme-context"
 import { formatDistanceToNow } from 'date-fns'
 
@@ -26,7 +26,7 @@ import {
     DropdownMenuSubTrigger,
     DropdownMenuPortal,
     DropdownMenuSubContent
-  } from "@/components/ui/dropdown-menu"
+  } from "./ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import type { UserSession } from "@/hooks/use-session"
 import { DashboardLayoutWrapper } from "@/app/dashboard/layout-wrapper"
@@ -218,6 +218,12 @@ const SidebarContent = ({ role, user }: DashboardSidebarProps) => {
     const openAppearanceSettings = () => router.push(pathname + '?settings=true&tab=Appearance');
     const openAccountSettings = () => router.push(pathname + '?settings=true&tab=Account');
 
+    const handleSearchClick = () => {
+        // This will be handled by the layout component
+        const event = new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true });
+        document.dispatchEvent(event);
+    }
+
     return (
         <div className="flex h-full max-h-screen flex-col gap-2">
             <div className="flex h-16 items-center gap-3 px-4 lg:px-6 py-12">
@@ -225,14 +231,14 @@ const SidebarContent = ({ role, user }: DashboardSidebarProps) => {
             </div>
             <div className="flex-1 overflow-auto py-2">
                  <div className="px-4 mb-4">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input type="search" placeholder="Search..." className="pl-9 w-full themed-clear-button rounded-full" />
-                         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                    <Button variant="outline" className="w-full justify-start text-muted-foreground" onClick={handleSearchClick}>
+                        <Search className="mr-2 h-4 w-4" />
+                        Search...
+                        <div className="ml-auto flex items-center gap-1">
                             <Kbd><Command className="h-3 w-3" /></Kbd>
                             <Kbd>K</Kbd>
                         </div>
-                    </div>
+                    </Button>
                 </div>
                 <nav className="grid items-start px-2 text-sm font-medium lg:px-4 gap-2">
                     {navItems.map((item) => (
