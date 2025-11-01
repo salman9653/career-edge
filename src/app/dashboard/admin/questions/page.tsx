@@ -1,7 +1,7 @@
 
 
 'use client';
-import { useContext } from 'react';
+import { useContext, useMemo } from 'react';
 import { useSession } from '@/hooks/use-session';
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { QuestionsTable } from '@/components/questions/questions-table';
@@ -11,6 +11,10 @@ import { MobileSearch } from '@/components/mobile-search';
 export default function QuestionLibraryPage() {
   const { session, loading } = useSession();
   const { questions, loading: questionsLoading } = useContext(QuestionContext);
+
+  const libraryQuestions = useMemo(() => {
+    return questions.filter(q => q.libraryType === 'library');
+  }, [questions]);
 
   if (loading) {
     return (
@@ -48,7 +52,7 @@ export default function QuestionLibraryPage() {
             <MobileSearch />
         </header>
         <main className="flex flex-1 flex-col gap-2 overflow-hidden p-4 md:p-6">
-            <QuestionsTable questions={questions} loading={questionsLoading} context="admin" showAddButton={true} />
+            <QuestionsTable questions={libraryQuestions} loading={questionsLoading} context="admin" showAddButton={true} />
         </main>
       </div>
     </div>
