@@ -397,7 +397,6 @@ export function CandidatesTable() {
                                     />
                                 ) : 'S.No.'}
                             </TableHead>
-                            <TableHead className="w-[80px] font-bold py-4">Avatar</TableHead>
                             <TableHead className="font-bold py-4">
                                 <button onClick={() => requestSort('name')} className="group flex items-center gap-2">
                                     Candidate Name
@@ -423,7 +422,6 @@ export function CandidatesTable() {
                             Array.from({length: 5}).map((_, index) => (
                                 <TableRow key={index}>
                                     <TableCell className="pl-6"><Skeleton className="h-5 w-5" /></TableCell>
-                                    <TableCell><Skeleton className="h-10 w-10 rounded-full" /></TableCell>
                                     <TableCell><Skeleton className="h-5 w-48" /></TableCell>
                                     <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-5 w-24" /></TableCell>
@@ -444,13 +442,15 @@ export function CandidatesTable() {
                                             index + 1
                                         )}
                                     </TableCell>
-                                    <TableCell className="w-[80px]">
-                                        <Avatar>
-                                            {candidate.avatar && <AvatarImage src={candidate.avatar} alt={`${candidate.name} avatar`} data-ai-hint="person avatar" />}
-                                            <AvatarFallback>{getInitials(candidate.name)}</AvatarFallback>
-                                        </Avatar>
+                                    <TableCell>
+                                        <div className="flex items-center gap-3">
+                                            <Avatar className="h-10 w-10">
+                                                {candidate.avatar && <AvatarImage src={candidate.avatar} alt={`${candidate.name} avatar`} data-ai-hint="person avatar" />}
+                                                <AvatarFallback>{getInitials(candidate.name)}</AvatarFallback>
+                                            </Avatar>
+                                            <span className="font-medium">{candidate.name}</span>
+                                        </div>
                                     </TableCell>
-                                    <TableCell className="font-medium">{candidate.name}</TableCell>
                                     <TableCell>
                                         <Badge variant={getStatusVariant(candidate.status)}>{candidate.status}</Badge>
                                     </TableCell>
@@ -465,7 +465,7 @@ export function CandidatesTable() {
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center h-24">
+                                <TableCell colSpan={5} className="text-center h-24">
                                     {searchQuery ? `No candidates found for "${searchQuery}"` : 'No candidates found.'}
                                 </TableCell>
                             </TableRow>
