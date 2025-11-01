@@ -13,6 +13,7 @@ import { ArrowLeft, Loader2, Download, Edit } from 'lucide-react';
 import type { GeneratedResume } from '@/ai/flows/generate-ats-resume-flow-types';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { cn } from '@/lib/utils';
 
 export default function GeneratedResumePage() {
     const { session } = useSession();
@@ -92,27 +93,25 @@ export default function GeneratedResumePage() {
                         </Button>
                         <h1 className="font-headline text-xl font-semibold">{resume.name}</h1>
                     </div>
+                    <div className="flex items-center gap-2 print:hidden">
+                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => toast({title: "Edit not implemented"})}>
+                            <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={handlePrint}>
+                            <Download className="h-4 w-4" />
+                        </Button>
+                    </div>
                 </header>
                 <main className="flex-1 overflow-auto custom-scrollbar p-4 md:p-8 bg-secondary">
-                    <div className="force-light">
-                        <Card id="printable-resume" className="max-w-[8.5in] min-h-[11in] mx-auto bg-card shadow-lg relative group print:shadow-none print:border-none">
-                            <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity print:hidden">
-                                <Button variant="outline" size="icon" className="h-8 w-8" disabled>
-                                    <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={handlePrint}>
-                                    <Download className="h-4 w-4" />
-                                </Button>
-                            </div>
-                            <CardContent className="p-12">
-                                <article className="prose max-w-full prose-sm md:prose-base">
-                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                        {resume.markdownContent}
-                                    </ReactMarkdown>
-                                </article>
-                            </CardContent>
-                        </Card>
-                    </div>
+                    <Card id="printable-resume" className={cn("force-light max-w-[8.5in] min-h-[11in] mx-auto bg-card shadow-lg print:shadow-none print:border-none")}>
+                        <CardContent className="p-12">
+                            <article className="prose max-w-full prose-sm md:prose-base">
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                    {resume.markdownContent}
+                                </ReactMarkdown>
+                            </article>
+                        </CardContent>
+                    </Card>
                 </main>
             </div>
         </div>

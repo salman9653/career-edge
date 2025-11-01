@@ -17,17 +17,17 @@
   }
   @page {
     size: A4;
-    margin: 2cm;
+    margin: 0;
   }
 
   /* Page break control */
   h1, h2, h3, h4, h5, h6, p, ul, li {
-    break-inside: avoid;
+    page-break-inside: avoid;
   }
 }
 
 .force-light {
-    --background: 210 40% 98%;
+    --background: 210 40% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 210 40% 100%;
     --card-foreground: 222.2 84% 4.9%;
@@ -43,24 +43,24 @@
     --accent-foreground: 222.2 47.4% 11.2%;
     --border: 210 40% 90%;
     --input: 210 40% 92%;
-    background-color: hsl(var(--background)) !important;
-    color: hsl(var(--foreground)) !important;
+    background-color: hsl(var(--card)) !important;
+    color: hsl(var(--card-foreground)) !important;
 }
 
 .force-light .prose {
-    --tw-prose-body: hsl(var(--foreground));
-    --tw-prose-headings: hsl(var(--foreground));
+    --tw-prose-body: hsl(var(--card-foreground));
+    --tw-prose-headings: hsl(var(--card-foreground));
     --tw-prose-lead: hsl(var(--muted-foreground));
     --tw-prose-links: hsl(var(--primary));
-    --tw-prose-bold: hsl(var(--foreground));
+    --tw-prose-bold: hsl(var(--card-foreground));
     --tw-prose-counters: hsl(var(--muted-foreground));
     --tw-prose-bullets: hsl(var(--muted-foreground));
     --tw-prose-hr: hsl(var(--border));
-    --tw-prose-quotes: hsl(var(--foreground));
+    --tw-prose-quotes: hsl(var(--card-foreground));
     --tw-prose-quote-borders: hsl(var(--border));
     --tw-prose-captions: hsl(var(--muted-foreground));
-    --tw-prose-code: hsl(var(--foreground));
-    --tw-prose-pre-code: hsl(var(--foreground));
+    --tw-prose-code: hsl(var(--card-foreground));
+    --tw-prose-pre-code: hsl(var(--card-foreground));
     --tw-prose-pre-bg: hsl(var(--muted));
     --tw-prose-th-borders: hsl(var(--border));
     --tw-prose-td-borders: hsl(var(--border));
