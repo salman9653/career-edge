@@ -180,7 +180,7 @@ export function ResumesTable() {
                                     <div className="flex-1 min-w-0">
                                         <p className="font-semibold truncate">{resume.name}</p>
                                         <p className="text-sm text-muted-foreground">
-                                            Generated on {formatDate(resume.createdAt)}
+                                            {formatDate(resume.createdAt)}
                                         </p>
                                     </div>
                                 </CardContent>
@@ -190,7 +190,7 @@ export function ResumesTable() {
                                     <Checkbox
                                         checked={selectedResumes.includes(resume.id)}
                                         onCheckedChange={(checked) => handleRowSelect(resume.id, !!checked)}
-                                        className="bg-background border-muted-foreground data-[state=checked]:border-dash-primary h-5 w-5"
+                                        className="bg-background border-dash-primary data-[state=checked]:border-dash-primary h-5 w-5"
                                     />
                                 </div>
                             )}
