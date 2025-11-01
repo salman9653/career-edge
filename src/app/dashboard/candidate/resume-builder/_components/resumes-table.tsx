@@ -191,7 +191,7 @@ export function ResumesTable() {
                     ))}
                 </div>
             ) : filteredResumes.length > 0 ? (
-                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
                     {filteredResumes.map((resume) => (
                         <ContextMenu key={resume.id}>
                             <ContextMenuTrigger>
@@ -222,10 +222,6 @@ export function ResumesTable() {
                                 </div>
                             </ContextMenuTrigger>
                             <ContextMenuContent>
-                                <ContextMenuItem onSelect={() => setDeleteTarget(resume.id)} className="text-destructive focus:text-destructive">
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Delete
-                                </ContextMenuItem>
                                 <ContextMenuItem disabled>
                                     <Pen className="mr-2 h-4 w-4" />
                                     Edit
@@ -233,6 +229,10 @@ export function ResumesTable() {
                                 <ContextMenuItem disabled>
                                     <Sparkles className="mr-2 h-4 w-4" />
                                     Analyze
+                                </ContextMenuItem>
+                                <ContextMenuItem onSelect={() => setDeleteTarget(resume.id)} className="text-destructive focus:text-destructive">
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    Delete
                                 </ContextMenuItem>
                             </ContextMenuContent>
                         </ContextMenu>
