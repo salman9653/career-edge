@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { File, PlusCircle, Search, ArrowUpDown, MoreVertical, Trash2, Download, Edit } from 'lucide-react';
+import { File, PlusCircle, Search, ArrowUpDown, MoreVertical, Trash2, Download, Edit, ListTodo, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { format, formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -15,6 +15,8 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { GeneratedResumeContext } from '@/context/generated-resume-context';
 import type { GeneratedResume } from '@/ai/flows/generate-ats-resume-flow-types';
+import { Checkbox } from '@/components/ui/checkbox';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 type SortKey = 'name' | 'createdAt';
 
@@ -24,6 +26,9 @@ export function ResumesTable() {
     const { toast } = useToast();
     const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'createdAt', direction: 'descending' });
     const [searchQuery, setSearchQuery] = useState('');
+    const [isSearchFocused, setIsSearchFocused] = useState(false);
+    const [isSelectModeActive, setIsSelectModeActive] = useState(false);
+    const [selectedResumes, setSelectedResumes] = useState<string[]>([]);
 
     const requestSort = (key: SortKey) => {
         let direction: 'ascending' | 'descending' = 'descending';
@@ -68,33 +73,104 @@ export function ResumesTable() {
     }
 
     const handleRowClick = (resumeId: string) => {
-        router.push(`/dashboard/candidate/resumes/${resumeId}`);
+        if (isSelectModeActive) {
+            handleRowSelect(resumeId, !selectedResumes.includes(resumeId));
+        } else {
+            router.push(`/dashboard/candidate/resumes/${resumeId}`);
+        }
     };
+    
+    const toggleSelectMode = () => {
+        setIsSelectModeActive(!isSelectModeActive);
+        setSelectedResumes([]);
+    }
+
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) {
+            setSelectedResumes(filteredAndSortedResumes.map(r => r.id));
+        } else {
+            setSelectedResumes([]);
+        }
+    }
+
+    const handleRowSelect = (resumeId: string, checked: boolean) => {
+        if (checked) {
+            setSelectedResumes(prev => [...prev, resumeId]);
+        } else {
+            setSelectedResumes(prev => prev.filter(id => id !== resumeId));
+        }
+    }
+
 
     return (
         <div className="flex flex-col h-full gap-4">
             <div className="flex items-center gap-2">
-                <div className="relative flex-1">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        type="search"
-                        placeholder="Search resumes..."
-                        className="w-full rounded-lg bg-background pl-8"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </div>
-                 <Button size="sm" className="h-10 gap-1" asChild>
-                    <Link href="/dashboard/candidate/resume-builder/new">
-                        <PlusCircle className="h-3.5 w-3.5" /> Generate New
-                    </Link>
-                </Button>
+                 {isSelectModeActive ? (
+                    <>
+                        <div className="flex items-center gap-4 flex-1">
+                            <span className="text-sm font-medium">{selectedResumes.length} selected</span>
+                            <Button variant="ghost" size="sm" onClick={toggleSelectMode} className="h-10 gap-1 text-muted-foreground hover:text-foreground">
+                                <X className="h-4 w-4" />
+                                <span>Cancel</span>
+                            </Button>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="destructive" size="sm" className="h-10 gap-1" disabled>
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                        <span>Delete</span>
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader><AlertDialogTitle>Delete Not Implemented</AlertDialogTitle></AlertDialogHeader>
+                                    <AlertDialogFooter><AlertDialogCancel>OK</AlertDialogCancel></AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <div className={cn("relative", isSearchFocused ? "flex-1" : "md:flex-1")}>
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                type="search"
+                                placeholder="Search resumes..."
+                                className="w-full rounded-lg bg-background pl-8"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onFocus={() => setIsSearchFocused(true)}
+                                onBlur={() => setIsSearchFocused(false)}
+                            />
+                        </div>
+                        <div className={cn("flex items-center gap-2", isSearchFocused && "hidden md:flex")}>
+                             <Button variant="secondary" size="sm" onClick={toggleSelectMode} className="h-10 gap-1">
+                                <ListTodo className="h-3.5 w-3.5" />
+                                <span>Select</span>
+                            </Button>
+                            <Button size="sm" className="h-10 gap-1" asChild>
+                                <Link href="/dashboard/candidate/resume-builder/new">
+                                    <PlusCircle className="h-3.5 w-3.5" /> Generate New
+                                </Link>
+                            </Button>
+                        </div>
+                    </>
+                )}
             </div>
             <Card className="flex-1 overflow-hidden">
                 <div className="relative h-full overflow-auto custom-scrollbar">
                     <Table>
                         <TableHeader className="bg-muted/50 sticky top-0">
                             <TableRow>
+                                <TableHead className="w-[80px] font-bold py-4 pl-6">
+                                     {isSelectModeActive ? (
+                                        <Checkbox 
+                                            checked={selectedResumes.length > 0 && selectedResumes.length === filteredAndSortedResumes.length}
+                                            onCheckedChange={(checked) => handleSelectAll(!!checked)}
+                                            aria-label="Select all rows"
+                                        />
+                                    ) : 'S.No.'}
+                                </TableHead>
                                 <TableHead>
                                     <button onClick={() => requestSort('name')} className="group flex items-center gap-2">
                                         Resume Name {getSortIndicator('name')}
@@ -112,11 +188,22 @@ export function ResumesTable() {
                         <TableBody>
                             {loading ? (
                                 Array.from({ length: 3 }).map((_, index) => (
-                                    <TableRow key={index}><TableCell colSpan={4}><Skeleton className="h-5 w-full" /></TableCell></TableRow>
+                                    <TableRow key={index}><TableCell colSpan={5}><Skeleton className="h-5 w-full" /></TableCell></TableRow>
                                 ))
                             ) : filteredAndSortedResumes.length > 0 ? (
-                                filteredAndSortedResumes.map(resume => (
-                                    <TableRow key={resume.id} onClick={() => handleRowClick(resume.id)} className="cursor-pointer">
+                                filteredAndSortedResumes.map((resume, index) => (
+                                    <TableRow key={resume.id} onClick={() => handleRowClick(resume.id)} className="cursor-pointer" data-state={selectedResumes.includes(resume.id) && "selected"}>
+                                         <TableCell className="w-[80px] pl-6" onClick={(e) => {if(isSelectModeActive) e.stopPropagation()}}>
+                                            {isSelectModeActive ? (
+                                                <Checkbox
+                                                    checked={selectedResumes.includes(resume.id)}
+                                                    onCheckedChange={(checked) => handleRowSelect(resume.id, !!checked)}
+                                                    aria-label={`Select row ${index + 1}`}
+                                                />
+                                            ) : (
+                                                index + 1
+                                            )}
+                                        </TableCell>
                                         <TableCell className="font-medium">{resume.name}</TableCell>
                                         <TableCell className="max-w-xs truncate text-muted-foreground">{resume.jobDescription}</TableCell>
                                         <TableCell>{formatDate(resume.createdAt)}</TableCell>
@@ -128,7 +215,6 @@ export function ResumesTable() {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent>
-                                                    <DropdownMenuItem onSelect={() => handleRowClick(resume.id)}><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>
                                                     <DropdownMenuItem disabled><Download className="mr-2 h-4 w-4" /> Download PDF</DropdownMenuItem>
                                                     <DropdownMenuItem className="text-destructive" disabled><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
                                                 </DropdownMenuContent>
@@ -138,7 +224,7 @@ export function ResumesTable() {
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={4} className="text-center h-24">
+                                    <TableCell colSpan={5} className="text-center h-24">
                                         You haven't generated any resumes yet.
                                     </TableCell>
                                 </TableRow>

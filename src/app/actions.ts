@@ -1374,26 +1374,3 @@ export async function generateAtsResumeAction(prevState: any, formData: FormData
         return { error: e.message || "An unexpected error occurred during AI generation." };
     }
 }
-
-export async function updateGeneratedResumeAction(prevState: any, formData: FormData) {
-    const userId = formData.get('userId') as string;
-    const resumeId = formData.get('resumeId') as string;
-    const content = formData.get('content') as string;
-
-    if (!userId || !resumeId || !content) {
-        return { error: 'Missing required information to update resume.' };
-    }
-
-    try {
-        const resumeRef = doc(db, `users/${userId}/generated-resumes`, resumeId);
-        await updateDoc(resumeRef, {
-            markdownContent: content,
-            updatedAt: serverTimestamp()
-        });
-        revalidatePath(`/dashboard/candidate/resumes/${resumeId}`);
-        return { success: true };
-    } catch (e: any) {
-        console.error('Error updating generated resume:', e);
-        return { error: e.message || 'Could not save your changes.' };
-    }
-}
