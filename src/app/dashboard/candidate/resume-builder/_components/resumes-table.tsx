@@ -130,8 +130,9 @@ export function ResumesTable() {
                         <div className="flex items-center gap-4 flex-1">
                             <Checkbox
                                 id="select-all"
-                                checked={selectedResumes.length > 0 && selectedResumes.length === filteredResumes.length}
+                                checked={filteredResumes.length > 0 && selectedResumes.length === filteredResumes.length}
                                 onCheckedChange={(checked) => handleSelectAll(!!checked)}
+                                aria-label="Select all"
                             />
                             <span className="text-sm font-medium">{selectedResumes.length} selected</span>
                             <Button variant="ghost" size="sm" onClick={toggleSelectMode} className="h-10 gap-1 text-muted-foreground hover:text-foreground">
@@ -237,8 +238,8 @@ export function ResumesTable() {
                                     )}
                                 </div>
                             </ContextMenuTrigger>
-                            <ContextMenuContent>
-                                 <ContextMenuItem onSelect={() => handleRename(resume)}>
+                             <ContextMenuContent>
+                                <ContextMenuItem onSelect={(e) => { e.preventDefault(); handleRename(resume); }}>
                                     <Pencil className="mr-2 h-4 w-4" />
                                     Rename
                                 </ContextMenuItem>
