@@ -4,7 +4,7 @@ import { useState, useMemo, useContext, useTransition } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Search, ListTodo, X, Trash2, Loader2, FileText, AlertTriangle, Pen, Sparkles } from 'lucide-react';
+import { PlusCircle, Search, ListTodo, X, Trash2, Loader2, FileText, AlertTriangle, Pen, Sparkles, Pencil } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
@@ -18,7 +18,8 @@ import { useSession } from '@/hooks/use-session';
 import { deleteGeneratedResumeAction } from '@/app/actions';
 import { FaRegFilePdf } from 'react-icons/fa';
 import { format } from 'date-fns';
-import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu';
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, ContextMenuSeparator } from '@/components/ui/context-menu';
+import { RenameResumeDialog } from './rename-resume-dialog';
 
 export function ResumesTable() {
     const { resumes, loading } = useContext(GeneratedResumeContext);
@@ -31,6 +32,9 @@ export function ResumesTable() {
     const [selectedResumes, setSelectedResumes] = useState<string[]>([]);
     const [isDeleting, startDeleteTransition] = useTransition();
     const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+
+    const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
+    const [renameTarget, setRenameTarget] = useState<GeneratedResume | null>(null);
 
     const filteredResumes = useMemo(() => {
         let items = [...resumes];
@@ -88,6 +92,11 @@ export function ResumesTable() {
         });
     }
 
+    const handleRename = (resume: GeneratedResume) => {
+        setRenameTarget(resume);
+        setIsRenameDialogOpen(true);
+    };
+
     return (
         <div className="flex flex-col h-full gap-4">
              <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
@@ -107,6 +116,13 @@ export function ResumesTable() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+            {renameTarget && (
+                <RenameResumeDialog
+                    resume={renameTarget}
+                    open={isRenameDialogOpen}
+                    onOpenChange={setIsRenameDialogOpen}
+                />
+            )}
 
             <div className="flex items-center gap-2">
                 {isSelectModeActive ? (
@@ -191,7 +207,7 @@ export function ResumesTable() {
                     ))}
                 </div>
             ) : filteredResumes.length > 0 ? (
-                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredResumes.map((resume) => (
                         <ContextMenu key={resume.id}>
                             <ContextMenuTrigger>
@@ -222,14 +238,15 @@ export function ResumesTable() {
                                 </div>
                             </ContextMenuTrigger>
                             <ContextMenuContent>
-                                <ContextMenuItem disabled>
-                                    <Pen className="mr-2 h-4 w-4" />
-                                    Edit
+                                 <ContextMenuItem onSelect={() => handleRename(resume)}>
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    Rename
                                 </ContextMenuItem>
                                 <ContextMenuItem disabled>
                                     <Sparkles className="mr-2 h-4 w-4" />
                                     Analyze
                                 </ContextMenuItem>
+                                <ContextMenuSeparator />
                                 <ContextMenuItem onSelect={() => setDeleteTarget(resume.id)} className="text-destructive focus:text-destructive">
                                     <Trash2 className="mr-2 h-4 w-4" />
                                     Delete

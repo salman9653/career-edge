@@ -1395,3 +1395,25 @@ export async function deleteGeneratedResumeAction(resumeId: string, userId: stri
     return { error: e.message || "An unexpected error occurred." };
   }
 }
+
+export async function renameGeneratedResumeAction(prevState: any, formData: FormData) {
+  const userId = formData.get('userId') as string;
+  const resumeId = formData.get('resumeId') as string;
+  const newName = formData.get('newName') as string;
+  
+  if (!userId || !resumeId || !newName) {
+    return { error: 'Missing required information.' };
+  }
+
+  try {
+    const docRef = doc(db, `users/${userId}/generated-resumes`, resumeId);
+    await updateDoc(docRef, {
+      name: newName,
+    });
+    revalidatePath('/dashboard/candidate/resume-builder');
+    return { success: true };
+  } catch (e: any) {
+    console.error('Error renaming resume:', e);
+    return { error: e.message || 'Could not rename the resume.' };
+  }
+}
