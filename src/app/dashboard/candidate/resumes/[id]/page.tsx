@@ -9,11 +9,12 @@ import { db } from '@/lib/firebase/config';
 import { DashboardSidebar } from '@/components/dashboard-sidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Loader2, Download, Edit } from 'lucide-react';
+import { ArrowLeft, Loader2, Download, Trash2 } from 'lucide-react';
 import type { GeneratedResume } from '@/ai/flows/generate-ats-resume-flow-types';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 export default function GeneratedResumePage() {
     const { session } = useSession();
@@ -23,6 +24,7 @@ export default function GeneratedResumePage() {
     
     const [resume, setResume] = useState<GeneratedResume | null>(null);
     const [loading, setLoading] = useState(true);
+    const { toast } = useToast();
 
     useEffect(() => {
         if(session?.uid && resumeId) {
@@ -93,17 +95,17 @@ export default function GeneratedResumePage() {
                         </Button>
                         <h1 className="font-headline text-xl font-semibold">{resume.name}</h1>
                     </div>
-                    <div className="flex items-center gap-2 print:hidden">
-                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => toast({title: "Edit not implemented"})}>
-                            <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={handlePrint}>
-                            <Download className="h-4 w-4" />
-                        </Button>
-                    </div>
                 </header>
                 <main className="flex-1 overflow-auto custom-scrollbar p-4 md:p-8 bg-secondary">
-                    <Card id="printable-resume" className={cn("force-light max-w-[8.5in] min-h-[11in] mx-auto bg-card shadow-lg print:shadow-none print:border-none")}>
+                    <Card id="printable-resume" className={cn("force-light max-w-[8.5in] min-h-[11in] mx-auto bg-card shadow-lg print:shadow-none print:border-none relative")}>
+                        <div className="absolute top-4 right-4 flex items-center gap-2 print:hidden">
+                            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => toast({title: "Delete not implemented"})}>
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                            <Button variant="outline" size="icon" className="h-8 w-8" onClick={handlePrint}>
+                                <Download className="h-4 w-4" />
+                            </Button>
+                        </div>
                         <CardContent className="p-12">
                             <article className="prose max-w-full prose-sm md:prose-base">
                                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
