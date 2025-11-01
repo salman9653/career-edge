@@ -97,7 +97,7 @@ export default function GeneratedResumePage() {
                     </div>
                 </header>
                 <main className="flex-1 overflow-auto custom-scrollbar p-4 md:p-8 bg-secondary">
-                    <Card id="printable-resume" className={cn("force-light max-w-[8.5in] min-h-[11in] mx-auto bg-card shadow-lg print:shadow-none print:border-none relative")}>
+                    <Card id="printable-resume" className={cn("force-light max-w-[8.5in] min-h-[11in] mx-auto shadow-lg print:shadow-none print:border-none relative")}>
                         <div className="absolute top-4 right-4 flex items-center gap-2 print:hidden">
                             <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => toast({title: "Delete not implemented"})}>
                                 <Trash2 className="h-4 w-4" />
@@ -107,7 +107,7 @@ export default function GeneratedResumePage() {
                             </Button>
                         </div>
                         <CardContent className="p-12">
-                            <article className="prose max-w-full prose-sm md:prose-base">
+                            <article className="prose max-w-full prose-sm md:prose-base prose-headings:font-headline prose-h1:text-4xl prose-h2:text-2xl prose-h3:text-xl">
                                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                                     {resume.markdownContent}
                                 </ReactMarkdown>
