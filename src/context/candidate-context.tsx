@@ -38,19 +38,19 @@ export const CandidateProvider = ({ children }: { children: ReactNode }) => {
         const q = query(candidatesCol, where('role', '==', 'candidate'));
 
         const unsubscribe = onSnapshot(q, async (snapshot) => {
-            const candidateListPromises = snapshot.docs.map(async (doc) => {
-                const data = doc.data();
+            const candidateListPromises = snapshot.docs.map(async (userDoc) => {
+                const data = userDoc.data();
                 
                 let avatarUrl = data.avatarUrl;
                 if (data.hasDisplayImage) {
-                    const imageDocSnap = await getDoc(doc(db, `users/${doc.id}/uploads/displayImage`));
+                    const imageDocSnap = await getDoc(doc(db, `users/${userDoc.id}/uploads/displayImage`));
                     if (imageDocSnap.exists()) {
                         avatarUrl = imageDocSnap.data().data;
                     }
                 }
 
                 return {
-                    id: doc.id,
+                    id: userDoc.id,
                     name: data.name || 'N/A',
                     email: data.email || 'N/A',
                     status: data.status || 'Active',

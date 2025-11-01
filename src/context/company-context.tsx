@@ -43,19 +43,19 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
         const q = query(companiesCol, where('role', '==', 'company'));
 
         const unsubscribe = onSnapshot(q, async (snapshot) => {
-            const companyListPromises = snapshot.docs.map(async (doc) => {
-                const data = doc.data();
+            const companyListPromises = snapshot.docs.map(async (companyDoc) => {
+                const data = companyDoc.data();
                 
                 let displayImageUrl = data.displayImageUrl;
                 if (data.hasDisplayImage) {
-                    const imageDocSnap = await getDoc(doc(db, `users/${doc.id}/uploads/displayImage`));
+                    const imageDocSnap = await getDoc(doc(db, `users/${companyDoc.id}/uploads/displayImage`));
                     if (imageDocSnap.exists()) {
                         displayImageUrl = imageDocSnap.data().data;
                     }
                 }
 
                 return {
-                    id: doc.id,
+                    id: companyDoc.id,
                     name: data.name || 'N/A',
                     email: data.email || 'N/A',
                     displayImageUrl,
