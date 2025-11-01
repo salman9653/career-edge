@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useMemo, useContext, useTransition } from 'react';
 import Link from 'next/link';
@@ -153,11 +154,11 @@ export function ResumesTable() {
             </div>
             
             {loading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
                     {Array.from({ length: 8 }).map((_, i) => (
-                        <Card key={i} className="p-4">
+                        <Card key={i} className="p-4 h-[120px]">
                             <div className="flex items-center gap-4">
-                                <Skeleton className="h-12 w-12" />
+                                <Skeleton className="h-16 w-16" />
                                 <div className="space-y-2 flex-1">
                                     <Skeleton className="h-4 w-3/4" />
                                     <Skeleton className="h-3 w-1/2" />
@@ -167,12 +168,12 @@ export function ResumesTable() {
                     ))}
                 </div>
             ) : filteredResumes.length > 0 ? (
-                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
                     {filteredResumes.map((resume) => (
                         <div key={resume.id} onClick={() => handleCardClick(resume.id)} className="relative group">
                             <Card className={cn(
-                                "hover:bg-accent transition-colors cursor-pointer min-h-[120px]",
-                                isSelectModeActive && selectedResumes.includes(resume.id) && "ring-2 ring-primary bg-accent"
+                                "hover:bg-accent transition-all duration-200 cursor-pointer h-[120px] flex items-center",
+                                isSelectModeActive && selectedResumes.includes(resume.id) && "ring-2 ring-dash-primary bg-accent"
                             )}>
                                 <CardContent className="p-6 flex items-center gap-6">
                                     <FaRegFilePdf className="h-16 w-16 text-muted-foreground flex-shrink-0" />
@@ -189,7 +190,7 @@ export function ResumesTable() {
                                     <Checkbox
                                         checked={selectedResumes.includes(resume.id)}
                                         onCheckedChange={(checked) => handleRowSelect(resume.id, !!checked)}
-                                        className="bg-background border-muted-foreground data-[state=checked]:border-primary h-5 w-5"
+                                        className="bg-background border-muted-foreground data-[state=checked]:border-dash-primary h-5 w-5"
                                     />
                                 </div>
                             )}
