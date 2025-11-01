@@ -94,23 +94,25 @@ export default function GeneratedResumePage() {
                     </div>
                 </header>
                 <main className="flex-1 overflow-auto custom-scrollbar p-4 md:p-8 bg-secondary">
-                    <Card id="printable-resume" className="max-w-[8.5in] min-h-[11in] mx-auto bg-card shadow-lg relative group print:shadow-none print:border-none">
-                        <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity print:hidden">
-                            <Button variant="outline" size="icon" className="h-8 w-8" disabled>
-                                <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="outline" size="icon" className="h-8 w-8" onClick={handlePrint}>
-                                <Download className="h-4 w-4" />
-                            </Button>
-                        </div>
-                        <CardContent className="p-12">
-                            <article className="prose dark:prose-invert max-w-full prose-sm md:prose-base">
-                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                    {resume.markdownContent}
-                                </ReactMarkdown>
-                            </article>
-                        </CardContent>
-                    </Card>
+                    <div className="light">
+                        <Card id="printable-resume" className="max-w-[8.5in] min-h-[11in] mx-auto bg-card shadow-lg relative group print:shadow-none print:border-none">
+                            <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity print:hidden">
+                                <Button variant="outline" size="icon" className="h-8 w-8" disabled>
+                                    <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={handlePrint}>
+                                    <Download className="h-4 w-4" />
+                                </Button>
+                            </div>
+                            <CardContent className="p-12">
+                                <article className="prose max-w-full prose-sm md:prose-base">
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                        {resume.markdownContent}
+                                    </ReactMarkdown>
+                                </article>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </main>
             </div>
         </div>
