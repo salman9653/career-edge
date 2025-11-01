@@ -153,7 +153,7 @@ export function ResumesTable() {
             </div>
             
             {loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {Array.from({ length: 8 }).map((_, i) => (
                         <Card key={i} className="p-4">
                             <div className="flex items-center gap-4">
@@ -167,15 +167,15 @@ export function ResumesTable() {
                     ))}
                 </div>
             ) : filteredResumes.length > 0 ? (
-                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {filteredResumes.map((resume) => (
                         <div key={resume.id} onClick={() => handleCardClick(resume.id)} className="relative group">
                             <Card className={cn(
-                                "hover:bg-accent transition-colors cursor-pointer",
+                                "hover:bg-accent transition-colors cursor-pointer min-h-[120px]",
                                 isSelectModeActive && selectedResumes.includes(resume.id) && "ring-2 ring-primary bg-accent"
                             )}>
                                 <CardContent className="p-6 flex items-center gap-6">
-                                    <FaRegFilePdf className="h-12 w-12 text-muted-foreground flex-shrink-0" />
+                                    <FaRegFilePdf className="h-16 w-16 text-muted-foreground flex-shrink-0" />
                                     <div className="flex-1 min-w-0">
                                         <p className="font-semibold truncate">{resume.name}</p>
                                         <p className="text-sm text-muted-foreground">
@@ -189,7 +189,7 @@ export function ResumesTable() {
                                     <Checkbox
                                         checked={selectedResumes.includes(resume.id)}
                                         onCheckedChange={(checked) => handleRowSelect(resume.id, !!checked)}
-                                        className="bg-background border-muted-foreground data-[state=checked]:border-primary"
+                                        className="bg-background border-muted-foreground data-[state=checked]:border-primary h-5 w-5"
                                     />
                                 </div>
                             )}
