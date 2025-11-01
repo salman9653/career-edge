@@ -4,7 +4,7 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { Home, Package, User, Users, Users2, LineChart, Search, Settings, LogOut, Moon, Sun, Briefcase, Library, FileCheck, ClipboardList, BookUser, Book, BookCopy, CreditCard, TicketPercent, Palette, Laptop, Check, ChevronRight, HelpCircle, MessageSquare, Sparkles, PanelLeft, AppWindow, Bell, FileText as ResumeIcon } from "lucide-react"
+import { Home, Package, User, Users, Users2, LineChart, Search, Settings, LogOut, Moon, Sun, Briefcase, Library, FileCheck, ClipboardList, BookUser, Book, BookCopy, CreditCard, TicketPercent, Palette, Laptop, Check, ChevronRight, HelpCircle, MessageSquare, Sparkles, PanelLeft, AppWindow, Bell, FileText as ResumeIcon, Command } from "lucide-react"
 import { useTheme as useNextTheme } from "next-themes"
 import { useState, useContext, useTransition } from "react"
 import { useTheme } from "@/context/dashboard-theme-context"
@@ -38,6 +38,7 @@ import { useNotifications } from "@/context/notification-context"
 import { ScrollArea } from "./ui/scroll-area"
 import { Badge } from "./ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip"
+import { Kbd } from "./ui/kbd"
 
 const candidateNavItems: NavItem[] = [
     { href: "/dashboard", label: "Dashboard", icon: Home },
@@ -225,8 +226,12 @@ const SidebarContent = ({ role, user }: DashboardSidebarProps) => {
             <div className="flex-1 overflow-auto py-2">
                  <div className="px-4 mb-4">
                     <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-dash-primary" />
-                        <Input type="search" placeholder="Search anything" className="pl-9 w-full themed-clear-button rounded-full" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input type="search" placeholder="Search..." className="pl-9 w-full themed-clear-button rounded-full" />
+                         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                            <Kbd><Command className="h-3 w-3" /></Kbd>
+                            <Kbd>K</Kbd>
+                        </div>
                     </div>
                 </div>
                 <nav className="grid items-start px-2 text-sm font-medium lg:px-4 gap-2">
