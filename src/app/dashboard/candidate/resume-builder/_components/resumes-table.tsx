@@ -17,6 +17,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useSession } from '@/hooks/use-session';
 import { deleteGeneratedResumeAction } from '@/app/actions';
 import { FaRegFilePdf } from 'react-icons/fa';
+import { format } from 'date-fns';
 
 export function ResumesTable() {
     const { resumes, loading } = useContext(GeneratedResumeContext);
@@ -37,9 +38,20 @@ export function ResumesTable() {
             );
         }
         // Sort by creation date descending
-        items.sort((a, b) => new Date(b.createdAt.seconds * 1000).getTime() - new Date(a.createdAt.seconds * 1000).getTime());
+        items.sort((a, b) => {
+            if (a.createdAt?.seconds && b.createdAt?.seconds) {
+                return b.createdAt.seconds - a.createdAt.seconds;
+            }
+            return 0;
+        });
         return items;
     }, [resumes, searchQuery]);
+    
+    const formatDate = (date: any) => {
+        if (!date) return 'N/A';
+        const jsDate = date.toDate ? date.toDate() : new Date(date);
+        return format(jsDate, "dd MMM yyyy");
+    }
 
     const toggleSelectMode = () => {
         setIsSelectModeActive(!isSelectModeActive);
@@ -142,21 +154,33 @@ export function ResumesTable() {
             </div>
             
             {loading ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    {Array.from({ length: 6 }).map((_, i) => (
-                        <Card key={i} className="aspect-[4/5] flex flex-col items-center justify-center p-4">
-                            <Skeleton className="h-12 w-12" />
-                            <Skeleton className="h-4 w-20 mt-4" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                        <Card key={i} className="p-4">
+                            <div className="flex items-center gap-4">
+                                <Skeleton className="h-8 w-8" />
+                                <div className="space-y-2 flex-1">
+                                    <Skeleton className="h-4 w-3/4" />
+                                    <Skeleton className="h-3 w-1/2" />
+                                </div>
+                            </div>
                         </Card>
                     ))}
                 </div>
             ) : filteredResumes.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {filteredResumes.map((resume) => (
                         <div key={resume.id} onClick={() => handleCardClick(resume.id)} className="relative group">
-                            <Card className="aspect-[4/5] flex flex-col items-center justify-center p-4 hover:bg-accent transition-colors cursor-pointer">
-                                <FaRegFilePdf className="h-12 w-12 text-muted-foreground" />
-                                <p className="mt-4 text-sm font-medium text-center line-clamp-2">{resume.name}</p>
+                            <Card className="hover:bg-accent transition-colors cursor-pointer">
+                                <CardContent className="p-4 flex items-center gap-4">
+                                    <FaRegFilePdf className="h-8 w-8 text-muted-foreground flex-shrink-0" />
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-semibold truncate">{resume.name}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            Generated on {formatDate(resume.createdAt)}
+                                        </p>
+                                    </div>
+                                </CardContent>
                             </Card>
                              {isSelectModeActive && (
                                 <div className="absolute top-2 left-2" onClick={(e) => e.stopPropagation()}>
