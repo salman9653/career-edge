@@ -106,7 +106,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
         {commandGroups.map((group) => (
           <CommandGroup key={group.heading} heading={group.heading}>
             {group.commands.map(({ icon: Icon, label, action }) => (
-              <CommandItem key={label} onSelect={action}>
+              <CommandItem key={label} onSelect={() => runCommand(action)} value={label}>
                 <Icon className="mr-2 h-4 w-4" />
                 <span>{label}</span>
               </CommandItem>
