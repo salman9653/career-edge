@@ -4,10 +4,8 @@ import { useState, useMemo, useContext, useTransition } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { File, PlusCircle, Search, ArrowUpDown, MoreVertical, Trash2, Download, ListTodo, X, Loader2, FileText } from 'lucide-react';
+import { PlusCircle, Search, ListTodo, X, Trash2, Loader2, FileText, AlertTriangle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { format, formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -18,82 +16,158 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useSession } from '@/hooks/use-session';
 import { deleteGeneratedResumeAction } from '@/app/actions';
-
-type SortKey = 'name' | 'createdAt';
+import { FaRegFilePdf } from 'react-icons/fa';
 
 export function ResumesTable() {
     const { resumes, loading } = useContext(GeneratedResumeContext);
     const router = useRouter();
     const { session } = useSession();
     const { toast } = useToast();
-    const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'createdAt', direction: 'descending' });
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearchFocused, setIsSearchFocused] = useState(false);
-    
-    const filteredAndSortedResumes = useMemo(() => {
-        let sortableItems = [...resumes];
+    const [isSelectModeActive, setIsSelectModeActive] = useState(false);
+    const [selectedResumes, setSelectedResumes] = useState<string[]>([]);
+    const [isDeleting, startDeleteTransition] = useTransition();
+
+    const filteredResumes = useMemo(() => {
+        let items = [...resumes];
         if (searchQuery) {
-            sortableItems = sortableItems.filter(resume =>
-                resume.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                resume.jobDescription.toLowerCase().includes(searchQuery.toLowerCase())
+            items = items.filter(resume =>
+                resume.name.toLowerCase().includes(searchQuery.toLowerCase())
             );
         }
+        // Sort by creation date descending
+        items.sort((a, b) => new Date(b.createdAt.seconds * 1000).getTime() - new Date(a.createdAt.seconds * 1000).getTime());
+        return items;
+    }, [resumes, searchQuery]);
 
-        if (sortConfig !== null) {
-            sortableItems.sort((a, b) => {
-                const aValue = a[sortConfig.key];
-                const bValue = b[sortConfig.key];
-                
-                if (aValue < bValue) return sortConfig.direction === 'ascending' ? -1 : 1;
-                if (aValue > bValue) return sortConfig.direction === 'ascending' ? 1 : -1;
-                return 0;
-            });
+    const toggleSelectMode = () => {
+        setIsSelectModeActive(!isSelectModeActive);
+        setSelectedResumes([]);
+    }
+
+    const handleSelectAll = (checked: boolean) => {
+        setSelectedResumes(checked ? filteredResumes.map(r => r.id) : []);
+    };
+    
+    const handleRowSelect = (resumeId: string, checked: boolean) => {
+        setSelectedResumes(prev => checked ? [...prev, resumeId] : prev.filter(id => id !== resumeId));
+    };
+
+    const handleCardClick = (resumeId: string) => {
+        if (isSelectModeActive) {
+            handleRowSelect(resumeId, !selectedResumes.includes(resumeId));
+        } else {
+            router.push(`/dashboard/candidate/resumes/${resumeId}`);
         }
-        return sortableItems;
-    }, [resumes, searchQuery, sortConfig]);
+    }
+
+    const handleBulkDelete = () => {
+        if (!session?.uid || selectedResumes.length === 0) return;
+        startDeleteTransition(async () => {
+            for (const resumeId of selectedResumes) {
+                await deleteGeneratedResumeAction(resumeId, session.uid);
+            }
+            toast({ title: `${selectedResumes.length} resume(s) deleted.` });
+            setSelectedResumes([]);
+            setIsSelectModeActive(false);
+        });
+    }
 
     return (
         <div className="flex flex-col h-full gap-4">
             <div className="flex items-center gap-2">
-                <div className={cn("relative", isSearchFocused ? "flex-1" : "md:flex-1")}>
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        type="search"
-                        placeholder="Search resumes..."
-                        className="w-full rounded-lg bg-background pl-8"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onFocus={() => setIsSearchFocused(true)}
-                        onBlur={() => setIsSearchFocused(false)}
-                    />
-                </div>
-                <div className={cn("flex items-center gap-2", isSearchFocused && "hidden md:flex")}>
-                    <Button size="sm" className="h-10 gap-1" asChild>
-                        <Link href="/dashboard/candidate/resume-builder/new">
-                            <PlusCircle className="h-3.5 w-3.5" /> Generate New
-                        </Link>
-                    </Button>
-                </div>
+                {isSelectModeActive ? (
+                    <>
+                        <div className="flex items-center gap-4 flex-1">
+                            <Checkbox
+                                id="select-all"
+                                checked={selectedResumes.length > 0 && selectedResumes.length === filteredResumes.length}
+                                onCheckedChange={(checked) => handleSelectAll(!!checked)}
+                            />
+                            <span className="text-sm font-medium">{selectedResumes.length} selected</span>
+                            <Button variant="ghost" size="sm" onClick={toggleSelectMode} className="h-10 gap-1 text-muted-foreground hover:text-foreground">
+                                <X className="h-4 w-4" />
+                                <span>Cancel</span>
+                            </Button>
+                        </div>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="destructive" size="sm" className="h-10 gap-1" disabled={selectedResumes.length === 0 || isDeleting}>
+                                    {isDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                                    <span>Delete</span>
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This will permanently delete {selectedResumes.length} resume(s). This action cannot be undone.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleBulkDelete} disabled={isDeleting}>Delete</AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </>
+                ) : (
+                    <>
+                        <div className={cn("relative", isSearchFocused ? "flex-1" : "md:flex-1")}>
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                type="search"
+                                placeholder="Search resumes..."
+                                className="w-full rounded-lg bg-background pl-8"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onFocus={() => setIsSearchFocused(true)}
+                                onBlur={() => setIsSearchFocused(false)}
+                            />
+                        </div>
+                        <div className={cn("flex items-center gap-2", isSearchFocused && "hidden md:flex")}>
+                            <Button variant="secondary" size="sm" onClick={toggleSelectMode} className="h-10 gap-1">
+                                <ListTodo className="h-3.5 w-3.5" />
+                                <span>Select</span>
+                            </Button>
+                            <Button size="sm" className="h-10 gap-1" asChild>
+                                <Link href="/dashboard/candidate/resume-builder/new">
+                                    <PlusCircle className="h-3.5 w-3.5" /> Generate New
+                                </Link>
+                            </Button>
+                        </div>
+                    </>
+                )}
             </div>
             
             {loading ? (
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                     {Array.from({ length: 6 }).map((_, i) => (
-                        <Card key={i} className="aspect-square flex flex-col items-center justify-center p-4">
+                        <Card key={i} className="aspect-[4/5] flex flex-col items-center justify-center p-4">
                             <Skeleton className="h-12 w-12" />
                             <Skeleton className="h-4 w-20 mt-4" />
                         </Card>
                     ))}
                 </div>
-            ) : filteredAndSortedResumes.length > 0 ? (
+            ) : filteredResumes.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    {filteredAndSortedResumes.map((resume) => (
-                        <Link key={resume.id} href={`/dashboard/candidate/resumes/${resume.id}`}>
-                            <Card className="aspect-square flex flex-col items-center justify-center p-4 hover:bg-accent transition-colors cursor-pointer">
-                                <FileText className="h-12 w-12 text-muted-foreground" />
+                    {filteredResumes.map((resume) => (
+                        <div key={resume.id} onClick={() => handleCardClick(resume.id)} className="relative group">
+                            <Card className="aspect-[4/5] flex flex-col items-center justify-center p-4 hover:bg-accent transition-colors cursor-pointer">
+                                <FaRegFilePdf className="h-12 w-12 text-muted-foreground" />
                                 <p className="mt-4 text-sm font-medium text-center line-clamp-2">{resume.name}</p>
                             </Card>
-                        </Link>
+                             {isSelectModeActive && (
+                                <div className="absolute top-2 left-2" onClick={(e) => e.stopPropagation()}>
+                                    <Checkbox
+                                        checked={selectedResumes.includes(resume.id)}
+                                        onCheckedChange={(checked) => handleRowSelect(resume.id, !!checked)}
+                                        className="bg-background"
+                                    />
+                                </div>
+                            )}
+                        </div>
                     ))}
                 </div>
             ) : (
