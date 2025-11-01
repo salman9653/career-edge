@@ -215,13 +215,12 @@ export function ResumesTable() {
                                         Date Created {getSortIndicator('createdAt')}
                                     </button>
                                 </TableHead>
-                                <TableHead className="text-right pr-6">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {loading ? (
                                 Array.from({ length: 3 }).map((_, index) => (
-                                    <TableRow key={index}><TableCell colSpan={5}><Skeleton className="h-5 w-full" /></TableCell></TableRow>
+                                    <TableRow key={index}><TableCell colSpan={4}><Skeleton className="h-5 w-full" /></TableCell></TableRow>
                                 ))
                             ) : filteredAndSortedResumes.length > 0 ? (
                                 filteredAndSortedResumes.map((resume, index) => (
@@ -240,43 +239,11 @@ export function ResumesTable() {
                                         <TableCell className="font-medium">{resume.name}</TableCell>
                                         <TableCell className="max-w-xs truncate text-muted-foreground">{resume.jobDescription}</TableCell>
                                         <TableCell>{formatDate(resume.createdAt)}</TableCell>
-                                        <TableCell className="text-right pr-4">
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
-                                                        <MoreVertical className="h-4 w-4" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent>
-                                                    <DropdownMenuItem onClick={() => window.print()}><Download className="mr-2 h-4 w-4" /> Download PDF</DropdownMenuItem>
-                                                    <AlertDialog>
-                                                        <AlertDialogTrigger asChild>
-                                                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
-                                                                <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                                            </DropdownMenuItem>
-                                                        </AlertDialogTrigger>
-                                                        <AlertDialogContent>
-                                                            <AlertDialogHeader>
-                                                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                                                <AlertDialogDescription>This action cannot be undone. This will permanently delete this resume.</AlertDialogDescription>
-                                                            </AlertDialogHeader>
-                                                            <AlertDialogFooter>
-                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                                <AlertDialogAction onClick={() => handleDelete([resume.id])} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90">
-                                                                     {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                                                    Delete
-                                                                </AlertDialogAction>
-                                                            </AlertDialogFooter>
-                                                        </AlertDialogContent>
-                                                    </AlertDialog>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </TableCell>
                                     </TableRow>
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="text-center h-24">
+                                    <TableCell colSpan={4} className="text-center h-24">
                                         You haven't generated any resumes yet.
                                     </TableCell>
                                 </TableRow>
