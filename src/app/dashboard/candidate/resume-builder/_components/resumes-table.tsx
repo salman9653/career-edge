@@ -1,12 +1,12 @@
 
 'use client';
-import { useState, useMemo, useContext } from 'react';
+import { useState, useMemo, useContext, useTransition } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { File, PlusCircle, Search, ArrowUpDown, MoreVertical, Trash2, Download, Edit, ListTodo, X } from 'lucide-react';
+import { File, PlusCircle, Search, ArrowUpDown, MoreVertical, Trash2, Download, ListTodo, X, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { format, formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -17,18 +17,22 @@ import { GeneratedResumeContext } from '@/context/generated-resume-context';
 import type { GeneratedResume } from '@/ai/flows/generate-ats-resume-flow-types';
 import { Checkbox } from '@/components/ui/checkbox';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { useSession } from '@/hooks/use-session';
+import { deleteGeneratedResumeAction } from '@/app/actions';
 
 type SortKey = 'name' | 'createdAt';
 
 export function ResumesTable() {
     const { resumes, loading } = useContext(GeneratedResumeContext);
     const router = useRouter();
+    const { session } = useSession();
     const { toast } = useToast();
     const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'createdAt', direction: 'descending' });
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearchFocused, setIsSearchFocused] = useState(false);
     const [isSelectModeActive, setIsSelectModeActive] = useState(false);
     const [selectedResumes, setSelectedResumes] = useState<string[]>([]);
+    const [isDeleting, startDeleteTransition] = useTransition();
 
     const requestSort = (key: SortKey) => {
         let direction: 'ascending' | 'descending' = 'descending';
@@ -100,6 +104,28 @@ export function ResumesTable() {
             setSelectedResumes(prev => prev.filter(id => id !== resumeId));
         }
     }
+    
+    const handleDelete = (resumeIds: string[]) => {
+        if (!session?.uid) {
+            toast({ variant: "destructive", title: "Error", description: "You must be logged in to delete resumes." });
+            return;
+        }
+        startDeleteTransition(async () => {
+            let errorOccurred = false;
+            for (const resumeId of resumeIds) {
+                const result = await deleteGeneratedResumeAction(resumeId, session.uid);
+                if (result.error) {
+                    errorOccurred = true;
+                    toast({ variant: "destructive", title: "Deletion Failed", description: `Could not delete resume ${resumeId}. ${result.error}` });
+                }
+            }
+            if (!errorOccurred) {
+                toast({ title: "Resumes Deleted", description: `${resumeIds.length} resume(s) have been successfully deleted.` });
+            }
+            setSelectedResumes([]);
+            setIsSelectModeActive(false);
+        });
+    };
 
 
     return (
@@ -114,20 +140,27 @@ export function ResumesTable() {
                                 <span>Cancel</span>
                             </Button>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                    <Button variant="destructive" size="sm" className="h-10 gap-1" disabled>
-                                        <Trash2 className="h-3.5 w-3.5" />
-                                        <span>Delete</span>
-                                    </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader><AlertDialogTitle>Delete Not Implemented</AlertDialogTitle></AlertDialogHeader>
-                                    <AlertDialogFooter><AlertDialogCancel>OK</AlertDialogCancel></AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
-                        </div>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="destructive" size="sm" className="h-10 gap-1" disabled={selectedResumes.length === 0}>
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                    <span>Delete</span>
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>This will permanently delete {selectedResumes.length} selected resume(s).</AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDelete(selectedResumes)} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90">
+                                         {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                         Delete
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                     </>
                 ) : (
                     <>
@@ -215,8 +248,27 @@ export function ResumesTable() {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent>
-                                                    <DropdownMenuItem disabled><Download className="mr-2 h-4 w-4" /> Download PDF</DropdownMenuItem>
-                                                    <DropdownMenuItem className="text-destructive" disabled><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => window.print()}><Download className="mr-2 h-4 w-4" /> Download PDF</DropdownMenuItem>
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
+                                                                <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                                            </DropdownMenuItem>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                                <AlertDialogDescription>This action cannot be undone. This will permanently delete this resume.</AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                <AlertDialogAction onClick={() => handleDelete([resume.id])} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90">
+                                                                     {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                                                    Delete
+                                                                </AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </TableCell>

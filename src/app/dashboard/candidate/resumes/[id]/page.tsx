@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from '@/hooks/use-session';
 import { doc, getDoc } from 'firebase/firestore';
@@ -9,12 +9,24 @@ import { db } from '@/lib/firebase/config';
 import { DashboardSidebar } from '@/components/dashboard-sidebar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Loader2, Download, Trash2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Download, Trash2, AlertTriangle } from 'lucide-react';
 import type { GeneratedResume } from '@/ai/flows/generate-ats-resume-flow-types';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { deleteGeneratedResumeAction } from '@/app/actions';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export default function GeneratedResumePage() {
     const { session } = useSession();
@@ -24,6 +36,7 @@ export default function GeneratedResumePage() {
     
     const [resume, setResume] = useState<GeneratedResume | null>(null);
     const [loading, setLoading] = useState(true);
+    const [isDeleting, startDeleteTransition] = useTransition();
     const { toast } = useToast();
 
     useEffect(() => {
@@ -45,6 +58,19 @@ export default function GeneratedResumePage() {
     const handlePrint = () => {
         window.print();
     };
+
+    const handleDelete = () => {
+        if (!session?.uid) return;
+        startDeleteTransition(async () => {
+            const result = await deleteGeneratedResumeAction(resumeId, session.uid);
+            if(result.success) {
+                toast({ title: "Resume deleted successfully!" });
+                router.push('/dashboard/candidate/resume-builder');
+            } else {
+                toast({ variant: 'destructive', title: 'Error', description: result.error });
+            }
+        })
+    }
 
     if (loading) {
         return (
@@ -99,9 +125,33 @@ export default function GeneratedResumePage() {
                 <main className="flex-1 overflow-auto custom-scrollbar p-4 md:p-8 bg-secondary">
                     <Card id="printable-resume" className={cn("force-light max-w-[8.5in] min-h-[11in] mx-auto shadow-lg print:shadow-none print:border-none relative")}>
                         <div className="absolute top-4 right-4 flex items-center gap-2 print:hidden">
-                            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => toast({title: "Delete not implemented"})}>
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="outline" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <div className="flex justify-center">
+                                            <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center mb-2">
+                                                <AlertTriangle className="h-6 w-6 text-destructive"/>
+                                            </div>
+                                        </div>
+                                        <AlertDialogTitle className="text-center">Are you absolutely sure?</AlertDialogTitle>
+                                        <AlertDialogDescription className="text-center">
+                                            This action cannot be undone. This will permanently delete this resume.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={handleDelete} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90">
+                                            {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                            Delete
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
                             <Button variant="outline" size="icon" className="h-8 w-8" onClick={handlePrint}>
                                 <Download className="h-4 w-4" />
                             </Button>

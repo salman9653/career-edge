@@ -1379,3 +1379,19 @@ export async function generateAtsResumeAction(prevState: any, formData: FormData
         return { error: e.message || "An unexpected error occurred during AI generation." };
     }
 }
+
+export async function deleteGeneratedResumeAction(resumeId: string, userId: string): Promise<{ success?: boolean, error?: string }> {
+  if (!userId || !resumeId) {
+    return { error: "User ID and Resume ID are required." };
+  }
+
+  try {
+    const docRef = doc(db, `users/${userId}/generated-resumes`, resumeId);
+    await deleteDoc(docRef);
+    revalidatePath('/dashboard/candidate/resume-builder');
+    return { success: true };
+  } catch (e: any) {
+    console.error("Error deleting resume:", e);
+    return { error: e.message || "An unexpected error occurred." };
+  }
+}
