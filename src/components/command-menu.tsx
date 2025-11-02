@@ -42,7 +42,7 @@ import {
     Sparkles,
     MessageSquare,
     Bell,
-    Command,
+    Command as CommandIcon,
 } from 'lucide-react';
 import { CreateAssessmentDialog } from '@/app/dashboard/company/assessments/_components/create-assessment-dialog';
 import { GenerateAiInterviewDialog } from '@/app/dashboard/company/templates/_components/generate-ai-interview-dialog';
@@ -158,6 +158,14 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
   const [isGenerateAiInterviewOpen, setIsGenerateAiInterviewOpen] = React.useState(false);
   const [searchValue, setSearchValue] = React.useState('');
 
+  const runCommand = React.useCallback((commandId: string, allCommands: CommandItem[]) => {
+    const command = allCommands.find(c => c.id === commandId);
+    if (command && !command.disabled) {
+      trackCommand(commandId);
+      command.action();
+    }
+  }, [trackCommand]);
+
   const allCommands = React.useMemo(() => {
     let commands: CommandItem[] = [];
     const run = (action: () => void) => () => {
@@ -169,18 +177,24 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
       commands.push(
         { id: 'post-job', label: 'Post New Job', group: 'Actions', icon: PlusCircle, action: run(() => router.push('/dashboard/company/jobs/new')) },
         { id: 'create-assessment', label: 'Create Assessment', group: 'Actions', icon: AppWindow, action: run(() => setIsCreateAssessmentOpen(true)) },
+        { id: 'gen-mcq-assessment', label: 'Generate MCQ Assessment', group: 'Actions', icon: Sparkles, action: () => {}, disabled: true },
+        { id: 'gen-subjective-assessment', label: 'Generate Subjective Assessment', group: 'Actions', icon: Sparkles, action: () => {}, disabled: true },
+        { id: 'gen-coding-assessment', label: 'Generate Coding Assessment', group: 'Actions', icon: Sparkles, action: () => {}, disabled: true },
         { id: 'gen-ai-interview', label: 'Generate AI Interview', group: 'Actions', icon: Bot, action: run(() => setIsGenerateAiInterviewOpen(true)) },
         { id: 'add-custom-question', label: 'Add Custom Question', group: 'Actions', icon: Library, action: run(() => router.push('/dashboard/company/questions/new')) },
         { id: 'gen-questions-ai', label: 'Generate Questions with AI', group: 'Actions', icon: Sparkles, action: run(() => router.push('/dashboard/company/questions/new')) },
         
         { id: 'nav-dashboard', label: 'Dashboard', group: 'Navigation', icon: Home, action: run(() => router.push('/dashboard')) },
         { id: 'nav-ats', label: 'ATS', group: 'Navigation', icon: FileCheck, action: run(() => router.push('/dashboard/company/ats')) },
+        { id: 'nav-job-pipelines', label: 'Job Pipelines', group: 'Navigation', icon: FileCheck, action: run(() => router.push('/dashboard/company/ats')) },
         { id: 'nav-crm', label: 'CRM / Talent Pool', group: 'Navigation', icon: BookUser, action: run(() => router.push('/dashboard/company/crm')) },
         { id: 'nav-jobs', label: 'Job Postings', group: 'Navigation', icon: Briefcase, action: run(() => router.push('/dashboard/company/jobs')) },
         { id: 'nav-templates', label: 'Templates', group: 'Navigation', icon: AppWindow, action: run(() => router.push('/dashboard/company/templates')) },
         { id: 'nav-assessments', label: 'Assessments', group: 'Navigation', icon: ListOrdered, action: run(() => router.push('/dashboard/company/templates?tab=assessments')) },
         { id: 'nav-ai-interviews', label: 'AI Interviews', group: 'Navigation', icon: Bot, action: run(() => router.push('/dashboard/company/templates?tab=ai-interviews')) },
         { id: 'nav-question-bank', label: 'Question Bank', group: 'Navigation', icon: Library, action: run(() => router.push('/dashboard/company/questions')) },
+        { id: 'nav-library-questions', label: 'Library Questions', group: 'Navigation', icon: Library, action: run(() => router.push('/dashboard/company/questions?tab=library')) },
+        { id: 'nav-custom-questions', label: 'My Custom Questions', group: 'Navigation', icon: Library, action: run(() => router.push('/dashboard/company/questions?tab=custom')) },
 
         ...jobs.map(job => ({ id: `job-${job.id}`, label: job.title, group: 'Jobs', icon: Briefcase, action: run(() => router.push(`/dashboard/company/jobs/${job.id}`)) })),
         ...jobs.map(job => ({ id: `pipeline-${job.id}`, label: job.title, group: 'Job Pipelines', icon: FileCheck, action: run(() => router.push(`/dashboard/company/ats/${job.id}`)) })),
@@ -204,6 +218,9 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
     else if (session?.role === 'admin') {
       commands.push(
         { id: 'admin-gen-questions', label: 'Generate Questions for Library', group: 'Actions', icon: Sparkles, action: run(() => router.push('/dashboard/admin/questions/new')) },
+        { id: 'admin-manage-subscriptions', label: 'Manage Subscriptions', group: 'Actions', icon: CreditCard, action: run(() => router.push('/dashboard/admin/subscriptions/company')) },
+        { id: 'admin-manage-coupons', label: 'Manage Offers & Coupons', group: 'Actions', icon: TicketPercent, action: run(() => router.push('/dashboard/admin/coupons')) },
+        { id: 'admin-manage-platform-settings', label: 'Manage Platform Settings', group: 'Actions', icon: SettingsIcon, action: run(() => router.push('/dashboard?settings=true&tab=Platform Settings')) },
         
         { id: 'nav-dashboard', label: 'Dashboard', group: 'Navigation', icon: Home, action: run(() => router.push('/dashboard')) },
         { id: 'nav-analytics', label: 'Analytics', group: 'Navigation', icon: LayoutDashboard, action: run(() => router.push('/dashboard/analytics')) },
@@ -237,14 +254,6 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
 
     return commands;
   }, [session, router, onOpenChange, jobs, assessments, interviews]);
-
-  const runCommand = React.useCallback((commandId: string) => {
-    const command = allCommands.find(c => c.id === commandId);
-    if (command && !command.disabled) {
-      trackCommand(commandId);
-      command.action();
-    }
-  }, [allCommands, trackCommand]);
   
   const searchResults = React.useMemo(() => {
     if (!searchValue) return [];
@@ -279,7 +288,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
             {searchValue ? (
                  <CommandGroup heading="Search Results">
                     {searchResults.length > 0 ? searchResults.map((item) => (
-                        <CommandItem key={item.id} onSelect={() => runCommand(item.id)} value={item.label}>
+                        <CommandItem key={item.id} onSelect={() => runCommand(item.id, allCommands)} value={item.label}>
                             <item.icon className="mr-2 h-4 w-4" />
                             <span>{item.label}</span>
                             <span className="ml-auto text-xs text-muted-foreground">{item.group}</span>
@@ -290,7 +299,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
                 <>
                 <CommandGroup heading="Suggestions">
                     {suggestions.length > 0 ? suggestions.map((item) => (
-                        <CommandItem key={item.id} onSelect={() => runCommand(item.id)} value={item.label}>
+                        <CommandItem key={item.id} onSelect={() => runCommand(item.id, allCommands)} value={item.label}>
                             <item.icon className="mr-2 h-4 w-4" />
                             <span>{item.label}</span>
                         </CommandItem>
@@ -303,7 +312,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
 
                 <CommandGroup heading="Settings">
                     {topSettings.map((item) => (
-                        <CommandItem key={item.id} onSelect={() => runCommand(item.id)} value={item.label}>
+                        <CommandItem key={item.id} onSelect={() => runCommand(item.id, allCommands)} value={item.label}>
                             <item.icon className="mr-2 h-4 w-4" />
                             <span>{item.label}</span>
                         </CommandItem>
