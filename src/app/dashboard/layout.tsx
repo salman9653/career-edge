@@ -16,6 +16,7 @@ import { Loader2 } from 'lucide-react';
 import { NotificationProvider } from '@/context/notification-context';
 import { AiInterviewProvider } from '@/context/ai-interview-context';
 import { CommandMenu } from '@/components/command-menu';
+import { GeneratedResumeProvider } from '@/context/generated-resume-context';
 
 function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     const router = useRouter();
@@ -61,12 +62,14 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
                              <AssessmentProvider>
                                 <QuestionProvider>
                                   <AiInterviewProvider>
-                                    <NotificationProvider>
-                                      <SettingsDialog open={isSettingsOpen} onOpenChange={handleSettingsOpenChange} initialTab={searchParams.get('tab') || 'Account'} />
-                                      <CommandMenu open={isCommandMenuOpen} onOpenChange={setIsCommandMenuOpen} />
-                                      {children}
-                                      <Toaster />
-                                    </NotificationProvider>
+                                    <GeneratedResumeProvider>
+                                        <NotificationProvider>
+                                        <SettingsDialog open={isSettingsOpen} onOpenChange={handleSettingsOpenChange} initialTab={searchParams.get('tab') || 'Account'} />
+                                        <CommandMenu open={isCommandMenuOpen} onOpenChange={setIsCommandMenuOpen} />
+                                        {children}
+                                        <Toaster />
+                                        </NotificationProvider>
+                                    </GeneratedResumeProvider>
                                   </AiInterviewProvider>
                                 </QuestionProvider>
                             </AssessmentProvider>
@@ -93,9 +96,11 @@ export default function DashboardLayout({
             <JobProvider>
                 <AssessmentProvider>
                     <AiInterviewProvider>
-                        <DashboardLayoutContent>
-                            {children}
-                        </DashboardLayoutContent>
+                       <GeneratedResumeProvider>
+                            <DashboardLayoutContent>
+                                {children}
+                            </DashboardLayoutContent>
+                        </GeneratedResumeProvider>
                     </AiInterviewProvider>
                 </AssessmentProvider>
             </JobProvider>

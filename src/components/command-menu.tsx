@@ -51,6 +51,7 @@ import { GenerateAiInterviewDialog } from '@/app/dashboard/company/templates/_co
 import { JobContext } from '@/context/job-context';
 import { AssessmentContext } from '@/context/assessment-context';
 import { AiInterviewContext } from '@/context/ai-interview-context';
+import { GeneratedResumeContext } from '@/context/generated-resume-context';
 import { Kbd } from './ui/kbd';
 
 interface CommandItem {
@@ -131,7 +132,7 @@ const useCommandHistory = () => {
             .map(item => settingCommands.find(cmd => cmd.id === item.id))
             .filter(Boolean) as CommandItem[];
         
-        return top.length > 0 ? top : settingCommands.slice(0, 3);
+        return top;
 
     }, [getHistory]);
 
@@ -149,9 +150,11 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
   const { session } = useSession();
   const { trackCommand, getSuggestions, getTopSettings } = useCommandHistory();
 
-  const { jobs, loading: jobsLoading } = React.useContext(JobContext);
-  const { assessments, loading: assessmentsLoading } = React.useContext(AssessmentContext);
-  const { interviews, loading: interviewsLoading } = React.useContext(AiInterviewContext);
+  const { jobs } = React.useContext(JobContext);
+  const { assessments } = React.useContext(AssessmentContext);
+  const { interviews } = React.useContext(AiInterviewContext);
+  const { resumes } = React.useContext(GeneratedResumeContext);
+
 
   const [isCreateAssessmentOpen, setIsCreateAssessmentOpen] = React.useState(false);
   const [isGenerateAiInterviewOpen, setIsGenerateAiInterviewOpen] = React.useState(false);
@@ -177,7 +180,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
         { id: 'create-mcq-assessment', label: 'Create MCQ Assessment', group: 'Actions', icon: ListChecks, action: run(() => openCreateAssessment('mcq')) },
         { id: 'create-subjective-assessment', label: 'Create Subjective Assessment', group: 'Actions', icon: FileText, action: run(() => openCreateAssessment('subjective')) },
         { id: 'create-coding-assessment', label: 'Create Coding Assessment', group: 'Actions', icon: Code, action: run(() => openCreateAssessment('code')) },
-        { id: 'gen-ai-interview', label: 'Generate AI Interview', group: 'Actions', icon: Bot, action: run(() => setIsGenerateAiInterviewOpen(true)) },
+        { id: 'gen-ai-interview', label: 'Generate AI Interview', group: 'Actions', icon: Sparkles, action: run(() => setIsGenerateAiInterviewOpen(true)) },
         { id: 'add-custom-question', label: 'Add Custom Question', group: 'Actions', icon: Library, action: run(() => router.push('/dashboard/company/questions/new')) },
         { id: 'gen-questions-ai', label: 'Generate Questions with AI', group: 'Actions', icon: Sparkles, action: run(() => router.push('/dashboard/company/questions/new')) },
         
@@ -202,14 +205,17 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
     else if (session?.role === 'candidate') {
       commands.push(
         { id: 'candidate-gen-resume', label: 'Generate Resume with AI', group: 'Actions', icon: Sparkles, action: run(() => router.push('/dashboard/candidate/resume-builder/new')) },
-        { id: 'candidate-analyze-resume', label: 'Analyze Resume', group: 'Actions', icon: Bot, action: () => {}, disabled: true },
+        { id: 'candidate-analyze-resume', label: 'Analyze Resume', group: 'Actions', icon: Bot, action: run(() => router.push('/dashboard/candidate/jobs')), disabled: false },
         { id: 'candidate-find-jobs', label: 'Find Jobs', group: 'Actions', icon: SearchIcon, action: run(() => router.push('/dashboard/candidate/jobs')) },
-        { id: 'candidate-job-invites', label: 'Job Invites', group: 'Actions', icon: Mail, action: () => {}, disabled: true },
+        { id: 'candidate-job-invites', label: 'Job Invites', group: 'Navigation', icon: Mail, action: () => {}, disabled: true },
         
         { id: 'nav-dashboard', label: 'Dashboard', group: 'Navigation', icon: Home, action: run(() => router.push('/dashboard')) },
+        { id: 'nav-candidate-jobs', label: 'Jobs', group: 'Navigation', icon: Briefcase, action: run(() => router.push('/dashboard/candidate/jobs')) },
         { id: 'nav-my-applications', label: 'My Applications', group: 'Navigation', icon: Briefcase, action: run(() => router.push('/dashboard/candidate/applications')) },
         { id: 'nav-resume-builder', label: 'Resume Builder', group: 'Navigation', icon: ResumeIcon, action: run(() => router.push('/dashboard/candidate/resume-builder')) },
         { id: 'nav-practice', label: 'Practice', group: 'Navigation', icon: BookCopy, action: run(() => router.push('/dashboard/candidate/practice')) },
+        
+        ...resumes.map(resume => ({ id: `resume-${resume.id}`, label: resume.name, group: 'Generated Resumes', icon: ResumeIcon, action: run(() => router.push(`/dashboard/candidate/resumes/${resume.id}`)) }))
       );
     }
     else if (session?.role === 'admin') {
@@ -249,7 +255,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
     commands.push(...settingsBase);
 
     return commands;
-  }, [session, router, onOpenChange, jobs, assessments, interviews]);
+  }, [session, router, onOpenChange, jobs, assessments, interviews, resumes]);
   
   const runCommand = React.useCallback((commandId: string) => {
     const command = allCommands.find(c => c.id === commandId);
@@ -271,11 +277,12 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
   }, [searchValue, allCommands]);
 
   const suggestions = React.useMemo(() => getSuggestions(allCommands), [getSuggestions, allCommands]);
+  
   const topSettings = React.useMemo(() => {
     const settingsCommands = allCommands.filter(c => c.group === 'Settings');
     const top = getTopSettings(settingsCommands);
-    return top.length > 0 ? top : settingsCommands.slice(0, 3);
-
+    if (top.length > 0) return top;
+    return settingsCommands.slice(0, 3);
   }, [getTopSettings, allCommands]);
 
 
