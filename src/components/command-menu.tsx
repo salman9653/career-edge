@@ -5,7 +5,6 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/hooks/use-session';
 import {
-  Command,
   CommandDialog,
   CommandEmpty,
   CommandGroup,
@@ -39,7 +38,7 @@ import {
     BookCopy,
     ListOrdered,
     Shield,
-    Sparkles, // Added Sparkles import
+    Sparkles,
 } from 'lucide-react';
 import { CreateAssessmentDialog } from '@/app/dashboard/company/assessments/_components/create-assessment-dialog';
 import { GenerateAiInterviewDialog } from '@/app/dashboard/company/templates/_components/generate-ai-interview-dialog';
@@ -100,9 +99,7 @@ const useCommandHistory = () => {
 
         const suggestionIds = new Set<string>();
 
-        // Add most used (up to 3)
         mostUsed.slice(0, 3).forEach(item => suggestionIds.add(item.id));
-        // Add recently used, filling up to 6
         recentlyUsed.forEach(item => {
             if (suggestionIds.size < 6) {
                 suggestionIds.add(item.id);
@@ -147,15 +144,6 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
   const [isCreateAssessmentOpen, setIsCreateAssessmentOpen] = React.useState(false);
   const [isGenerateAiInterviewOpen, setIsGenerateAiInterviewOpen] = React.useState(false);
   const [searchValue, setSearchValue] = React.useState('');
-
-  const runCommand = React.useCallback((commandId: string) => {
-    const command = allCommands.find(c => c.id === commandId);
-    if (command && !command.disabled) {
-      trackCommand(commandId);
-      onOpenChange(false);
-      command.action();
-    }
-  }, [allCommands, onOpenChange, trackCommand]);
 
   const allCommands = React.useMemo(() => {
     let commands: CommandItem[] = [];
@@ -224,6 +212,15 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
 
     return commands;
   }, [session, router, jobs, assessments, interviews]);
+
+  const runCommand = React.useCallback((commandId: string) => {
+    const command = allCommands.find(c => c.id === commandId);
+    if (command && !command.disabled) {
+      trackCommand(commandId);
+      onOpenChange(false);
+      command.action();
+    }
+  }, [allCommands, onOpenChange, trackCommand]);
   
   const searchResults = React.useMemo(() => {
     if (!searchValue) return [];
