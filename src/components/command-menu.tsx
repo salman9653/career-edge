@@ -47,10 +47,11 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
   const router = useRouter();
   const { session } = useSession();
 
-  const runCommand = (command: () => void) => {
-    onOpenChange(false);
-    command();
-  };
+  const runCommand = React.useCallback((command: () => unknown) => {
+    onOpenChange(false)
+    command()
+  }, [onOpenChange])
+
 
   const commandGroups = React.useMemo(() => {
     const candidateNav: NavItem[] = [
@@ -115,17 +116,10 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
 
     return [
       {
-        heading: 'Actions',
+        heading: 'Suggestions',
         commands: roleBasedActions.map(item => ({
             ...item,
-            onSelect: () => runCommand(item.action)
-        }))
-      },
-      {
-        heading: 'Navigation',
-        commands: roleBasedNav.map(item => ({
-            ...item,
-            onSelect: () => runCommand(() => router.push(item.href))
+            onSelect: item.disabled ? () => {} : () => runCommand(item.action)
         }))
       },
       {
@@ -137,7 +131,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
       }
     ];
 
-  }, [session, router, onOpenChange]);
+  }, [session, router, runCommand]);
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
@@ -148,7 +142,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
           <React.Fragment key={group.heading}>
             <CommandGroup heading={group.heading}>
               {group.commands.map(({ icon: Icon, label, onSelect, disabled }) => (
-                <CommandItem key={label} onSelect={onSelect} disabled={disabled}>
+                <CommandItem key={label} onSelect={onSelect} disabled={disabled} className="cursor-pointer">
                   <Icon className="mr-2 h-4 w-4" />
                   <span>{label}</span>
                 </CommandItem>
