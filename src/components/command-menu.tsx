@@ -129,7 +129,6 @@ const useCommandHistory = () => {
             .map(item => settingCommands.find(cmd => cmd.id === item.id))
             .filter(Boolean) as CommandItem[];
         
-        // If no history, return the first 3 settings
         return top.length > 0 ? top : settingCommands.slice(0, 3);
 
     }, [getHistory]);
@@ -156,14 +155,6 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
   const [isGenerateAiInterviewOpen, setIsGenerateAiInterviewOpen] = React.useState(false);
   const [searchValue, setSearchValue] = React.useState('');
   const [preselectedAssessmentType, setPreselectedAssessmentType] = React.useState<'mcq' | 'subjective' | 'code' | undefined>(undefined);
-
-  const runCommand = React.useCallback((commandId: string) => {
-    const command = allCommands.find(c => c.id === commandId);
-    if (command && !command.disabled) {
-      trackCommand(commandId);
-      command.action();
-    }
-  }, [trackCommand, allCommands]);
 
   const allCommands = React.useMemo(() => {
     let commands: CommandItem[] = [];
@@ -257,6 +248,14 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
 
     return commands;
   }, [session, router, onOpenChange, jobs, assessments, interviews]);
+
+  const runCommand = React.useCallback((commandId: string) => {
+    const command = allCommands.find(c => c.id === commandId);
+    if (command && !command.disabled) {
+      trackCommand(commandId);
+      command.action();
+    }
+  }, [trackCommand, allCommands]);
   
   const searchResults = React.useMemo(() => {
     if (!searchValue) return [];
@@ -295,7 +294,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
             {searchValue ? (
                  <CommandGroup heading="Search Results">
                     {searchResults.length > 0 ? searchResults.map((item) => (
-                        <CommandItem key={item.id} onSelect={() => runCommand(item.id)} value={`${item.group}-${item.label}`}>
+                        <CommandItem key={item.id} onSelect={() => runCommand(item.id)} value={item.label + item.group}>
                             <item.icon className="mr-2 h-4 w-4" />
                             <span>{item.label}</span>
                             <span className="ml-auto text-xs text-muted-foreground">{item.group}</span>
@@ -311,7 +310,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
                             <span>{item.label}</span>
                         </CommandItem>
                     )) : (
-                        <div className="py-6 text-center text-sm">No suggestions yet. Start using commands to see them here.</div>
+                        <div className="py-6 text-center text-sm text-muted-foreground">No suggestions yet. Start using commands to see them here.</div>
                     )}
                 </CommandGroup>
 
@@ -333,3 +332,4 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
     </>
   );
 }
+
