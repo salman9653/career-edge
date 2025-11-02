@@ -39,6 +39,7 @@ import {
     BookCopy,
     ListOrdered,
     Shield,
+    Sparkles, // Added Sparkles import
 } from 'lucide-react';
 import { CreateAssessmentDialog } from '@/app/dashboard/company/assessments/_components/create-assessment-dialog';
 import { GenerateAiInterviewDialog } from '@/app/dashboard/company/templates/_components/generate-ai-interview-dialog';
@@ -147,10 +148,14 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
   const [isGenerateAiInterviewOpen, setIsGenerateAiInterviewOpen] = React.useState(false);
   const [searchValue, setSearchValue] = React.useState('');
 
-  const runCommand = React.useCallback((command: () => void) => {
-    onOpenChange(false);
-    command();
-  }, [onOpenChange]);
+  const runCommand = React.useCallback((commandId: string) => {
+    const command = allCommands.find(c => c.id === commandId);
+    if (command && !command.disabled) {
+      trackCommand(commandId);
+      onOpenChange(false);
+      command.action();
+    }
+  }, [allCommands, onOpenChange, trackCommand]);
 
   const allCommands = React.useMemo(() => {
     let commands: CommandItem[] = [];
@@ -177,9 +182,34 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
         ...interviews.map(interview => ({ id: `ai-interview-${interview.id}`, label: interview.name, group: 'Templates', icon: Bot, action: () => router.push(`/dashboard/company/templates/ai-interviews/${interview.id}`) }))
       );
     }
-    // TODO: Add Candidate and Admin commands
+    // Candidate Account Commands
+    else if (session?.role === 'candidate') {
+      commands.push(
+        { id: 'candidate-find-jobs', label: 'Find Jobs', group: 'Actions', icon: SearchIcon, action: () => router.push('/dashboard/candidate/jobs') },
+        { id: 'candidate-gen-resume', label: 'Generate Resume with AI', group: 'Actions', icon: Sparkles, action: () => router.push('/dashboard/candidate/resume-builder/new') },
+        { id: 'candidate-analyze-resume', label: 'Analyze Resume', group: 'Actions', icon: Bot, action: () => {}, disabled: true },
+        { id: 'candidate-job-invites', label: 'Job Invites', group: 'Actions', icon: Mail, action: () => {}, disabled: true },
+        { id: 'nav-dashboard', label: 'Dashboard', group: 'Navigation', icon: Home, action: () => router.push('/dashboard') },
+        { id: 'nav-my-applications', label: 'My Applications', group: 'Navigation', icon: Briefcase, action: () => router.push('/dashboard/candidate/applications') },
+        { id: 'nav-resume-builder', label: 'Resume Builder', group: 'Navigation', icon: ResumeIcon, action: () => router.push('/dashboard/candidate/resume-builder') },
+        { id: 'nav-practice', label: 'Practice', group: 'Navigation', icon: BookCopy, action: () => router.push('/dashboard/candidate/practice') },
+      );
+    }
+    // Admin Account Commands
+    else if (session?.role === 'admin') {
+      commands.push(
+        { id: 'admin-gen-questions', label: 'Generate Questions for Library', group: 'Actions', icon: Sparkles, action: () => router.push('/dashboard/admin/questions/new') },
+        { id: 'nav-dashboard', label: 'Dashboard', group: 'Navigation', icon: Home, action: () => router.push('/dashboard') },
+        { id: 'nav-analytics', label: 'Analytics', group: 'Navigation', icon: LayoutDashboard, action: () => router.push('/dashboard/analytics') },
+        { id: 'nav-manage-companies', label: 'Manage Companies', group: 'Navigation', icon: Building2, action: () => router.push('/dashboard/admin/companies') },
+        { id: 'nav-manage-candidates', label: 'Manage Candidates', group: 'Navigation', icon: Users, action: () => router.push('/dashboard/admin/candidates') },
+        { id: 'nav-question-library', label: 'Question Library', group: 'Navigation', icon: Library, action: () => router.push('/dashboard/admin/questions') },
+        { id: 'nav-subscriptions', label: 'Manage Subscriptions', group: 'Navigation', icon: CreditCard, action: () => router.push('/dashboard/admin/subscriptions/company') },
+        { id: 'nav-coupons', label: 'Manage Offers & Coupons', group: 'Navigation', icon: TicketPercent, action: () => router.push('/dashboard/admin/coupons') },
+      );
+    }
 
-    // Settings are universal but filtered by role inside the group
+
     const settingsBase = [
         { id: 'settings-profile', label: 'Profile', group: 'Settings', icon: User, action: () => router.push('/dashboard/profile') },
         { id: 'settings-account', label: 'Account Settings', group: 'Settings', icon: SettingsIcon, action: () => router.push('/dashboard?settings=true&tab=Account') },
@@ -211,14 +241,6 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
     setSearchValue('');
   }, [open]);
 
-  const handleSelect = (commandId: string) => {
-    const command = allCommands.find(c => c.id === commandId);
-    if (command) {
-        trackCommand(command.id);
-        runCommand(command.action);
-    }
-  };
-  
   return (
     <>
       <CreateAssessmentDialog open={isCreateAssessmentOpen} onOpenChange={setIsCreateAssessmentOpen} />
@@ -235,7 +257,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
             {searchValue ? (
                  <CommandGroup heading="Search Results">
                     {searchResults.map((item) => (
-                        <CommandItem key={item.id} onSelect={() => handleSelect(item.id)} value={item.label}>
+                        <CommandItem key={item.id} onSelect={() => runCommand(item.id)} value={item.label}>
                             <item.icon className="mr-2 h-4 w-4" />
                             <span>{item.label}</span>
                             <span className="ml-auto text-xs text-muted-foreground">{item.group}</span>
@@ -247,7 +269,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
                 {suggestions.length > 0 && (
                     <CommandGroup heading="Suggestions">
                     {suggestions.map((item) => (
-                        <CommandItem key={item.id} onSelect={() => handleSelect(item.id)} value={item.label}>
+                        <CommandItem key={item.id} onSelect={() => runCommand(item.id)} value={item.label}>
                             <item.icon className="mr-2 h-4 w-4" />
                             <span>{item.label}</span>
                         </CommandItem>
@@ -259,7 +281,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
 
                 <CommandGroup heading="Settings">
                     {topSettings.map((item) => (
-                        <CommandItem key={item.id} onSelect={() => handleSelect(item.id)} value={item.label}>
+                        <CommandItem key={item.id} onSelect={() => runCommand(item.id)} value={item.label}>
                             <item.icon className="mr-2 h-4 w-4" />
                             <span>{item.label}</span>
                         </CommandItem>
