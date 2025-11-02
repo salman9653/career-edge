@@ -39,6 +39,9 @@ import {
     ListOrdered,
     Shield,
     Sparkles,
+    MessageSquare,
+    Bell,
+    Command,
 } from 'lucide-react';
 import { CreateAssessmentDialog } from '@/app/dashboard/company/assessments/_components/create-assessment-dialog';
 import { GenerateAiInterviewDialog } from '@/app/dashboard/company/templates/_components/generate-ai-interview-dialog';
@@ -46,7 +49,6 @@ import { JobContext } from '@/context/job-context';
 import { AssessmentContext } from '@/context/assessment-context';
 import { AiInterviewContext } from '@/context/ai-interview-context';
 import { Kbd } from './ui/kbd';
-import { Command } from 'lucide-react';
 
 interface CommandItem {
   id: string;
@@ -126,10 +128,10 @@ const useCommandHistory = () => {
             .map(item => settingCommands.find(cmd => cmd.id === item.id))
             .filter(Boolean) as CommandItem[];
         
-        if (top.length === 0) {
-            return settingCommands.slice(0, 3);
-        }
-        return top;
+        if (top.length > 0) return top;
+        
+        // Fallback to first 3 settings if no history
+        return settingCommands.slice(0, 3);
 
     }, [getHistory]);
 
@@ -187,10 +189,11 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
     }
     else if (session?.role === 'candidate') {
       commands.push(
-        { id: 'candidate-find-jobs', label: 'Find Jobs', group: 'Actions', icon: SearchIcon, action: run(() => router.push('/dashboard/candidate/jobs')) },
         { id: 'candidate-gen-resume', label: 'Generate Resume with AI', group: 'Actions', icon: Sparkles, action: run(() => router.push('/dashboard/candidate/resume-builder/new')) },
         { id: 'candidate-analyze-resume', label: 'Analyze Resume', group: 'Actions', icon: Bot, action: () => {}, disabled: true },
+        { id: 'candidate-find-jobs', label: 'Find Jobs', group: 'Actions', icon: SearchIcon, action: run(() => router.push('/dashboard/candidate/jobs')) },
         { id: 'candidate-job-invites', label: 'Job Invites', group: 'Actions', icon: Mail, action: () => {}, disabled: true },
+        
         { id: 'nav-dashboard', label: 'Dashboard', group: 'Navigation', icon: Home, action: run(() => router.push('/dashboard')) },
         { id: 'nav-my-applications', label: 'My Applications', group: 'Navigation', icon: Briefcase, action: run(() => router.push('/dashboard/candidate/applications')) },
         { id: 'nav-resume-builder', label: 'Resume Builder', group: 'Navigation', icon: ResumeIcon, action: run(() => router.push('/dashboard/candidate/resume-builder')) },
@@ -200,6 +203,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
     else if (session?.role === 'admin') {
       commands.push(
         { id: 'admin-gen-questions', label: 'Generate Questions for Library', group: 'Actions', icon: Sparkles, action: run(() => router.push('/dashboard/admin/questions/new')) },
+        
         { id: 'nav-dashboard', label: 'Dashboard', group: 'Navigation', icon: Home, action: run(() => router.push('/dashboard')) },
         { id: 'nav-analytics', label: 'Analytics', group: 'Navigation', icon: LayoutDashboard, action: run(() => router.push('/dashboard/analytics')) },
         { id: 'nav-manage-companies', label: 'Manage Companies', group: 'Navigation', icon: Building2, action: run(() => router.push('/dashboard/admin/companies')) },
@@ -209,6 +213,12 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
         { id: 'nav-coupons', label: 'Manage Offers & Coupons', group: 'Navigation', icon: TicketPercent, action: run(() => router.push('/dashboard/admin/coupons')) },
       );
     }
+    
+    // Add "Others" group for all roles
+    commands.push(
+      { id: 'nav-inbox', label: 'Inbox', group: 'Others', icon: MessageSquare, action: run(() => router.push('/dashboard/chat')) },
+      { id: 'nav-notifications', label: 'Notifications History', group: 'Others', icon: Bell, action: run(() => router.push('/dashboard/notifications')) }
+    );
 
     const settingsBase = [
         { id: 'settings-profile', label: 'Profile', group: 'Settings', icon: User, action: run(() => router.push('/dashboard/profile')) },
@@ -225,7 +235,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
     commands.push(...settingsBase);
 
     return commands;
-  }, [session, router, jobs, assessments, interviews, onOpenChange]);
+  }, [session, router, onOpenChange, jobs, assessments, interviews]);
 
   const runCommand = React.useCallback((commandId: string) => {
     const command = allCommands.find(c => c.id === commandId);
@@ -279,7 +289,9 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
                             <item.icon className="mr-2 h-4 w-4" />
                             <span>{item.label}</span>
                         </CommandItem>
-                    )) : <div className="py-6 text-center text-sm">No suggestions yet. Start using commands to see them here.</div>}
+                    )) : (
+                        <div className="py-6 text-center text-sm">No suggestions yet. Start using commands to see them here.</div>
+                    )}
                 </CommandGroup>
 
                 <CommandSeparator />
