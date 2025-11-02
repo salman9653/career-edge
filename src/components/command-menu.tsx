@@ -24,7 +24,6 @@ import {
     BookUser,
     AppWindow,
     FileText as ResumeIcon,
-    BookCopy,
     Home,
     User,
     Palette,
@@ -52,12 +51,6 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
   const [isCreateAssessmentOpen, setIsCreateAssessmentOpen] = React.useState(false);
   const [isGenerateAiInterviewOpen, setIsGenerateAiInterviewOpen] = React.useState(false);
 
-  const runCommand = React.useCallback((command: () => unknown) => {
-    onOpenChange(false)
-    command()
-  }, [onOpenChange])
-
-
   const commandGroups = React.useMemo(() => {
     const candidateActions = [
         { action: () => router.push('/dashboard/candidate/resume-builder/new'), label: 'Generate Resume', icon: ResumeIcon },
@@ -79,7 +72,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
         { action: () => router.push('/dashboard/admin/coupons'), label: 'Manage Offers & Coupons', icon: TicketPercent },
         { action: () => router.push('/dashboard?settings=true&tab=Platform+Settings'), label: 'Manage Platform Settings', icon: SettingsIcon },
     ]
-
+    
     const settingsCommands = [
       { action: () => router.push('/dashboard/profile'), label: 'Profile', icon: User },
       { action: () => router.push('/dashboard?settings=true&tab=Account'), label: 'Account Settings', icon: SettingsIcon },
@@ -93,6 +86,11 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
       roleBasedActions = adminActions;
     } else if (session?.role === 'company' || session?.role === 'manager') {
       roleBasedActions = companyActions;
+      settingsCommands.splice(2, 0, {
+        action: () => router.push('/dashboard/company/managers'),
+        label: 'Company Account Managers',
+        icon: Users,
+      });
     } else if (session?.role === 'candidate') {
       roleBasedActions = candidateActions;
     }
@@ -102,19 +100,25 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
         heading: 'Suggestions',
         commands: roleBasedActions.map(item => ({
             ...item,
-            onSelect: item.disabled ? () => {} : () => runCommand(item.action)
+            onSelect: item.disabled ? () => {} : () => {
+                onOpenChange(false);
+                item.action();
+            }
         }))
       },
       {
         heading: 'Settings',
         commands: settingsCommands.map(item => ({
             ...item,
-            onSelect: () => runCommand(item.action)
+            onSelect: () => {
+                onOpenChange(false);
+                item.action();
+            }
         }))
       }
     ];
 
-  }, [session, router, runCommand]);
+  }, [session, router, onOpenChange]);
 
   return (
     <>
@@ -128,7 +132,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
             <React.Fragment key={group.heading}>
               <CommandGroup heading={group.heading}>
                 {group.commands.map(({ icon: Icon, label, onSelect, disabled }) => (
-                  <CommandItem key={label} onSelect={onSelect} disabled={disabled} className="cursor-pointer">
+                  <CommandItem key={label} onSelect={onSelect} disabled={disabled}>
                     <Icon className="mr-2 h-4 w-4" />
                     <span>{label}</span>
                   </CommandItem>
