@@ -5,6 +5,7 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/hooks/use-session';
 import {
+  Command,
   CommandDialog,
   CommandEmpty,
   CommandGroup,
@@ -247,8 +248,12 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
   
   const searchResults = React.useMemo(() => {
     if (!searchValue) return [];
+    const lowerCaseSearch = searchValue.toLowerCase();
     return allCommands
-      .filter(cmd => cmd.label.toLowerCase().includes(searchValue.toLowerCase()))
+      .filter(cmd => 
+        cmd.label.toLowerCase().includes(lowerCaseSearch) ||
+        cmd.group.toLowerCase().includes(lowerCaseSearch)
+      )
       .slice(0, 6);
   }, [searchValue, allCommands]);
 
