@@ -158,14 +158,6 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
   const [isGenerateAiInterviewOpen, setIsGenerateAiInterviewOpen] = React.useState(false);
   const [searchValue, setSearchValue] = React.useState('');
 
-  const runCommand = React.useCallback((commandId: string, allCommands: CommandItem[]) => {
-    const command = allCommands.find(c => c.id === commandId);
-    if (command && !command.disabled) {
-      trackCommand(commandId);
-      command.action();
-    }
-  }, [trackCommand]);
-
   const allCommands = React.useMemo(() => {
     let commands: CommandItem[] = [];
     const run = (action: () => void) => () => {
@@ -198,8 +190,8 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
 
         ...jobs.map(job => ({ id: `job-${job.id}`, label: job.title, group: 'Jobs', icon: Briefcase, action: run(() => router.push(`/dashboard/company/jobs/${job.id}`)) })),
         ...jobs.map(job => ({ id: `pipeline-${job.id}`, label: job.title, group: 'Job Pipelines', icon: FileCheck, action: run(() => router.push(`/dashboard/company/ats/${job.id}`)) })),
-        ...assessments.map(assessment => ({ id: `assessment-${assessment.id}`, label: assessment.name, group: 'Templates', icon: AppWindow, action: run(() => router.push(`/dashboard/company/templates/assessments/${assessment.id}`)) })),
-        ...interviews.map(interview => ({ id: `ai-interview-${interview.id}`, label: interview.name, group: 'Templates', icon: Bot, action: run(() => router.push(`/dashboard/company/templates/ai-interviews/${interview.id}`)) }))
+        ...assessments.map(assessment => ({ id: `assessment-${assessment.id}`, label: assessment.name, group: 'Templates > Assessment', icon: AppWindow, action: run(() => router.push(`/dashboard/company/templates/assessments/${assessment.id}`)) })),
+        ...interviews.map(interview => ({ id: `ai-interview-${interview.id}`, label: interview.name, group: 'Templates > AI Interview', icon: Bot, action: run(() => router.push(`/dashboard/company/templates/ai-interviews/${interview.id}`)) }))
       );
     }
     else if (session?.role === 'candidate') {
@@ -255,6 +247,14 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
     return commands;
   }, [session, router, onOpenChange, jobs, assessments, interviews]);
   
+  const runCommand = React.useCallback((commandId: string) => {
+    const command = allCommands.find(c => c.id === commandId);
+    if (command && !command.disabled) {
+      trackCommand(commandId);
+      command.action();
+    }
+  }, [allCommands, trackCommand]);
+  
   const searchResults = React.useMemo(() => {
     if (!searchValue) return [];
     const lowerCaseSearch = searchValue.toLowerCase();
@@ -267,7 +267,12 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
   }, [searchValue, allCommands]);
 
   const suggestions = React.useMemo(() => getSuggestions(allCommands), [getSuggestions, allCommands]);
-  const topSettings = React.useMemo(() => getTopSettings(allCommands.filter(c => c.group === 'Settings')), [getTopSettings, allCommands]);
+  const topSettings = React.useMemo(() => {
+    const settingsCommands = allCommands.filter(c => c.group === 'Settings');
+    const top = getTopSettings(settingsCommands);
+    // If no history, return the first 3 settings
+    return top.length > 0 ? top : settingsCommands.slice(0, 3);
+  }, [getTopSettings, allCommands]);
 
 
   React.useEffect(() => {
@@ -288,7 +293,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
             {searchValue ? (
                  <CommandGroup heading="Search Results">
                     {searchResults.length > 0 ? searchResults.map((item) => (
-                        <CommandItem key={item.id} onSelect={() => runCommand(item.id, allCommands)} value={item.label}>
+                        <CommandItem key={item.id} onSelect={() => runCommand(item.id)} value={`${item.group}-${item.label}`}>
                             <item.icon className="mr-2 h-4 w-4" />
                             <span>{item.label}</span>
                             <span className="ml-auto text-xs text-muted-foreground">{item.group}</span>
@@ -299,7 +304,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
                 <>
                 <CommandGroup heading="Suggestions">
                     {suggestions.length > 0 ? suggestions.map((item) => (
-                        <CommandItem key={item.id} onSelect={() => runCommand(item.id, allCommands)} value={item.label}>
+                        <CommandItem key={item.id} onSelect={() => runCommand(item.id)} value={item.label}>
                             <item.icon className="mr-2 h-4 w-4" />
                             <span>{item.label}</span>
                         </CommandItem>
@@ -312,7 +317,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
 
                 <CommandGroup heading="Settings">
                     {topSettings.map((item) => (
-                        <CommandItem key={item.id} onSelect={() => runCommand(item.id, allCommands)} value={item.label}>
+                        <CommandItem key={item.id} onSelect={() => runCommand(item.id)} value={item.label}>
                             <item.icon className="mr-2 h-4 w-4" />
                             <span>{item.label}</span>
                         </CommandItem>
