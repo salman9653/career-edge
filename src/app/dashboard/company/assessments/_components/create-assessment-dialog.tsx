@@ -1,6 +1,6 @@
 
 'use client';
-import { useActionState, useEffect, useRef } from 'react';
+import { useActionState, useEffect, useRef, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import {
   Dialog,
@@ -43,14 +43,23 @@ function SubmitButton() {
 interface CreateAssessmentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  assessmentType?: 'mcq' | 'subjective' | 'code';
 }
 
-export function CreateAssessmentDialog({ open, onOpenChange }: CreateAssessmentDialogProps) {
+export function CreateAssessmentDialog({ open, onOpenChange, assessmentType }: CreateAssessmentDialogProps) {
   const [state, formAction] = useActionState(createAssessmentAction, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const { session } = useSession();
   const router = useRouter();
+  
+  const [type, setType] = useState(assessmentType);
+
+  useEffect(() => {
+    if(assessmentType) {
+        setType(assessmentType);
+    }
+  }, [assessmentType, open]);
 
   useEffect(() => {
     if (state.success && state.assessmentId) {
@@ -61,6 +70,7 @@ export function CreateAssessmentDialog({ open, onOpenChange }: CreateAssessmentD
       router.push(`/dashboard/company/assessments/${state.assessmentId}`);
       onOpenChange(false);
       formRef.current?.reset();
+      setType(undefined); // Reset type after submission
     }
   }, [state.success, state.assessmentId, toast, onOpenChange, router]);
 
@@ -83,7 +93,7 @@ export function CreateAssessmentDialog({ open, onOpenChange }: CreateAssessmentD
             </div>
              <div className="grid gap-2">
                 <Label htmlFor="assessmentType">Assessment Type*</Label>
-                <Select name="assessmentType" required>
+                <Select name="assessmentType" required value={type} onValueChange={(value) => setType(value as any)}>
                     <SelectTrigger><SelectValue placeholder="Select Assessment Type" /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="mcq">MCQ</SelectItem>

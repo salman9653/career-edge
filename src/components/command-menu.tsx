@@ -129,10 +129,8 @@ const useCommandHistory = () => {
             .map(item => settingCommands.find(cmd => cmd.id === item.id))
             .filter(Boolean) as CommandItem[];
         
-        if (top.length > 0) return top;
-        
-        // Fallback to first 3 settings if no history
-        return settingCommands.slice(0, 3);
+        // If no history, return the first 3 settings
+        return top.length > 0 ? top : settingCommands.slice(0, 3);
 
     }, [getHistory]);
 
@@ -157,6 +155,15 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
   const [isCreateAssessmentOpen, setIsCreateAssessmentOpen] = React.useState(false);
   const [isGenerateAiInterviewOpen, setIsGenerateAiInterviewOpen] = React.useState(false);
   const [searchValue, setSearchValue] = React.useState('');
+  const [preselectedAssessmentType, setPreselectedAssessmentType] = React.useState<'mcq' | 'subjective' | 'code' | undefined>(undefined);
+
+  const runCommand = React.useCallback((commandId: string) => {
+    const command = allCommands.find(c => c.id === commandId);
+    if (command && !command.disabled) {
+      trackCommand(commandId);
+      command.action();
+    }
+  }, [trackCommand, allCommands]);
 
   const allCommands = React.useMemo(() => {
     let commands: CommandItem[] = [];
@@ -164,14 +171,19 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
       onOpenChange(false);
       action();
     }
+    
+    const openCreateAssessment = (type?: 'mcq' | 'subjective' | 'code') => {
+        setPreselectedAssessmentType(type);
+        setIsCreateAssessmentOpen(true);
+    }
 
     if (session?.role === 'company' || session?.role === 'manager') {
       commands.push(
         { id: 'post-job', label: 'Post New Job', group: 'Actions', icon: PlusCircle, action: run(() => router.push('/dashboard/company/jobs/new')) },
-        { id: 'create-assessment', label: 'Create Assessment', group: 'Actions', icon: AppWindow, action: run(() => setIsCreateAssessmentOpen(true)) },
-        { id: 'gen-mcq-assessment', label: 'Generate MCQ Assessment', group: 'Actions', icon: Sparkles, action: () => {}, disabled: true },
-        { id: 'gen-subjective-assessment', label: 'Generate Subjective Assessment', group: 'Actions', icon: Sparkles, action: () => {}, disabled: true },
-        { id: 'gen-coding-assessment', label: 'Generate Coding Assessment', group: 'Actions', icon: Sparkles, action: () => {}, disabled: true },
+        { id: 'create-assessment', label: 'Create Assessment', group: 'Actions', icon: AppWindow, action: run(() => openCreateAssessment()) },
+        { id: 'create-mcq-assessment', label: 'Create MCQ Assessment', group: 'Actions', icon: Sparkles, action: run(() => openCreateAssessment('mcq')) },
+        { id: 'create-subjective-assessment', label: 'Create Subjective Assessment', group: 'Actions', icon: Sparkles, action: run(() => openCreateAssessment('subjective')) },
+        { id: 'create-coding-assessment', label: 'Create Coding Assessment', group: 'Actions', icon: Sparkles, action: run(() => openCreateAssessment('code')) },
         { id: 'gen-ai-interview', label: 'Generate AI Interview', group: 'Actions', icon: Bot, action: run(() => setIsGenerateAiInterviewOpen(true)) },
         { id: 'add-custom-question', label: 'Add Custom Question', group: 'Actions', icon: Library, action: run(() => router.push('/dashboard/company/questions/new')) },
         { id: 'gen-questions-ai', label: 'Generate Questions with AI', group: 'Actions', icon: Sparkles, action: run(() => router.push('/dashboard/company/questions/new')) },
@@ -224,7 +236,6 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
       );
     }
     
-    // Add "Others" group for all roles
     commands.push(
       { id: 'nav-inbox', label: 'Inbox', group: 'Others', icon: MessageSquare, action: run(() => router.push('/dashboard/chat')) },
       { id: 'nav-notifications', label: 'Notifications History', group: 'Others', icon: Bell, action: run(() => router.push('/dashboard/notifications')) }
@@ -247,14 +258,6 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
     return commands;
   }, [session, router, onOpenChange, jobs, assessments, interviews]);
   
-  const runCommand = React.useCallback((commandId: string) => {
-    const command = allCommands.find(c => c.id === commandId);
-    if (command && !command.disabled) {
-      trackCommand(commandId);
-      command.action();
-    }
-  }, [allCommands, trackCommand]);
-  
   const searchResults = React.useMemo(() => {
     if (!searchValue) return [];
     const lowerCaseSearch = searchValue.toLowerCase();
@@ -270,7 +273,6 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
   const topSettings = React.useMemo(() => {
     const settingsCommands = allCommands.filter(c => c.group === 'Settings');
     const top = getTopSettings(settingsCommands);
-    // If no history, return the first 3 settings
     return top.length > 0 ? top : settingsCommands.slice(0, 3);
   }, [getTopSettings, allCommands]);
 
@@ -281,7 +283,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
 
   return (
     <>
-      <CreateAssessmentDialog open={isCreateAssessmentOpen} onOpenChange={setIsCreateAssessmentOpen} />
+      <CreateAssessmentDialog open={isCreateAssessmentOpen} onOpenChange={setIsCreateAssessmentOpen} assessmentType={preselectedAssessmentType} />
       <GenerateAiInterviewDialog open={isGenerateAiInterviewOpen} onOpenChange={setIsGenerateAiInterviewOpen} />
       <CommandDialog open={open} onOpenChange={onOpenChange}>
         <CommandInput 
