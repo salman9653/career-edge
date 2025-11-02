@@ -90,9 +90,15 @@ export default function DashboardLayout({
                 <Loader2 className="h-8 w-8 animate-spin" />
             </div>
         }>
-            <DashboardLayoutContent>
-                {children}
-            </DashboardLayoutContent>
+            <JobProvider>
+                <AssessmentProvider>
+                    <AiInterviewProvider>
+                        <DashboardLayoutContent>
+                            {children}
+                        </DashboardLayoutContent>
+                    </AiInterviewProvider>
+                </AssessmentProvider>
+            </JobProvider>
         </Suspense>
     );
 }
