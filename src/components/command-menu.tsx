@@ -9,7 +9,6 @@ import {
   CommandDialog,
   CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
   CommandList,
   CommandSeparator,
@@ -38,13 +37,13 @@ import {
     BookCopy,
     ListOrdered,
     Shield,
-    Sparkles,
     MessageSquare,
     Bell,
     Command as CommandIcon,
     Code,
     FileText,
-    ListChecks
+    ListChecks,
+    Sparkles,
 } from 'lucide-react';
 import { CreateAssessmentDialog } from '@/app/dashboard/company/assessments/_components/create-assessment-dialog';
 import { GenerateAiInterviewDialog } from '@/app/dashboard/company/templates/_components/generate-ai-interview-dialog';
@@ -101,9 +100,17 @@ const useCommandHistory = () => {
         }
     }, [getHistory]);
 
-    const getSuggestions = React.useCallback((allCommands: CommandItem[]) => {
+    const getSuggestions = React.useCallback((allCommands: CommandItem[], role: UserSession['role']) => {
         const history = getHistory();
         const historyItems = Object.values(history);
+        
+        if(historyItems.length === 0) {
+            if (role === 'candidate') {
+                 return ['candidate-find-jobs', 'nav-my-applications', 'nav-resume-builder', 'candidate-gen-resume', 'candidate-analyze-resume', 'nav-dashboard']
+                    .map(id => allCommands.find(cmd => cmd.id === id)).filter(Boolean) as CommandItem[];
+            }
+            return []; // No default suggestions for other roles yet
+        }
 
         const mostUsed = [...historyItems].sort((a, b) => b.count - a.count);
         const recentlyUsed = [...historyItems].sort((a, b) => b.lastUsed - a.lastUsed);
@@ -132,7 +139,8 @@ const useCommandHistory = () => {
             .map(item => settingCommands.find(cmd => cmd.id === item.id))
             .filter(Boolean) as CommandItem[];
         
-        return top;
+        if (top.length > 0) return top;
+        return settingCommands.slice(0,3);
 
     }, [getHistory]);
 
@@ -273,16 +281,14 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
         cmd.label.toLowerCase().includes(lowerCaseSearch) ||
         cmd.group.toLowerCase().includes(lowerCaseSearch)
       )
-      .slice(0, 6);
+      .slice(0, 10);
   }, [searchValue, allCommands]);
 
-  const suggestions = React.useMemo(() => getSuggestions(allCommands), [getSuggestions, allCommands]);
+  const suggestions = React.useMemo(() => getSuggestions(allCommands, session?.role), [getSuggestions, allCommands, session?.role]);
   
   const topSettings = React.useMemo(() => {
     const settingsCommands = allCommands.filter(c => c.group === 'Settings');
-    const top = getTopSettings(settingsCommands);
-    if (top.length > 0) return top;
-    return settingsCommands.slice(0, 3);
+    return getTopSettings(settingsCommands);
   }, [getTopSettings, allCommands]);
 
 
@@ -304,7 +310,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
             {searchValue ? (
                  <CommandGroup heading="Search Results">
                     {searchResults.length > 0 ? searchResults.map((item) => (
-                        <CommandItem key={item.id} onSelect={() => runCommand(item.id)} value={item.id}>
+                        <CommandItem key={item.value} onSelect={() => runCommand(item.id)} value={item.value}>
                             <item.icon className="mr-2 h-4 w-4" />
                             <span>{item.label}</span>
                             <span className="ml-auto text-xs text-muted-foreground">{item.group}</span>
