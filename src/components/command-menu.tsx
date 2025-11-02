@@ -5,10 +5,10 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/hooks/use-session';
 import {
-  Command,
   CommandDialog,
   CommandEmpty,
   CommandGroup,
+  CommandInput,
   CommandItem,
   CommandList,
   CommandSeparator,
@@ -36,13 +36,14 @@ import {
     Building2,
     BookCopy,
     ListOrdered,
-    Shield,
     MessageSquare,
     Bell,
     Command as CommandIcon,
     Code,
     FileText,
     ListChecks,
+    ListFilter,
+    Shield,
     Sparkles,
 } from 'lucide-react';
 import { CreateAssessmentDialog } from '@/app/dashboard/company/assessments/_components/create-assessment-dialog';
@@ -52,10 +53,12 @@ import { AssessmentContext } from '@/context/assessment-context';
 import { AiInterviewContext } from '@/context/ai-interview-context';
 import { GeneratedResumeContext } from '@/context/generated-resume-context';
 import { Kbd } from './ui/kbd';
+import type { UserSession } from '@/hooks/use-session';
 
 interface CommandItem {
   id: string;
   label: string;
+  value: string;
   group: string;
   icon: React.ElementType;
   action: () => void;
@@ -183,81 +186,81 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
 
     if (session?.role === 'company' || session?.role === 'manager') {
       commands.push(
-        { id: 'post-job', label: 'Post New Job', group: 'Actions', icon: PlusCircle, action: run(() => router.push('/dashboard/company/jobs/new')) },
-        { id: 'create-assessment', label: 'Create Assessment', group: 'Actions', icon: AppWindow, action: run(() => openCreateAssessment()) },
-        { id: 'create-mcq-assessment', label: 'Create MCQ Assessment', group: 'Actions', icon: ListChecks, action: run(() => openCreateAssessment('mcq')) },
-        { id: 'create-subjective-assessment', label: 'Create Subjective Assessment', group: 'Actions', icon: FileText, action: run(() => openCreateAssessment('subjective')) },
-        { id: 'create-coding-assessment', label: 'Create Coding Assessment', group: 'Actions', icon: Code, action: run(() => openCreateAssessment('code')) },
-        { id: 'gen-ai-interview', label: 'Generate AI Interview', group: 'Actions', icon: Sparkles, action: run(() => setIsGenerateAiInterviewOpen(true)) },
-        { id: 'add-custom-question', label: 'Add Custom Question', group: 'Actions', icon: Library, action: run(() => router.push('/dashboard/company/questions/new')) },
-        { id: 'gen-questions-ai', label: 'Generate Questions with AI', group: 'Actions', icon: Sparkles, action: run(() => router.push('/dashboard/company/questions/new')) },
+        { id: 'post-job', label: 'Post New Job', value: 'post-job', group: 'Actions', icon: PlusCircle, action: run(() => router.push('/dashboard/company/jobs/new')) },
+        { id: 'create-assessment', label: 'Create Assessment', value: 'create-assessment', group: 'Actions', icon: AppWindow, action: run(() => openCreateAssessment()) },
+        { id: 'create-mcq-assessment', label: 'Create MCQ Assessment', value: 'create-mcq-assessment', group: 'Actions', icon: ListChecks, action: run(() => openCreateAssessment('mcq')) },
+        { id: 'create-subjective-assessment', label: 'Create Subjective Assessment', value: 'create-subjective-assessment', group: 'Actions', icon: FileText, action: run(() => openCreateAssessment('subjective')) },
+        { id: 'create-coding-assessment', label: 'Create Coding Assessment', value: 'create-coding-assessment', group: 'Actions', icon: Code, action: run(() => openCreateAssessment('code')) },
+        { id: 'gen-ai-interview', label: 'Generate AI Interview', value: 'gen-ai-interview', group: 'Actions', icon: Sparkles, action: run(() => setIsGenerateAiInterviewOpen(true)) },
+        { id: 'add-custom-question', label: 'Add Custom Question', value: 'add-custom-question', group: 'Actions', icon: Library, action: run(() => router.push('/dashboard/company/questions/new')) },
+        { id: 'gen-questions-ai', label: 'Generate Questions with AI', value: 'gen-questions-ai', group: 'Actions', icon: Sparkles, action: run(() => router.push('/dashboard/company/questions/new')) },
         
-        { id: 'nav-dashboard', label: 'Dashboard', group: 'Navigation', icon: Home, action: run(() => router.push('/dashboard')) },
-        { id: 'nav-ats', label: 'ATS', group: 'Navigation', icon: FileCheck, action: run(() => router.push('/dashboard/company/ats')) },
-        { id: 'nav-job-pipelines', label: 'Job Pipelines', group: 'Navigation', icon: FileCheck, action: run(() => router.push('/dashboard/company/ats')) },
-        { id: 'nav-crm', label: 'CRM / Talent Pool', group: 'Navigation', icon: BookUser, action: run(() => router.push('/dashboard/company/crm')) },
-        { id: 'nav-jobs', label: 'Job Postings', group: 'Navigation', icon: Briefcase, action: run(() => router.push('/dashboard/company/jobs')) },
-        { id: 'nav-templates', label: 'Templates', group: 'Navigation', icon: AppWindow, action: run(() => router.push('/dashboard/company/templates')) },
-        { id: 'nav-assessments', label: 'Assessments', group: 'Navigation', icon: ListOrdered, action: run(() => router.push('/dashboard/company/templates?tab=assessments')) },
-        { id: 'nav-ai-interviews', label: 'AI Interviews', group: 'Navigation', icon: Bot, action: run(() => router.push('/dashboard/company/templates?tab=ai-interviews')) },
-        { id: 'nav-question-bank', label: 'Question Bank', group: 'Navigation', icon: Library, action: run(() => router.push('/dashboard/company/questions')) },
-        { id: 'nav-library-questions', label: 'Library Questions', group: 'Navigation', icon: Library, action: run(() => router.push('/dashboard/company/questions?tab=library')) },
-        { id: 'nav-custom-questions', label: 'My Custom Questions', group: 'Navigation', icon: Library, action: run(() => router.push('/dashboard/company/questions?tab=custom')) },
+        { id: 'nav-dashboard', label: 'Dashboard', value: 'nav-dashboard', group: 'Navigation', icon: Home, action: run(() => router.push('/dashboard')) },
+        { id: 'nav-ats', label: 'ATS', value: 'nav-ats', group: 'Navigation', icon: FileCheck, action: run(() => router.push('/dashboard/company/ats')) },
+        { id: 'nav-job-pipelines', label: 'Job Pipelines', value: 'nav-job-pipelines', group: 'Navigation', icon: FileCheck, action: run(() => router.push('/dashboard/company/ats')) },
+        { id: 'nav-crm', label: 'CRM / Talent Pool', value: 'nav-crm', group: 'Navigation', icon: BookUser, action: run(() => router.push('/dashboard/company/crm')) },
+        { id: 'nav-jobs', label: 'Job Postings', value: 'nav-jobs', group: 'Navigation', icon: Briefcase, action: run(() => router.push('/dashboard/company/jobs')) },
+        { id: 'nav-templates', label: 'Templates', value: 'nav-templates', group: 'Navigation', icon: AppWindow, action: run(() => router.push('/dashboard/company/templates')) },
+        { id: 'nav-assessments', label: 'Assessments', value: 'nav-assessments', group: 'Navigation', icon: ListOrdered, action: run(() => router.push('/dashboard/company/templates?tab=assessments')) },
+        { id: 'nav-ai-interviews', label: 'AI Interviews', value: 'nav-ai-interviews', group: 'Navigation', icon: Bot, action: run(() => router.push('/dashboard/company/templates?tab=ai-interviews')) },
+        { id: 'nav-question-bank', label: 'Question Bank', value: 'nav-question-bank', group: 'Navigation', icon: Library, action: run(() => router.push('/dashboard/company/questions')) },
+        { id: 'nav-library-questions', label: 'Library Questions', value: 'nav-library-questions', group: 'Navigation', icon: Library, action: run(() => router.push('/dashboard/company/questions?tab=library')) },
+        { id: 'nav-custom-questions', label: 'My Custom Questions', value: 'nav-custom-questions', group: 'Navigation', icon: Library, action: run(() => router.push('/dashboard/company/questions?tab=custom')) },
 
-        ...jobs.map(job => ({ id: `job-${job.id}`, label: job.title, group: 'Jobs', icon: Briefcase, action: run(() => router.push(`/dashboard/company/jobs/${job.id}`)) })),
-        ...jobs.map(job => ({ id: `pipeline-${job.id}`, label: job.title, group: 'Job Pipelines', icon: FileCheck, action: run(() => router.push(`/dashboard/company/ats/${job.id}`)) })),
-        ...assessments.map(assessment => ({ id: `assessment-${assessment.id}`, label: assessment.name, group: 'Templates > Assessments', icon: AppWindow, action: run(() => router.push(`/dashboard/company/templates/assessments/${assessment.id}`)) })),
-        ...interviews.map(interview => ({ id: `ai-interview-${interview.id}`, label: interview.name, group: 'Templates > AI Interviews', icon: Bot, action: run(() => router.push(`/dashboard/company/templates/ai-interviews/${interview.id}`)) }))
+        ...jobs.map(job => ({ id: `job-${job.id}`, label: job.title, value: `job-${job.id}`, group: 'Jobs', icon: Briefcase, action: run(() => router.push(`/dashboard/company/jobs/${job.id}`)) })),
+        ...jobs.map(job => ({ id: `pipeline-${job.id}`, label: job.title, value: `pipeline-${job.id}`, group: 'Job Pipelines', icon: FileCheck, action: run(() => router.push(`/dashboard/company/ats/${job.id}`)) })),
+        ...assessments.map(assessment => ({ id: `assessment-${assessment.id}`, label: assessment.name, value: `assessment-${assessment.id}`, group: 'Templates > Assessments', icon: AppWindow, action: run(() => router.push(`/dashboard/company/templates/assessments/${assessment.id}`)) })),
+        ...interviews.map(interview => ({ id: `ai-interview-${interview.id}`, label: interview.name, value: `ai-interview-${interview.id}`, group: 'Templates > AI Interviews', icon: Bot, action: run(() => router.push(`/dashboard/company/templates/ai-interviews/${interview.id}`)) }))
       );
     }
     else if (session?.role === 'candidate') {
       commands.push(
-        { id: 'candidate-gen-resume', label: 'Generate Resume with AI', group: 'Actions', icon: Sparkles, action: run(() => router.push('/dashboard/candidate/resume-builder/new')) },
-        { id: 'candidate-analyze-resume', label: 'Analyze Resume', group: 'Actions', icon: Bot, action: run(() => router.push('/dashboard/candidate/jobs')), disabled: false },
-        { id: 'candidate-find-jobs', label: 'Find Jobs', group: 'Actions', icon: SearchIcon, action: run(() => router.push('/dashboard/candidate/jobs')) },
-        { id: 'candidate-job-invites', label: 'Job Invites', group: 'Navigation', icon: Mail, action: () => {}, disabled: true },
+        { id: 'candidate-gen-resume', label: 'Generate Resume with AI', value: 'candidate-gen-resume', group: 'Actions', icon: Sparkles, action: run(() => router.push('/dashboard/candidate/resume-builder/new')) },
+        { id: 'candidate-analyze-resume', label: 'Analyze Resume', value: 'candidate-analyze-resume', group: 'Actions', icon: Bot, action: run(() => router.push('/dashboard/candidate/jobs')), disabled: false },
+        { id: 'candidate-find-jobs', label: 'Find Jobs', value: 'candidate-find-jobs', group: 'Actions', icon: SearchIcon, action: run(() => router.push('/dashboard/candidate/jobs')) },
+        { id: 'candidate-job-invites', label: 'Job Invites', value: 'candidate-job-invites', group: 'Navigation', icon: Mail, action: () => {}, disabled: true },
         
-        { id: 'nav-dashboard', label: 'Dashboard', group: 'Navigation', icon: Home, action: run(() => router.push('/dashboard')) },
-        { id: 'nav-candidate-jobs', label: 'Jobs', group: 'Navigation', icon: Briefcase, action: run(() => router.push('/dashboard/candidate/jobs')) },
-        { id: 'nav-my-applications', label: 'My Applications', group: 'Navigation', icon: Briefcase, action: run(() => router.push('/dashboard/candidate/applications')) },
-        { id: 'nav-resume-builder', label: 'Resume Builder', group: 'Navigation', icon: ResumeIcon, action: run(() => router.push('/dashboard/candidate/resume-builder')) },
-        { id: 'nav-practice', label: 'Practice', group: 'Navigation', icon: BookCopy, action: run(() => router.push('/dashboard/candidate/practice')) },
+        { id: 'nav-dashboard', label: 'Dashboard', value: 'nav-dashboard', group: 'Navigation', icon: Home, action: run(() => router.push('/dashboard')) },
+        { id: 'nav-candidate-jobs', label: 'Jobs', value: 'nav-candidate-jobs', group: 'Navigation', icon: Briefcase, action: run(() => router.push('/dashboard/candidate/jobs')) },
+        { id: 'nav-my-applications', label: 'My Applications', value: 'nav-my-applications', group: 'Navigation', icon: Briefcase, action: run(() => router.push('/dashboard/candidate/applications')) },
+        { id: 'nav-resume-builder', label: 'Resume Builder', value: 'nav-resume-builder', group: 'Navigation', icon: ResumeIcon, action: run(() => router.push('/dashboard/candidate/resume-builder')) },
+        { id: 'nav-practice', label: 'Practice', value: 'nav-practice', group: 'Navigation', icon: BookCopy, action: run(() => router.push('/dashboard/candidate/practice')) },
         
-        ...resumes.map(resume => ({ id: `resume-${resume.id}`, label: resume.name, group: 'Generated Resumes', icon: ResumeIcon, action: run(() => router.push(`/dashboard/candidate/resumes/${resume.id}`)) }))
+        ...resumes.map(resume => ({ id: `resume-${resume.id}`, label: resume.name, value: `resume-${resume.id}`, group: 'Generated Resumes', icon: ResumeIcon, action: run(() => router.push(`/dashboard/candidate/resumes/${resume.id}`)) }))
       );
     }
     else if (session?.role === 'admin') {
       commands.push(
-        { id: 'admin-gen-questions', label: 'Generate Questions for Library', group: 'Actions', icon: Sparkles, action: run(() => router.push('/dashboard/admin/questions/new')) },
-        { id: 'admin-manage-subscriptions', label: 'Manage Subscriptions', group: 'Actions', icon: CreditCard, action: run(() => router.push('/dashboard/admin/subscriptions/company')) },
-        { id: 'admin-manage-coupons', label: 'Manage Offers & Coupons', group: 'Actions', icon: TicketPercent, action: run(() => router.push('/dashboard/admin/coupons')) },
-        { id: 'admin-manage-platform-settings', label: 'Manage Platform Settings', group: 'Actions', icon: SettingsIcon, action: run(() => router.push('/dashboard?settings=true&tab=Platform Settings')) },
+        { id: 'admin-gen-questions', label: 'Generate Questions for Library', value: 'admin-gen-questions', group: 'Actions', icon: Sparkles, action: run(() => router.push('/dashboard/admin/questions/new')) },
+        { id: 'admin-manage-subscriptions', label: 'Manage Subscriptions', value: 'admin-manage-subscriptions', group: 'Actions', icon: CreditCard, action: run(() => router.push('/dashboard/admin/subscriptions/company')) },
+        { id: 'admin-manage-coupons', label: 'Manage Offers & Coupons', value: 'admin-manage-coupons', group: 'Actions', icon: TicketPercent, action: run(() => router.push('/dashboard/admin/coupons')) },
+        { id: 'admin-manage-platform-settings', label: 'Manage Platform Settings', value: 'admin-manage-platform-settings', group: 'Actions', icon: SettingsIcon, action: run(() => router.push('/dashboard?settings=true&tab=Platform Settings')) },
         
-        { id: 'nav-dashboard', label: 'Dashboard', group: 'Navigation', icon: Home, action: run(() => router.push('/dashboard')) },
-        { id: 'nav-analytics', label: 'Analytics', group: 'Navigation', icon: LayoutDashboard, action: run(() => router.push('/dashboard/analytics')) },
-        { id: 'nav-manage-companies', label: 'Manage Companies', group: 'Navigation', icon: Building2, action: run(() => router.push('/dashboard/admin/companies')) },
-        { id: 'nav-manage-candidates', label: 'Manage Candidates', group: 'Navigation', icon: Users, action: run(() => router.push('/dashboard/admin/candidates')) },
-        { id: 'nav-question-library', label: 'Question Library', group: 'Navigation', icon: Library, action: run(() => router.push('/dashboard/admin/questions')) },
-        { id: 'nav-subscriptions', label: 'Manage Subscriptions', group: 'Navigation', icon: CreditCard, action: run(() => router.push('/dashboard/admin/subscriptions/company')) },
-        { id: 'nav-coupons', label: 'Manage Offers & Coupons', group: 'Navigation', icon: TicketPercent, action: run(() => router.push('/dashboard/admin/coupons')) },
+        { id: 'nav-dashboard', label: 'Dashboard', value: 'nav-dashboard', group: 'Navigation', icon: Home, action: run(() => router.push('/dashboard')) },
+        { id: 'nav-analytics', label: 'Analytics', value: 'nav-analytics', group: 'Navigation', icon: LayoutDashboard, action: run(() => router.push('/dashboard/analytics')) },
+        { id: 'nav-manage-companies', label: 'Manage Companies', value: 'nav-manage-companies', group: 'Navigation', icon: Building2, action: run(() => router.push('/dashboard/admin/companies')) },
+        { id: 'nav-manage-candidates', label: 'Manage Candidates', value: 'nav-manage-candidates', group: 'Navigation', icon: Users, action: run(() => router.push('/dashboard/admin/candidates')) },
+        { id: 'nav-question-library', label: 'Question Library', value: 'nav-question-library', group: 'Navigation', icon: Library, action: run(() => router.push('/dashboard/admin/questions')) },
+        { id: 'nav-subscriptions', label: 'Manage Subscriptions', value: 'nav-subscriptions', group: 'Navigation', icon: CreditCard, action: run(() => router.push('/dashboard/admin/subscriptions/company')) },
+        { id: 'nav-coupons', label: 'Manage Offers & Coupons', value: 'nav-coupons', group: 'Navigation', icon: TicketPercent, action: run(() => router.push('/dashboard/admin/coupons')) },
       );
     }
     
     commands.push(
-      { id: 'nav-inbox', label: 'Inbox', group: 'Others', icon: MessageSquare, action: run(() => router.push('/dashboard/chat')) },
-      { id: 'nav-notifications', label: 'Notifications History', group: 'Others', icon: Bell, action: run(() => router.push('/dashboard/notifications')) }
+      { id: 'nav-inbox', label: 'Inbox', value: 'nav-inbox', group: 'Others', icon: MessageSquare, action: run(() => router.push('/dashboard/chat')) },
+      { id: 'nav-notifications', label: 'Notifications History', value: 'nav-notifications', group: 'Others', icon: Bell, action: run(() => router.push('/dashboard/notifications')) }
     );
 
     const settingsBase = [
-        { id: 'settings-profile', label: 'Profile', group: 'Settings', icon: User, action: run(() => router.push('/dashboard/profile')) },
-        { id: 'settings-account', label: 'Account Settings', group: 'Settings', icon: SettingsIcon, action: run(() => router.push('/dashboard?settings=true&tab=Account')) },
-        { id: 'settings-appearance', label: 'Appearance', group: 'Settings', icon: Palette, action: run(() => router.push('/dashboard?settings=true&tab=Appearance')) },
-        { id: 'settings-security', label: 'Security', group: 'Settings', icon: Shield, action: run(() => router.push('/dashboard?settings=true&tab=Security'))},
-        { id: 'settings-help', label: 'Help', group: 'Settings', icon: HelpCircle, action: run(() => router.push('/dashboard?settings=true&tab=Help')) },
+        { id: 'settings-profile', label: 'Profile', value: 'settings-profile', group: 'Settings', icon: User, action: run(() => router.push('/dashboard/profile')) },
+        { id: 'settings-account', label: 'Account Settings', value: 'settings-account', group: 'Settings', icon: SettingsIcon, action: run(() => router.push('/dashboard?settings=true&tab=Account')) },
+        { id: 'settings-appearance', label: 'Appearance', value: 'settings-appearance', group: 'Settings', icon: Palette, action: run(() => router.push('/dashboard?settings=true&tab=Appearance')) },
+        { id: 'settings-security', label: 'Security', value: 'settings-security', group: 'Settings', icon: Shield, action: run(() => router.push('/dashboard?settings=true&tab=Security'))},
+        { id: 'settings-help', label: 'Help', value: 'settings-help', group: 'Settings', icon: HelpCircle, action: run(() => router.push('/dashboard?settings=true&tab=Help')) },
     ];
 
     if (session?.role === 'company' || session?.role === 'manager') {
-        settingsBase.splice(2, 0, { id: 'settings-managers', label: 'Company Account Managers', group: 'Settings', icon: Users, action: run(() => router.push('/dashboard/company/managers')) });
+        settingsBase.splice(2, 0, { id: 'settings-managers', label: 'Company Account Managers', value: 'settings-managers', group: 'Settings', icon: Users, action: run(() => router.push('/dashboard/company/managers')) });
     }
     
     commands.push(...settingsBase);
