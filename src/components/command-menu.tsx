@@ -33,7 +33,6 @@ import {
     Bot,
     Search as SearchIcon,
     Mail,
-    FileText,
     LayoutDashboard,
     Building2,
     BookCopy,
@@ -43,6 +42,9 @@ import {
     MessageSquare,
     Bell,
     Command as CommandIcon,
+    Code,
+    FileText,
+    ListChecks
 } from 'lucide-react';
 import { CreateAssessmentDialog } from '@/app/dashboard/company/assessments/_components/create-assessment-dialog';
 import { GenerateAiInterviewDialog } from '@/app/dashboard/company/templates/_components/generate-ai-interview-dialog';
@@ -172,9 +174,9 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
       commands.push(
         { id: 'post-job', label: 'Post New Job', group: 'Actions', icon: PlusCircle, action: run(() => router.push('/dashboard/company/jobs/new')) },
         { id: 'create-assessment', label: 'Create Assessment', group: 'Actions', icon: AppWindow, action: run(() => openCreateAssessment()) },
-        { id: 'create-mcq-assessment', label: 'Create MCQ Assessment', group: 'Actions', icon: Sparkles, action: run(() => openCreateAssessment('mcq')) },
-        { id: 'create-subjective-assessment', label: 'Create Subjective Assessment', group: 'Actions', icon: Sparkles, action: run(() => openCreateAssessment('subjective')) },
-        { id: 'create-coding-assessment', label: 'Create Coding Assessment', group: 'Actions', icon: Sparkles, action: run(() => openCreateAssessment('code')) },
+        { id: 'create-mcq-assessment', label: 'Create MCQ Assessment', group: 'Actions', icon: ListChecks, action: run(() => openCreateAssessment('mcq')) },
+        { id: 'create-subjective-assessment', label: 'Create Subjective Assessment', group: 'Actions', icon: FileText, action: run(() => openCreateAssessment('subjective')) },
+        { id: 'create-coding-assessment', label: 'Create Coding Assessment', group: 'Actions', icon: Code, action: run(() => openCreateAssessment('code')) },
         { id: 'gen-ai-interview', label: 'Generate AI Interview', group: 'Actions', icon: Bot, action: run(() => setIsGenerateAiInterviewOpen(true)) },
         { id: 'add-custom-question', label: 'Add Custom Question', group: 'Actions', icon: Library, action: run(() => router.push('/dashboard/company/questions/new')) },
         { id: 'gen-questions-ai', label: 'Generate Questions with AI', group: 'Actions', icon: Sparkles, action: run(() => router.push('/dashboard/company/questions/new')) },
@@ -193,8 +195,8 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
 
         ...jobs.map(job => ({ id: `job-${job.id}`, label: job.title, group: 'Jobs', icon: Briefcase, action: run(() => router.push(`/dashboard/company/jobs/${job.id}`)) })),
         ...jobs.map(job => ({ id: `pipeline-${job.id}`, label: job.title, group: 'Job Pipelines', icon: FileCheck, action: run(() => router.push(`/dashboard/company/ats/${job.id}`)) })),
-        ...assessments.map(assessment => ({ id: `assessment-${assessment.id}`, label: assessment.name, group: 'Templates > Assessment', icon: AppWindow, action: run(() => router.push(`/dashboard/company/templates/assessments/${assessment.id}`)) })),
-        ...interviews.map(interview => ({ id: `ai-interview-${interview.id}`, label: interview.name, group: 'Templates > AI Interview', icon: Bot, action: run(() => router.push(`/dashboard/company/templates/ai-interviews/${interview.id}`)) }))
+        ...assessments.map(assessment => ({ id: `assessment-${assessment.id}`, label: assessment.name, group: 'Templates > Assessments', icon: AppWindow, action: run(() => router.push(`/dashboard/company/templates/assessments/${assessment.id}`)) })),
+        ...interviews.map(interview => ({ id: `ai-interview-${interview.id}`, label: interview.name, group: 'Templates > AI Interviews', icon: Bot, action: run(() => router.push(`/dashboard/company/templates/ai-interviews/${interview.id}`)) }))
       );
     }
     else if (session?.role === 'candidate') {
@@ -248,7 +250,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
 
     return commands;
   }, [session, router, onOpenChange, jobs, assessments, interviews]);
-
+  
   const runCommand = React.useCallback((commandId: string) => {
     const command = allCommands.find(c => c.id === commandId);
     if (command && !command.disabled) {
@@ -273,6 +275,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
     const settingsCommands = allCommands.filter(c => c.group === 'Settings');
     const top = getTopSettings(settingsCommands);
     return top.length > 0 ? top : settingsCommands.slice(0, 3);
+
   }, [getTopSettings, allCommands]);
 
 
@@ -294,7 +297,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
             {searchValue ? (
                  <CommandGroup heading="Search Results">
                     {searchResults.length > 0 ? searchResults.map((item) => (
-                        <CommandItem key={item.id} onSelect={() => runCommand(item.id)} value={item.label + item.group}>
+                        <CommandItem key={item.id} onSelect={() => runCommand(item.id)} value={item.id}>
                             <item.icon className="mr-2 h-4 w-4" />
                             <span>{item.label}</span>
                             <span className="ml-auto text-xs text-muted-foreground">{item.group}</span>
@@ -332,4 +335,3 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
     </>
   );
 }
-
