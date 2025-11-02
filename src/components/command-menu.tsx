@@ -37,7 +37,8 @@ import {
     LayoutDashboard,
     Building2,
     BookCopy,
-    ListOrdered
+    ListOrdered,
+    Shield,
 } from 'lucide-react';
 import { CreateAssessmentDialog } from '@/app/dashboard/company/assessments/_components/create-assessment-dialog';
 import { GenerateAiInterviewDialog } from '@/app/dashboard/company/templates/_components/generate-ai-interview-dialog';
@@ -210,9 +211,12 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
     setSearchValue('');
   }, [open]);
 
-  const handleSelect = (command: CommandItem) => {
-    trackCommand(command.id);
-    runCommand(command.action);
+  const handleSelect = (commandId: string) => {
+    const command = allCommands.find(c => c.id === commandId);
+    if (command) {
+        trackCommand(command.id);
+        runCommand(command.action);
+    }
   };
   
   return (
@@ -231,7 +235,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
             {searchValue ? (
                  <CommandGroup heading="Search Results">
                     {searchResults.map((item) => (
-                        <CommandItem key={item.id} onSelect={() => handleSelect(item)} value={item.label}>
+                        <CommandItem key={item.id} onSelect={() => handleSelect(item.id)} value={item.label}>
                             <item.icon className="mr-2 h-4 w-4" />
                             <span>{item.label}</span>
                             <span className="ml-auto text-xs text-muted-foreground">{item.group}</span>
@@ -243,7 +247,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
                 {suggestions.length > 0 && (
                     <CommandGroup heading="Suggestions">
                     {suggestions.map((item) => (
-                        <CommandItem key={item.id} onSelect={() => handleSelect(item)} value={item.label}>
+                        <CommandItem key={item.id} onSelect={() => handleSelect(item.id)} value={item.label}>
                             <item.icon className="mr-2 h-4 w-4" />
                             <span>{item.label}</span>
                         </CommandItem>
@@ -255,7 +259,7 @@ export function CommandMenu({ open, onOpenChange }: CommandMenuProps) {
 
                 <CommandGroup heading="Settings">
                     {topSettings.map((item) => (
-                        <CommandItem key={item.id} onSelect={() => handleSelect(item)} value={item.label}>
+                        <CommandItem key={item.id} onSelect={() => handleSelect(item.id)} value={item.label}>
                             <item.icon className="mr-2 h-4 w-4" />
                             <span>{item.label}</span>
                         </CommandItem>
