@@ -1,12 +1,17 @@
+
 import Link from 'next/link';
-import { Briefcase } from 'lucide-react';
+import Image from 'next/image';
 
 export function Logo() {
   return (
     <Link href="/" className="flex items-center space-x-3">
-      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-[#667EEA] to-[#764BA2] text-white">
-        <Briefcase className="h-6 w-6" />
-      </div>
+      <Image
+        src="/logo.png"
+        alt="Career Edge Logo"
+        width={40}
+        height={40}
+        className="rounded-full"
+      />
       <span className="font-headline text-2xl font-bold text-foreground">
         Career Edge
       </span>
