@@ -4,13 +4,9 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { collection, query, where, onSnapshot, getDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
+import type { UserProfile, CompanySize } from '@/lib/types';
 
-export interface CompanySize {
-    size: string;
-    employees: string;
-}
-
-export interface CompanyData {
+export type CompanyData = Omit<UserProfile, 'uid' | 'email' | 'name' | 'role' | 'displayImageUrl'> & {
     id: string;
     name: string;
     email: string;
@@ -19,7 +15,8 @@ export interface CompanyData {
     plan: string;
     size: CompanySize;
     createdAt: string | null;
-}
+};
+
 
 interface CompanyContextType {
     companies: CompanyData[];
@@ -62,8 +59,17 @@ export const CompanyProvider = ({ children }: { children: ReactNode }) => {
                     status: data.status || 'Active',
                     plan: data.subscription || 'Free',
                     size: data.companySize || { size: 'Startup', employees: '1-100' },
-                    createdAt: data.createdAt?.toDate()?.toISOString() || null
-                };
+                    createdAt: data.createdAt?.toDate()?.toISOString() || null,
+                    website: data.website,
+                    socials: data.socials,
+                    helplinePhone: data.helplinePhone,
+                    helplineEmail: data.helplineEmail,
+                    aboutCompany: data.aboutCompany,
+                    companyType: data.companyType,
+                    foundedYear: data.foundedYear,
+                    tags: data.tags,
+                    benefits: data.benefits,
+                } as CompanyData;
             });
 
             const companyList = await Promise.all(companyListPromises);

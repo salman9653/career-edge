@@ -41,7 +41,10 @@ export const JobProvider = ({ children }: { children: ReactNode }) => {
                 q = query(jobsCol, where('companyId', '==', companyId));
             } else if (session.role === 'candidate') {
                  q = query(jobsCol, where('status', '==', 'Live'));
-            } else {
+            } else if (session.role === 'admin' || session.role === 'adminAccountManager') {
+                q = query(jobsCol);
+            }
+             else {
                  setLoading(false);
                  return;
             }
@@ -51,7 +54,8 @@ export const JobProvider = ({ children }: { children: ReactNode }) => {
                     const data = doc.data();
                     let applicants: Applicant[] = [];
 
-                    if(session.role === 'company' || session.role === 'manager') {
+                    // Fetch applicants only if user is a company/manager or admin
+                    if(session.role === 'company' || session.role === 'manager' || session.role === 'admin' || session.role === 'adminAccountManager') {
                          const applicantsColRef = collection(db, 'jobs', doc.id, 'applicants');
                          const applicantsSnapshot = await getDocs(applicantsColRef);
                          applicants = applicantsSnapshot.docs.map(applicantDoc => ({
