@@ -90,11 +90,21 @@ export interface Question {
     libraryType: 'library' | 'custom';
     addedBy: string;
     addedByName: string;
+    // Subjective
     answerSummary?: string;
+    // MCQ
     options?: string[];
     correctAnswer?: string;
+    // Screening
     acceptableAnswer?: string[];
     isStrict?: boolean;
+    // Coding
+    functionName?: { [language: string]: string };
+    boilerplate?: { [language: string]: string };
+    examples?: { input: string; output: string; }[];
+    constraints?: string[];
+    testCases?: { input: string; output: string; sample: boolean }[];
+    hints?: string[];
 }
 
 export interface PlanFeature {
@@ -137,10 +147,12 @@ export interface CompanySize {
 }
 
 export interface Socials {
-    linkedin?: string;
+    github?: string;
     twitter?: string;
+    linkedin?: string;
     naukri?: string;
     glassdoor?: string;
+    indeed?: string;
 }
 
 export interface CompanyDetails {
@@ -152,6 +164,7 @@ export interface CompanyDetails {
 
 export interface AiInterview {
     id: string;
+    companyId: string;
     name: string;
     jobTitle: string;
     jobDescription: string;
@@ -183,4 +196,172 @@ export interface Round {
     questions?: Question[];
     questionIds?: string[];
     autoProceed?: boolean;
+}
+
+export interface Notification {
+  id: string;
+  recipientId: string;
+  senderId: string;
+  senderName: string;
+  type: 'NEW_APPLICATION' | 'STATUS_UPDATE';
+  message: string;
+  link: string;
+  isRead: boolean;
+  createdAt: any;
+  jobId?: string;
+  jobTitle?: string;
+  applicantCount?: number;
+  newApplicantNames?: string[];
+  originalIds?: string[];
+}
+
+export interface ResumeAnalysisResult {
+  id: string;
+  userId: string;
+  jobId: string;
+  jobTitle: string;
+  companyName: string;
+  analyzedAt: any;
+  overallScore: number;
+  summary: string;
+  ratings: {
+    skills: number;
+    experience: number;
+    qualifications: number;
+  };
+  pros: string[];
+  cons: string[];
+  improvements: string[];
+}
+
+export interface GeneratedResume {
+  id: string;
+  userId: string;
+  name: string;
+  markdownContent: string;
+  pdfDataUri?: string;
+  jobDescription: string;
+  createdAt: any;
+  input: {
+      jobDescription: string;
+      userDetails: any;
+      hasExistingResume: boolean;
+  };
+}
+
+export interface Resume {
+    name: string;
+    size: number;
+    type: string;
+    updatedAt: any; // Firestore Timestamp
+    data: string; // Base64 data URI
+}
+
+export interface Employment {
+    id: string;
+    designation: string;
+    company: string;
+    employmentType: string;
+    isCurrent: boolean;
+    startDate: string;
+    endDate: string | null;
+    jobProfile: string;
+    ctc: {
+        amount: number;
+        currency: 'INR' | 'USD';
+    };
+    skillsUsed: string[];
+}
+
+export interface Education {
+    id: string;
+    level: 'Class 10th' | 'Class 12th' | 'Graduation/Diploma' | 'Masters/Post-Graduations' | 'Doctorate/PhD';
+    isPrimary?: boolean;
+    // For 10th/12th
+    board?: string;
+    school?: string;
+    passingYear?: number;
+    marks?: number; // as percentage
+    // For higher education
+    university?: string;
+    course?: string;
+    specialization?: string;
+    courseType?: 'Full time' | 'Part time' | 'Correspondence/Distance learning';
+    startYear?: number;
+    endYear?: number;
+    gradingSystem?: string;
+}
+
+export interface Project {
+    id: string;
+    projectTitle: string;
+    projectUrl?: string;
+    taggedWith?: string; // employment or education id
+    clientName?: string;
+    projectStatus: 'in progress' | 'finished';
+    workedFrom: { month: number; year: number; };
+    workedTill?: { month: number; year: number; };
+    projectDetails: string;
+    skillsUsed: string[];
+}
+
+
+export interface UserProfile {
+    uid: string;
+    email: string;
+    name: string;
+    role: 'candidate' | 'company' | 'admin' | 'manager' | 'adminAccountManager';
+    phone: string;
+    displayImageUrl: string | null;
+    emailVerified: boolean;
+    // Company specific
+    companySize?: CompanySize;
+    website?: string;
+    socials?: Socials;
+    helplinePhone?: string;
+    helplineEmail?: string;
+    company_uid?: string;
+    designation?: string;
+    permissions_role?: string;
+    aboutCompany?: string;
+    companyType?: string;
+    foundedYear?: string;
+    tags?: string[];
+    benefits?: string[];
+    // Candidate specific
+    jobTitle?: string;
+    currentCompany?: string;
+    address?: string;
+    workStatus?: 'fresher' | 'experienced';
+    experience?: string;
+    noticePeriod?: string;
+    currentSalary?: string;
+    resume?: Resume | null;
+    hasResume?: boolean;
+    profileSummary?: string;
+    keySkills?: string[];
+    employment?: Employment[];
+    education?: Education[];
+    projects?: Project[];
+    portfolio?: string;
+    linkedin?: string; // DEPRECATED: use socials.linkedin instead
+    naukri?: string; // DEPRECATED: use socials.naukri instead
+    github?: string; // DEPRECATED: use socials.github instead
+    gender?: string;
+    maritalStatus?: string;
+    dob?: string;
+    permanentAddress?: {
+      address: string;
+      city: string;
+      state: string;
+      country: string;
+      pincode: string;
+    };
+    languages?: {
+      language: string;
+      proficiency: string;
+      canRead: boolean;
+      canWrite: boolean;
+      canSpeak: boolean;
+    }[];
 }

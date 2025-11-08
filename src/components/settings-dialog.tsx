@@ -156,6 +156,11 @@ const AccountSettings = ({ onNavigate }: { onNavigate: () => void }) => {
         router.push('/dashboard/company/managers');
     }
 
+    const goToAdminManagers = () => {
+        onNavigate();
+        router.push('/dashboard/admin/managers');
+    }
+
     const handleLogout = () => {
         sessionStorage.clear();
         document.cookie = 'firebase-session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
@@ -220,6 +225,18 @@ const AccountSettings = ({ onNavigate }: { onNavigate: () => void }) => {
                     <Button onClick={goToCompanyManagers} variant="secondary">
                         <Users className="mr-2 h-4 w-4" />
                         Company Account Managers
+                    </Button>
+                </div>
+            )}
+             {session?.role === 'admin' && (
+                <div className="space-y-4 pt-4 border-t">
+                    <h4 className="font-semibold">Account Managers</h4>
+                    <p className="text-sm text-muted-foreground">
+                        Manage other platform administrators.
+                    </p>
+                    <Button onClick={goToAdminManagers} variant="secondary">
+                        <Users className="mr-2 h-4 w-4" />
+                        Platform Account Managers
                     </Button>
                 </div>
             )}

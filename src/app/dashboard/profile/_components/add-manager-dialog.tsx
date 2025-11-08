@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useActionState, useEffect, useRef } from 'react';
 import { useFormStatus } from 'react-dom';
@@ -42,10 +43,11 @@ function SubmitButton() {
 interface AddManagerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  companyId: string;
+  companyId?: string;
+  adminAccount?: boolean;
 }
 
-export function AddManagerDialog({ open, onOpenChange, companyId }: AddManagerDialogProps) {
+export function AddManagerDialog({ open, onOpenChange, companyId, adminAccount = false }: AddManagerDialogProps) {
   const [state, formAction] = useActionState(addManagerAction, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
@@ -71,7 +73,8 @@ export function AddManagerDialog({ open, onOpenChange, companyId }: AddManagerDi
           </DialogDescription>
         </DialogHeader>
         <form action={formAction} ref={formRef}>
-          <input type="hidden" name="company_uid" value={companyId} />
+          {companyId && <input type="hidden" name="company_uid" value={companyId} />}
+          {adminAccount && <input type="hidden" name="adminAccount" value="true" />}
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="name">Full Name</Label>

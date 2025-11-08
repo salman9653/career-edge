@@ -59,6 +59,7 @@ export async function analyzeAndSaveResumeAction(
   const jobTitle = formData.get("jobTitle") as string;
   const companyName = formData.get("companyName") as string;
   const userId = formData.get("userId") as string;
+  const jobDescription = formData.get("jobDescription") as string;
 
 
   if (!resumeFile || resumeFile.size === 0) {
@@ -81,6 +82,7 @@ export async function analyzeAndSaveResumeAction(
       userId,
       jobId,
       jobTitle,
+      companyName,
       analyzedAt: serverTimestamp(),
       ...analysisResult
     });
@@ -678,7 +680,7 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
         if (key.includes('.')) {
             // Handle nested objects like socials and address
             dataToUpdate[key] = value;
-        } else if (key === 'keySkills' || key === 'employment' || key === 'education' || key === 'languages' || key === 'projects') {
+        } else if (key === 'keySkills' || key === 'employment' || key === 'education' || key === 'languages' || key === 'projects' || key === 'benefits') {
             try {
                 const parsedValue = JSON.parse(value as string);
                 if (Array.isArray(parsedValue)) {
@@ -731,12 +733,33 @@ export async function updateUserProfileAction(prevState: any, formData: FormData
         }
     }
 
-    const dobDay = formData.get('dob-day');
-    const dobMonth = formData.get('dob-month');
-    const dobYear = formData.get('dob-year');
+    const languagesValue = formData.get('languages');
+    if (typeof languagesValue === 'string') {
+        try {
+            dataToUpdate['languages'] = JSON.parse(languagesValue);
+        } catch (e) {
+            console.error('Could not parse languages JSON:', e);
+        }
+    }
+    
+    const projectsValue = formData.get('projects');
+    if (typeof projectsValue === 'string') {
+        try {
+            dataToUpdate['projects'] = JSON.parse(projectsValue);
+        } catch (e) {
+            console.error('Could not parse projects JSON:', e);
+        }
+    }
+    
+    const benefitsValue = formData.getAll('benefits');
+    if(benefitsValue) {
+        dataToUpdate['benefits'] = benefitsValue;
+    }
 
-    if (dobDay && dobMonth && dobYear) {
-        dataToUpdate['dob'] = new Date(`${dobYear}-${dobMonth}-${dobDay}`).toISOString();
+
+    const dobValue = formData.get('dob');
+    if (dobValue) {
+        dataToUpdate['dob'] = dobValue;
     }
     
     if (Object.keys(dataToUpdate).length === 0) {
@@ -875,25 +898,38 @@ export async function addManagerAction(prevState: any, formData: FormData) {
   const designation = formData.get('designation') as string;
   const permissionsRole = formData.get('permissions_role') as string;
   const companyUid = formData.get('company_uid') as string;
-  
-  if (!name || !email || !designation || !permissionsRole || !companyUid) {
+  const adminAccount = formData.get('adminAccount') as string;
+
+  if (!name || !email || !designation || !permissionsRole) {
     return { error: 'Please fill out all required fields.' };
   }
 
-  const managerData = {
+  const managerData: any = {
     name,
     email,
     designation,
     permissions_role: permissionsRole,
-    company_uid: companyUid,
-    role: 'manager',
     status: 'inactive',
     createdAt: serverTimestamp(),
   };
 
+  if (adminAccount === 'true') {
+      managerData.role = 'adminAccountManager';
+  } else {
+      if (!companyUid) {
+          return { error: 'Company ID is missing for company manager.' };
+      }
+      managerData.role = 'manager';
+      managerData.company_uid = companyUid;
+  }
+  
   try {
     await addDoc(collection(db, 'users'), managerData);
-    revalidatePath('/dashboard/profile');
+    if(adminAccount === 'true') {
+        revalidatePath('/dashboard/admin/managers');
+    } else {
+        revalidatePath('/dashboard/profile');
+    }
     return { success: true, error: null };
   } catch (e: any) {
     return { error: e.message };
@@ -915,6 +951,7 @@ export async function inviteManagerAction(managerId: string) {
     });
     
     revalidatePath('/dashboard/profile');
+    revalidatePath('/dashboard/admin/managers');
     return { success: true, token: invitationToken };
 
   } catch (e: any) {
@@ -930,6 +967,7 @@ export async function updateManagerStatusAction(managerId: string, newStatus: 'a
     try {
         await updateDoc(doc(db, 'users', managerId), { status: newStatus });
         revalidatePath('/dashboard/profile');
+        revalidatePath('/dashboard/admin/managers');
         return { success: true };
     } catch (e: any) {
         return { error: e.message };
@@ -943,6 +981,7 @@ export async function updateManagerRoleAction(managerId: string, newRole: 'Admin
     try {
         await updateDoc(doc(db, 'users', managerId), { permissions_role: newRole });
         revalidatePath('/dashboard/profile');
+        revalidatePath('/dashboard/admin/managers');
         return { success: true };
     } catch (e: any) {
         return { error: e.message };
