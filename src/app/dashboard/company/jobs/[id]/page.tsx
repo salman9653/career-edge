@@ -1,6 +1,7 @@
 
+
 'use client';
-import { MoreHorizontal, ArrowLeft, Briefcase, MapPin, Banknote, FileText, ListOrdered, ChevronDown, Edit, Trash2, ChevronsUpDown, ChevronUp, Check, Mail, Linkedin, Clipboard, BriefcaseBusiness, Share2, Loader2, AlertTriangle, Copy, Users, SquareArrowOutUpRight, Sparkles } from "lucide-react"
+import { MoreHorizontal, ArrowLeft, Briefcase, MapPin, Banknote, FileText, ListOrdered, ChevronDown, Edit, Trash2, ChevronsUpDown, ChevronUp, Check, Mail, Linkedin, Clipboard, BriefcaseBusiness, Share2, Loader2, AlertTriangle, Copy, Users, SquareArrowOutUpRight, Sparkles, Link as LinkIcon } from "lucide-react"
 import { format } from "date-fns"
 
 import { Badge } from "@/components/ui/badge"
