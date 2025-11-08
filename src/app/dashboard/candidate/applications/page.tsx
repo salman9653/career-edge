@@ -7,7 +7,7 @@ import { ApplicationsTable, type Application } from './_components/applications-
 import { FavoriteJobsTable } from './_components/favorite-jobs-table';
 import { useContext, useEffect, useState } from 'react';
 import type { Job, Applicant } from '@/lib/types';
-import { collection, query, where, onSnapshot, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, getDoc, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { JobContext } from '@/context/job-context';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
