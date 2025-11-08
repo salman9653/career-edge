@@ -32,7 +32,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { MoreHorizontal, ShieldAlert, ShieldCheck, User, ShieldX, Trash, Gem, Star, Crown, ArrowLeft, UserCog, Building, Globe, Linkedin, Phone, Mail, Briefcase, Building2, Info, Calendar, ChevronDown } from 'lucide-react';
+import { MoreHorizontal, ShieldAlert, ShieldCheck, User, ShieldX, Trash, Gem, Star, Crown, ArrowLeft, UserCog, Building, Globe, Linkedin, Phone, Mail, Briefcase, Building2, Info, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { type CompanySize, type Socials } from '@/lib/types';
 import { updateCompanyStatusAction, updateCompanyPlanAction, deleteCompanyAction } from '../../actions';
@@ -290,14 +290,9 @@ export default function CompanyProfilePage() {
                                 <span className="font-medium">{company.foundedYear || 'N/A'}</span>
                             </div>
                         </CardContent>
-                        <Collapsible asChild>
+                         <Collapsible asChild>
                             <CardContent className="pt-6 border-t">
-                                <CollapsibleTrigger className="w-full">
-                                    <div className="flex justify-center items-center text-sm text-muted-foreground">
-                                        Show More Details <ChevronDown className="ml-1 h-4 w-4" />
-                                    </div>
-                                </CollapsibleTrigger>
-                                <CollapsibleContent className="mt-4 space-y-6">
+                                <CollapsibleContent className="space-y-6">
                                     <div className="space-y-2">
                                         <h4 className="font-semibold">About Company</h4>
                                         <p className="text-sm text-muted-foreground">{company.aboutCompany || 'No description provided.'}</p>
@@ -307,12 +302,21 @@ export default function CompanyProfilePage() {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                             {company.helplinePhone && <div className="flex items-center gap-2"><Phone className="h-4 w-4" /><span>{company.helplinePhone}</span></div>}
                                             {company.helplineEmail && <div className="flex items-center gap-2"><Mail className="h-4 w-4" /><span>{company.helplineEmail}</span></div>}
-                                            {company.website && <div className="flex items-center gap-2"><Globe className="h-4 w-4" /><a href={getWebsiteUrl(company.website)} target="_blank" className="text-dash-primary hover:underline">{company.website}</a></div>}
-                                            {company.socials?.linkedin && <div className="flex items-center gap-2"><Linkedin className="h-4 w-4" /><a href={getWebsiteUrl(company.socials.linkedin)} target="_blank" className="text-dash-primary hover:underline">LinkedIn</a></div>}
-                                            {company.socials?.twitter && <div className="flex items-center gap-2"><Twitter className="h-4 w-4" /><a href={getWebsiteUrl(company.socials.twitter)} target="_blank" className="text-dash-primary hover:underline">Twitter / X</a></div>}
+                                            {company.website && <div className="flex items-center gap-2"><Globe className="h-4 w-4" /><a href={getWebsiteUrl(company.website)} target="_blank" rel="noopener noreferrer" className="text-dash-primary hover:underline">{company.website}</a></div>}
+                                            {company.socials?.linkedin && <div className="flex items-center gap-2"><Linkedin className="h-4 w-4" /><a href={getWebsiteUrl(company.socials.linkedin)} target="_blank" rel="noopener noreferrer" className="text-dash-primary hover:underline">LinkedIn</a></div>}
+                                            {company.socials?.twitter && <div className="flex items-center gap-2"><Twitter className="h-4 w-4" /><a href={getWebsiteUrl(company.socials.twitter)} target="_blank" rel="noopener noreferrer" className="text-dash-primary hover:underline">Twitter / X</a></div>}
                                         </div>
                                     </div>
                                 </CollapsibleContent>
+                                <div className="flex justify-center items-center text-sm text-muted-foreground pt-4">
+                                    <CollapsibleTrigger asChild>
+                                        <Button variant="link" className="text-sm text-muted-foreground">
+                                            <span className="group-data-[state=closed]:inline group-data-[state=open]:hidden">Show More Details</span>
+                                            <span className="group-data-[state=open]:inline group-data-[state=closed]:hidden">Show Less</span>
+                                            <ChevronDown className="ml-1 h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+                                        </Button>
+                                    </CollapsibleTrigger>
+                                </div>
                             </CardContent>
                         </Collapsible>
                     </Card>
@@ -331,4 +335,3 @@ export default function CompanyProfilePage() {
         </div>
     );
 }
-
