@@ -68,6 +68,15 @@ export default function CandidateProfilePage() {
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
+
+                    let displayImageUrl = data.displayImageUrl || null;
+                    if(data.hasDisplayImage && !displayImageUrl) {
+                        const imageDoc = await getDoc(doc(db, `users/${candidateId}/uploads/displayImage`));
+                        if (imageDoc.exists()) {
+                            displayImageUrl = imageDoc.data().data;
+                        }
+                    }
+
                     const candidateData: CandidateData = {
                         ...(data as UserProfile),
                         id: docSnap.id,
@@ -75,6 +84,7 @@ export default function CandidateProfilePage() {
                         name: data.name || 'N/A',
                         email: data.email || 'N/A',
                         status: data.status || 'Active',
+                        displayImageUrl: displayImageUrl,
                         subscription: data.subscription || 'Free',
                         applications: data.applications || 0,
                         createdAt: data.createdAt?.toDate()?.toISOString() || null
