@@ -3,7 +3,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { collection, query, where, getDocs, doc, updateDoc, writeBatch, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, writeBatch, getDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase/config';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { Logo } from '@/components/logo';
@@ -23,7 +23,7 @@ interface ManagerProfile {
     designation: string;
     permissions_role: string;
     status: 'active' | 'inactive' | 'invited';
-    company_uid: string;
+    company_uid?: string;
     companyLogo?: string;
     createdAt?: any;
     role: string;
@@ -73,29 +73,41 @@ function AcceptInviteContents() {
                      return;
                 }
 
-                // Fetch company name
-                const companyDoc = await getDoc(doc(db, 'users', managerData.company_uid));
-                if (companyDoc.exists()) {
-                    const companyData = companyDoc.data();
-                    setCompanyName(companyData.name);
-                     const managerProfile: ManagerProfile = {
-                        id: managerDoc.id,
-                        name: managerData.name,
-                        email: managerData.email,
-                        designation: managerData.designation,
-                        permissions_role: managerData.permissions_role,
-                        status: managerData.status,
-                        company_uid: managerData.company_uid,
-                        companyLogo: companyData.displayImageUrl,
-                        createdAt: managerData.createdAt,
-                        role: managerData.role,
-                    };
-                    setManager(managerProfile);
+                const managerProfile: ManagerProfile = {
+                    id: managerDoc.id,
+                    name: managerData.name,
+                    email: managerData.email,
+                    designation: managerData.designation,
+                    permissions_role: managerData.permissions_role,
+                    status: managerData.status,
+                    company_uid: managerData.company_uid,
+                    createdAt: managerData.createdAt,
+                    role: managerData.role,
+                };
+
+                // If it's a company manager, fetch company details
+                if (managerData.company_uid) {
+                    const companyDoc = await getDoc(doc(db, 'users', managerData.company_uid));
+                    if (companyDoc.exists()) {
+                        const companyData = companyDoc.data();
+                        setCompanyName(companyData.name);
+                        managerProfile.companyLogo = companyData.displayImageUrl;
+                    } else {
+                         setError('The company that invited you no longer exists.');
+                         setLoading(false);
+                         return;
+                    }
+                } else if (managerData.role === 'adminAccountManager') {
+                    // It's a platform admin invitation
+                    setCompanyName('Career Edge Platform');
+                    managerProfile.companyLogo = '/logo.png'; // Use the platform logo
                 } else {
-                     setError('The company that invited you no longer exists.');
-                     setLoading(false);
-                     return;
+                    setError('The invitation is missing necessary details.');
+                    setLoading(false);
+                    return;
                 }
+                
+                setManager(managerProfile);
 
             } catch (err) {
                 setError('An error occurred while validating your invitation.');
@@ -134,18 +146,21 @@ function AcceptInviteContents() {
             const newManagerRef = doc(db, 'users', user.uid);
             
             // 2. Define the data for the new document, copying from the old one
-            const newManagerData = {
+            const newManagerData: any = {
                 uid: user.uid,
                 name: manager.name,
                 email: manager.email,
                 role: manager.role,
-                company_uid: manager.company_uid,
                 permissions_role: manager.permissions_role,
                 designation: manager.designation,
                 createdAt: manager.createdAt,
                 status: 'active',
                 preferences: { themeMode: 'system', themeColor: 'Aubergine' } // Default preferences
             };
+
+            if (manager.company_uid) {
+                newManagerData.company_uid = manager.company_uid;
+            }
 
             // 3. Create the new document in the batch
             batch.set(newManagerRef, newManagerData);
@@ -174,6 +189,7 @@ function AcceptInviteContents() {
     
     const getInitials = (name: string) => {
         if (!name) return '';
+        if (name === "Career Edge Platform") return "CE";
         const names = name.split(' ');
         return names.length > 1 ? `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase() : name.substring(0, 2).toUpperCase();
     }
