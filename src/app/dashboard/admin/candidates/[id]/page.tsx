@@ -36,6 +36,7 @@ import {
 import { MoreHorizontal, ShieldAlert, ShieldCheck, User, ShieldX, Trash, Gem, Star, ArrowLeft, UserCog, Briefcase, Globe, Linkedin, Phone, Mail, Github, MapPin, Cake, UserSquare, Building } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { UserProfile, Socials } from '@/lib/types';
+import Link from 'next/link';
 
 const Twitter = (props: React.SVGProps<SVGSVGElement>) => (
     <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24" {...props}>
@@ -230,7 +231,6 @@ export default function CandidateProfilePage() {
                     {loading ? (
                          <Skeleton className="w-full h-full rounded-lg" />
                     ) : candidate ? (
-                        <div className="space-y-6">
                         <Card>
                             <CardHeader>
                                 <div className="flex items-start justify-between">
@@ -296,7 +296,7 @@ export default function CandidateProfilePage() {
                                     </AlertDialog>
                                 </div>
                             </CardHeader>
-                            <CardContent className="mt-4 grid grid-cols-2 lg:grid-cols-4 gap-6 text-sm border-t pt-6">
+                            <CardContent className="grid grid-cols-2 lg:grid-cols-4 gap-6 text-sm border-t pt-6">
                                 <div className="flex flex-col">
                                     <span className="text-muted-foreground">Status</span>
                                     <span className={`font-medium flex items-center ${candidate.status === 'Banned' ? 'text-destructive' : ''}`}>
@@ -320,77 +320,70 @@ export default function CandidateProfilePage() {
                                     <span className="font-medium">{formatDate(candidate.createdAt)}</span>
                                 </div>
                             </CardContent>
-                        </Card>
-                         <Card>
-                            <CardHeader>
-                                <CardTitle>Career Profile</CardTitle>
-                            </CardHeader>
-                            <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
-                                <div className="flex flex-col gap-1">
-                                    <span className="text-muted-foreground flex items-center gap-2"><Briefcase className="h-4 w-4" /> Current Job Title</span>
-                                    <span className="font-medium">{candidate.jobTitle || 'N/A'}</span>
+                             <CardContent className="pt-6 border-t">
+                                <CardTitle className="mb-4">Career Profile</CardTitle>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-muted-foreground flex items-center gap-2"><Briefcase className="h-4 w-4" /> Current Job Title</span>
+                                        <span className="font-medium">{candidate.jobTitle || 'N/A'}</span>
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-muted-foreground flex items-center gap-2"><Building className="h-4 w-4" /> Current Company</span>
+                                        <span className="font-medium">{candidate.currentCompany || 'N/A'}</span>
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-muted-foreground flex items-center gap-2"><UserCog className="h-4 w-4" /> Total Experience</span>
+                                        <span className="font-medium">{candidate.experience ? `${candidate.experience} years` : 'N/A'}</span>
+                                    </div>
                                 </div>
-                                <div className="flex flex-col gap-1">
-                                    <span className="text-muted-foreground flex items-center gap-2"><Building className="h-4 w-4" /> Current Company</span>
-                                    <span className="font-medium">{candidate.currentCompany || 'N/A'}</span>
+                            </CardContent>
+                             <CardContent className="pt-6 border-t">
+                                <CardTitle className="mb-4">Online Profiles</CardTitle>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                    {candidate.socials?.github && (
+                                        <div className="flex items-center gap-2">
+                                            <Github className="h-5 w-5" />
+                                            <Link href={getWebsiteUrl(candidate.socials.github)} target="_blank" rel="noopener noreferrer" className="text-dash-primary hover:underline break-all">{candidate.socials.github}</Link>
+                                        </div>
+                                    )}
+                                    {candidate.socials?.twitter && (
+                                        <div className="flex items-center gap-2">
+                                            <Twitter className="h-5 w-5" />
+                                            <Link href={getWebsiteUrl(candidate.socials.twitter)} target="_blank" rel="noopener noreferrer" className="text-dash-primary hover:underline break-all">{candidate.socials.twitter}</Link>
+                                        </div>
+                                    )}
+                                    {candidate.socials?.linkedin && (
+                                        <div className="flex items-center gap-2">
+                                            <Linkedin className="h-5 w-5" />
+                                            <Link href={getWebsiteUrl(candidate.socials.linkedin)} target="_blank" rel="noopener noreferrer" className="text-dash-primary hover:underline break-all">{candidate.socials.linkedin}</Link>
+                                        </div>
+                                    )}
+                                    {candidate.portfolio && (
+                                        <div className="flex items-center gap-2">
+                                            <Globe className="h-5 w-5" />
+                                            <Link href={getWebsiteUrl(candidate.portfolio)} target="_blank" rel="noopener noreferrer" className="text-dash-primary hover:underline break-all">{candidate.portfolio}</Link>
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="flex flex-col gap-1">
-                                    <span className="text-muted-foreground flex items-center gap-2"><UserCog className="h-4 w-4" /> Total Experience</span>
-                                    <span className="font-medium">{candidate.experience ? `${candidate.experience} years` : 'N/A'}</span>
+                            </CardContent>
+                             <CardContent className="pt-6 border-t">
+                                <CardTitle className="mb-4">Personal Details</CardTitle>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-muted-foreground flex items-center gap-2"><Cake className="h-4 w-4" /> Date of Birth</span>
+                                        <span className="font-medium">{candidate.dob ? formatDate(candidate.dob) : 'N/A'}</span>
+                                    </div>
+                                     <div className="flex flex-col gap-1">
+                                        <span className="text-muted-foreground flex items-center gap-2"><UserSquare className="h-4 w-4" /> Gender</span>
+                                        <span className="font-medium capitalize">{candidate.gender || 'N/A'}</span>
+                                    </div>
+                                    <div className="flex flex-col gap-1 col-span-1 md:col-span-3">
+                                        <span className="text-muted-foreground flex items-center gap-2"><MapPin className="h-4 w-4" /> Address</span>
+                                        <span className="font-medium">{candidate.address || 'N/A'}</span>
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
-                         <Card>
-                            <CardHeader>
-                                <CardTitle>Online Profiles</CardTitle>
-                            </CardHeader>
-                            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                {candidate.socials?.github && (
-                                    <div className="flex items-center gap-2">
-                                        <Github className="h-5 w-5" />
-                                        <a href={getWebsiteUrl(candidate.socials.github)} target="_blank" rel="noopener noreferrer" className="text-dash-primary hover:underline break-all">{candidate.socials.github}</a>
-                                    </div>
-                                )}
-                                {candidate.socials?.twitter && (
-                                    <div className="flex items-center gap-2">
-                                        <Twitter className="h-5 w-5" />
-                                        <a href={getWebsiteUrl(candidate.socials.twitter)} target="_blank" rel="noopener noreferrer" className="text-dash-primary hover:underline break-all">{candidate.socials.twitter}</a>
-                                    </div>
-                                )}
-                                {candidate.socials?.linkedin && (
-                                    <div className="flex items-center gap-2">
-                                        <Linkedin className="h-5 w-5" />
-                                        <a href={getWebsiteUrl(candidate.socials.linkedin)} target="_blank" rel="noopener noreferrer" className="text-dash-primary hover:underline break-all">{candidate.socials.linkedin}</a>
-                                    </div>
-                                )}
-                                {candidate.portfolio && (
-                                    <div className="flex items-center gap-2">
-                                        <Globe className="h-5 w-5" />
-                                        <a href={getWebsiteUrl(candidate.portfolio)} target="_blank" rel="noopener noreferrer" className="text-dash-primary hover:underline break-all">{candidate.portfolio}</a>
-                                    </div>
-                                )}
-                            </CardContent>
-                        </Card>
-                         <Card>
-                            <CardHeader>
-                                <CardTitle>Personal Details</CardTitle>
-                            </CardHeader>
-                            <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
-                                <div className="flex flex-col gap-1">
-                                    <span className="text-muted-foreground flex items-center gap-2"><Cake className="h-4 w-4" /> Date of Birth</span>
-                                    <span className="font-medium">{candidate.dob ? formatDate(candidate.dob) : 'N/A'}</span>
-                                </div>
-                                 <div className="flex flex-col gap-1">
-                                    <span className="text-muted-foreground flex items-center gap-2"><UserSquare className="h-4 w-4" /> Gender</span>
-                                    <span className="font-medium capitalize">{candidate.gender || 'N/A'}</span>
-                                </div>
-                                <div className="flex flex-col gap-1 col-span-1 md:col-span-3">
-                                    <span className="text-muted-foreground flex items-center gap-2"><MapPin className="h-4 w-4" /> Address</span>
-                                    <span className="font-medium">{candidate.address || 'N/A'}</span>
-                                </div>
-                            </CardContent>
-                        </Card>
-                        </div>
                     ) : (
                         <p>Candidate not found.</p>
                     )}
@@ -399,4 +392,3 @@ export default function CandidateProfilePage() {
         </div>
     );
 }
-
