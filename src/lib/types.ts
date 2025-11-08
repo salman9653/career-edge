@@ -242,6 +242,11 @@ export interface GeneratedResume {
   pdfDataUri?: string;
   jobDescription: string;
   createdAt: any;
+  input: {
+      jobDescription: string;
+      userDetails: any;
+      hasExistingResume: boolean;
+  };
 }
 
 export interface Resume {
@@ -305,7 +310,7 @@ export interface UserProfile {
     uid: string;
     email: string;
     name: string;
-    role: 'candidate' | 'company' | 'admin' | 'manager';
+    role: 'candidate' | 'company' | 'admin' | 'manager' | 'adminAccountManager';
     phone: string;
     displayImageUrl: string | null;
     emailVerified: boolean;

@@ -1,5 +1,4 @@
 
-
 'use client'
 
 import Link from "next/link"
@@ -68,7 +67,7 @@ const adminNavItems: NavItem[] = [
 ]
 
 interface DashboardSidebarProps {
-  role: 'candidate' | 'company' | 'admin' | 'manager';
+  role: 'candidate' | 'company' | 'admin' | 'manager' | 'adminAccountManager';
   user: UserSession | null;
 }
 
@@ -196,7 +195,9 @@ const SidebarContent = ({ role, user }: DashboardSidebarProps) => {
 
     let navItems: NavItem[];
     switch (role) {
-        case 'admin': navItems = adminNavItems; break;
+        case 'admin':
+        case 'adminAccountManager':
+             navItems = adminNavItems; break;
         case 'company':
         case 'manager': navItems = companyNavItems; break;
         case 'candidate': default: navItems = candidateNavItems; break;

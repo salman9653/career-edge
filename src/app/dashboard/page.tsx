@@ -435,6 +435,7 @@ export default function DashboardPage() {
   const renderContent = () => {
     switch (session.role) {
       case 'admin':
+      case 'adminAccountManager':
         return <AdminDashboard />;
       case 'company':
       case 'manager':
