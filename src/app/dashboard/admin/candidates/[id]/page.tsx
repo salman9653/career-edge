@@ -33,7 +33,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { MoreHorizontal, ShieldAlert, ShieldCheck, User, ShieldX, Trash, Gem, Star, ArrowLeft, UserCog, Briefcase, Globe, Linkedin, Phone, Mail, Github, MapPin, Cake, UserSquare } from 'lucide-react';
+import { MoreHorizontal, ShieldAlert, ShieldCheck, User, ShieldX, Trash, Gem, Star, ArrowLeft, UserCog, Briefcase, Globe, Linkedin, Phone, Mail, Github, MapPin, Cake, UserSquare, Building } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { UserProfile, Socials } from '@/lib/types';
 
