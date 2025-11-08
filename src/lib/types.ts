@@ -314,6 +314,10 @@ export interface UserProfile {
     phone: string;
     displayImageUrl: string | null;
     emailVerified: boolean;
+    applications?: number;
+    createdAt?: string | null;
+    status?: string;
+    subscription?: string;
     // Company specific
     companySize?: CompanySize;
     website?: string;
@@ -365,5 +369,3 @@ export interface UserProfile {
       canSpeak: boolean;
     }[];
 }
-
-    
