@@ -1,7 +1,7 @@
 
 'use server';
 
-import { doc, setDoc, serverTimestamp, updateDoc, arrayUnion, arrayRemove, getDoc, collection, addDoc, query, where, getDocs, writeBatch } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, updateDoc, arrayUnion, arrayRemove, getDoc, collection, addDoc, query, where, getDocs, writeBatch, increment } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { revalidatePath } from 'next/cache';
 import { UserSession } from '@/hooks/use-session';
@@ -24,6 +24,8 @@ export async function applyForJobAction(input: ApplyForJobInput) {
 
   try {
     const jobDocRef = doc(db, 'jobs', jobId);
+    const candidateDocRef = doc(db, 'users', candidateId);
+
     const jobDocSnap = await getDoc(jobDocRef);
     if (!jobDocSnap.exists()) {
         return { error: 'Job not found.' };
@@ -95,7 +97,14 @@ export async function applyForJobAction(input: ApplyForJobInput) {
       roundResults,
     };
     
-    await setDoc(applicantRef, applicationData);
+    const batch = writeBatch(db);
+
+    // 1. Create the application document
+    batch.set(applicantRef, applicationData);
+    
+    // 2. Increment the application count on the candidate's profile
+    batch.update(candidateDocRef, { applications: increment(1) });
+
 
     // Create a notification for the company
     const notificationsCol = collection(db, 'notifications');
@@ -117,7 +126,7 @@ export async function applyForJobAction(input: ApplyForJobInput) {
         const notificationRef = notificationDoc.ref;
         const notificationData = notificationDoc.data();
         
-        await updateDoc(notificationRef, {
+        batch.update(notificationRef, {
             message: `${(notificationData.applicantCount || 1) + 1} new candidates have applied for ${jobData.title}.`,
             applicantCount: (notificationData.applicantCount || 1) + 1,
             // @ts-ignore
@@ -141,9 +150,11 @@ export async function applyForJobAction(input: ApplyForJobInput) {
             applicantCount: 1,
             newApplicantNames: [candidateName],
         };
-        await addDoc(notificationsCol, notificationData);
+        const newNotificationRef = doc(notificationsCol);
+        batch.set(newNotificationRef, notificationData);
     }
-
+    
+    await batch.commit();
 
     revalidatePath(`/dashboard/candidate/jobs/${jobId}`);
     revalidatePath(`/dashboard/candidate/applications`);

@@ -318,6 +318,7 @@ export interface UserProfile {
     createdAt?: string | null;
     status?: string;
     subscription?: string;
+    favourite_jobs?: string[];
     // Company specific
     companySize?: CompanySize;
     website?: string;
