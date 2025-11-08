@@ -203,7 +203,7 @@ export interface Notification {
   recipientId: string;
   senderId: string;
   senderName: string;
-  type: 'NEW_APPLICATION' | 'STATUS_UPDATE';
+  type: 'NEW_APPLICATION' | 'STATUS_UPDATE' | 'NEW_COMPANY_SIGNUP';
   message: string;
   link: string;
   isRead: boolean;

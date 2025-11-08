@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, Suspense, useCallback } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { DashboardThemeProvider } from '@/context/dashboard-theme-context';
 import { DashboardLayoutWrapper } from './layout-wrapper';
@@ -56,26 +56,12 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
     return (
         <DashboardThemeProvider>
             <DashboardLayoutWrapper>
-                <CompanyProvider>
-                    <CandidateProvider>
-                        <JobProvider>
-                             <AssessmentProvider>
-                                <QuestionProvider>
-                                  <AiInterviewProvider>
-                                    <GeneratedResumeProvider>
-                                        <NotificationProvider>
-                                        <SettingsDialog open={isSettingsOpen} onOpenChange={handleSettingsOpenChange} initialTab={searchParams.get('tab') || 'Account'} />
-                                        <CommandMenu open={isCommandMenuOpen} onOpenChange={setIsCommandMenuOpen} />
-                                        {children}
-                                        <Toaster />
-                                        </NotificationProvider>
-                                    </GeneratedResumeProvider>
-                                  </AiInterviewProvider>
-                                </QuestionProvider>
-                            </AssessmentProvider>
-                        </JobProvider>
-                    </CandidateProvider>
-                </CompanyProvider>
+                <NotificationProvider>
+                  <SettingsDialog open={isSettingsOpen} onOpenChange={handleSettingsOpenChange} initialTab={searchParams.get('tab') || 'Account'} />
+                  <CommandMenu open={isCommandMenuOpen} onOpenChange={setIsCommandMenuOpen} />
+                  {children}
+                  <Toaster />
+                </NotificationProvider>
             </DashboardLayoutWrapper>
         </DashboardThemeProvider>
     )
@@ -93,17 +79,23 @@ export default function DashboardLayout({
                 <Loader2 className="h-8 w-8 animate-spin" />
             </div>
         }>
-            <JobProvider>
-                <AssessmentProvider>
-                    <AiInterviewProvider>
-                       <GeneratedResumeProvider>
-                            <DashboardLayoutContent>
-                                {children}
-                            </DashboardLayoutContent>
+            <CompanyProvider>
+              <CandidateProvider>
+                <JobProvider>
+                  <AssessmentProvider>
+                    <QuestionProvider>
+                      <AiInterviewProvider>
+                        <GeneratedResumeProvider>
+                          <DashboardLayoutContent>
+                              {children}
+                          </DashboardLayoutContent>
                         </GeneratedResumeProvider>
-                    </AiInterviewProvider>
-                </AssessmentProvider>
-            </JobProvider>
+                      </AiInterviewProvider>
+                    </QuestionProvider>
+                  </AssessmentProvider>
+                </JobProvider>
+              </CandidateProvider>
+            </CompanyProvider>
         </Suspense>
     );
 }

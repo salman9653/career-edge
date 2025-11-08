@@ -1,7 +1,7 @@
 'use server';
 
 import { createUserWithEmailAndPassword, updateProfile, sendPasswordResetEmail } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, collection, query, where, getDocs, writeBatch } from 'firebase/firestore';
 import { auth, db } from './config';
 import { redirect } from 'next/navigation';
 
@@ -80,7 +80,7 @@ export async function signUpCompany(prevState: any, formData: FormData) {
         displayName: companyName,
       });
   
-      await setDoc(doc(db, 'users', user.uid), {
+      const companyData = {
         uid: user.uid,
         name: companyName,
         email: user.email,
@@ -100,13 +100,37 @@ export async function signUpCompany(prevState: any, formData: FormData) {
         tags: [],
         benefits: [],
         preferences: { themeMode: 'system', themeColor: 'Aubergine' }
-      });
+      };
+
+      await setDoc(doc(db, 'users', user.uid), companyData);
+      
+      // Notify admins
+      const adminsQuery = query(collection(db, 'users'), where('role', 'in', ['admin', 'adminAccountManager']));
+      const adminsSnapshot = await getDocs(adminsQuery);
+      
+      if (!adminsSnapshot.empty) {
+        const batch = writeBatch(db);
+        adminsSnapshot.forEach(adminDoc => {
+            const notificationRef = doc(collection(db, 'notifications'));
+            batch.set(notificationRef, {
+                recipientId: adminDoc.id,
+                senderId: user.uid,
+                senderName: companyName,
+                type: 'NEW_COMPANY_SIGNUP',
+                message: `${companyName} has just signed up on Career Edge.`,
+                link: `/dashboard/admin/companies/${user.uid}`,
+                isRead: false,
+                createdAt: serverTimestamp(),
+            });
+        });
+        await batch.commit();
+      }
 
     } catch (e: any)      {
       return { error: e.message };
     }
 
-    redirect('/dashboard/company/jobs');
+    redirect('/dashboard');
 }
 
 export async function sendPasswordResetEmailAction(prevState: any, formData: FormData) {
