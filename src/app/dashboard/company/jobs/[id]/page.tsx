@@ -316,13 +316,16 @@ export default function JobDetailsPage() {
                           </div>
                     </TabsContent>
                     <TabsContent value="analysis" className="px-6 pb-6">
-                        <div className="text-center space-y-1 mb-4">
+                        <div className='text-center space-y-1 mb-4'>
                            <h2 className='text-2xl font-bold font-headline'>AI Resume Analysis</h2>
-                           <div className='text-muted-foreground max-w-md mx-auto'>Upload a resume to automatically screen and score it against this job description.
-                             <Badge variant="outline" className="ml-2">Coming Soon</Badge>
-                           </div>
+                           <p className='text-muted-foreground'>Upload a resume to automatically screen and score it against this job description.</p>
                         </div>
-                        <ResumeAnalysis jobDescription={job.description} view="drag-and-drop" />
+                        <ResumeAnalysis 
+                            jobId={job.id} 
+                            jobTitle={job.title}
+                            jobDescription={job.description}
+                            companyName={session?.displayName || ''}
+                        />
                     </TabsContent>
                 </Tabs>
             </Card>

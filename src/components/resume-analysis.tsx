@@ -1,6 +1,5 @@
 
-
-"use client";
+'use client';
 
 import { useState, useRef, useTransition, DragEvent, useEffect, useActionState } from "react";
 import { useRouter } from "next/navigation";
@@ -37,9 +36,10 @@ export function ResumeAnalysis({ jobId, jobTitle, jobDescription, companyName, v
 
   useEffect(() => {
     if (state?.analysisId) {
-      router.push(`/dashboard/candidate/resume-analysis/${state.analysisId}`);
+      const basePath = session?.role === 'candidate' ? '/dashboard/candidate' : '/dashboard/company';
+      router.push(`${basePath}/resume-analysis/${state.analysisId}`);
     }
-  }, [state, router]);
+  }, [state, router, session?.role]);
 
   const handleFileSelect = (file: File | null) => {
     if (file && (file.type.includes('pdf') || file.type.includes('document'))) {
@@ -91,7 +91,21 @@ export function ResumeAnalysis({ jobId, jobTitle, jobDescription, companyName, v
     formData.append("jobTitle", jobTitle);
     formData.append("jobDescription", jobDescription);
     formData.append("companyName", companyName);
-    formData.append("userId", session.uid);
+    
+    // For a company, the userId to save against is the company's own UID.
+    // For a candidate, it's their own UID.
+    const userIdForAction = session.role === 'company' || session.role === 'manager' 
+        ? (session.role === 'company' ? session.uid : session.company_uid)
+        : session.uid;
+
+    if (userIdForAction) {
+        formData.append("userId", userIdForAction);
+    } else {
+        // Handle case where company_uid is not available for manager
+        // This is a fallback and ideally should not be hit
+        formAction(new FormData()); // Trigger an error state
+        return;
+    }
     
     startTransition(() => {
         formAction(formData);
