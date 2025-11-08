@@ -32,7 +32,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { MoreHorizontal, ShieldAlert, ShieldCheck, User, ShieldX, Trash, Gem, Star, Crown, ArrowLeft, UserCog, Building, Globe, Linkedin, Phone, Mail, Briefcase, Building2, Info, Calendar } from 'lucide-react';
+import { MoreHorizontal, ShieldAlert, ShieldCheck, User, ShieldX, Trash, Gem, Star, Crown, ArrowLeft, UserCog, Building, Globe, Linkedin, Phone, Mail, Briefcase, Building2, Info, Calendar, ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { type CompanySize, type Socials } from '@/lib/types';
 import { updateCompanyStatusAction, updateCompanyPlanAction, deleteCompanyAction } from '../../actions';
@@ -41,6 +41,8 @@ import { JobsTable } from './_components/jobs-table';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
+
 
 const Twitter = (props: React.SVGProps<SVGSVGElement>) => (
     <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24" {...props}>
@@ -288,22 +290,31 @@ export default function CompanyProfilePage() {
                                 <span className="font-medium">{company.foundedYear || 'N/A'}</span>
                             </div>
                         </CardContent>
-                         <CardContent className="space-y-4 pt-6 border-t">
-                            <div className="space-y-2">
-                                <h4 className="font-semibold">About Company</h4>
-                                <p className="text-sm text-muted-foreground">{company.aboutCompany || 'No description provided.'}</p>
-                            </div>
-                             <div className="space-y-4">
-                                <h4 className="font-semibold">Contact & Socials</h4>
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                    {company.website && <div className="flex items-center gap-2"><Globe className="h-4 w-4" /><a href={getWebsiteUrl(company.website)} target="_blank" className="text-dash-primary hover:underline">{company.website}</a></div>}
-                                    {company.socials?.linkedin && <div className="flex items-center gap-2"><Linkedin className="h-4 w-4" /><a href={getWebsiteUrl(company.socials.linkedin)} target="_blank" className="text-dash-primary hover:underline">LinkedIn</a></div>}
-                                    {company.helplinePhone && <div className="flex items-center gap-2"><Phone className="h-4 w-4" /><span>{company.helplinePhone}</span></div>}
-                                    {company.helplineEmail && <div className="flex items-center gap-2"><Mail className="h-4 w-4" /><span>{company.helplineEmail}</span></div>}
-                                    {company.socials?.twitter && <div className="flex items-center gap-2"><Twitter className="h-4 w-4" /><a href={getWebsiteUrl(company.socials.twitter)} target="_blank" className="text-dash-primary hover:underline">Twitter / X</a></div>}
-                                </div>
-                            </div>
-                        </CardContent>
+                        <Collapsible asChild>
+                            <CardContent className="pt-6 border-t">
+                                <CollapsibleTrigger className="w-full">
+                                    <div className="flex justify-center items-center text-sm text-muted-foreground">
+                                        Show More Details <ChevronDown className="ml-1 h-4 w-4" />
+                                    </div>
+                                </CollapsibleTrigger>
+                                <CollapsibleContent className="mt-4 space-y-6">
+                                    <div className="space-y-2">
+                                        <h4 className="font-semibold">About Company</h4>
+                                        <p className="text-sm text-muted-foreground">{company.aboutCompany || 'No description provided.'}</p>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <h4 className="font-semibold">Contact & Socials</h4>
+                                        <div className="grid grid-cols-2 gap-4 text-sm">
+                                            {company.website && <div className="flex items-center gap-2"><Globe className="h-4 w-4" /><a href={getWebsiteUrl(company.website)} target="_blank" className="text-dash-primary hover:underline">{company.website}</a></div>}
+                                            {company.socials?.linkedin && <div className="flex items-center gap-2"><Linkedin className="h-4 w-4" /><a href={getWebsiteUrl(company.socials.linkedin)} target="_blank" className="text-dash-primary hover:underline">LinkedIn</a></div>}
+                                            {company.helplinePhone && <div className="flex items-center gap-2"><Phone className="h-4 w-4" /><span>{company.helplinePhone}</span></div>}
+                                            {company.helplineEmail && <div className="flex items-center gap-2"><Mail className="h-4 w-4" /><span>{company.helplineEmail}</span></div>}
+                                            {company.socials?.twitter && <div className="flex items-center gap-2"><Twitter className="h-4 w-4" /><a href={getWebsiteUrl(company.socials.twitter)} target="_blank" className="text-dash-primary hover:underline">Twitter / X</a></div>}
+                                        </div>
+                                    </div>
+                                </CollapsibleContent>
+                            </CardContent>
+                        </Collapsible>
                     </Card>
 
                     <Card>
@@ -320,3 +331,4 @@ export default function CompanyProfilePage() {
         </div>
     );
 }
+
