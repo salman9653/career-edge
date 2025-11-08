@@ -166,11 +166,6 @@ const AccountSettings = ({ onNavigate }: { onNavigate: () => void }) => {
         document.cookie = 'firebase-session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
         router.push('/');
     }
-    
-    const getProfileButtonText = (role?: string) => {
-        if (!role) return "Go to Profile";
-        return `Go to ${role.charAt(0).toUpperCase() + role.slice(1)} Profile`;
-    }
 
     return (
         <div className="space-y-8">
@@ -213,10 +208,10 @@ const AccountSettings = ({ onNavigate }: { onNavigate: () => void }) => {
                 </p>
                 <Button onClick={goToProfile} variant="secondary">
                     <User className="mr-2 h-4 w-4" />
-                    {getProfileButtonText(session?.role)}
+                    Go to my Profile
                 </Button>
             </div>
-            {session?.role === 'company' && (
+            {(session?.role === 'company' || (session?.role === 'manager' && session?.permissions_role === 'Admin')) && (
                 <div className="space-y-4 pt-4 border-t">
                     <h4 className="font-semibold">Account Managers</h4>
                     <p className="text-sm text-muted-foreground">
@@ -228,7 +223,7 @@ const AccountSettings = ({ onNavigate }: { onNavigate: () => void }) => {
                     </Button>
                 </div>
             )}
-             {session?.role === 'admin' && (
+             {(session?.role === 'admin' || (session?.role === 'adminAccountManager' && session?.permissions_role === 'Admin')) && (
                 <div className="space-y-4 pt-4 border-t">
                     <h4 className="font-semibold">Account Managers</h4>
                     <p className="text-sm text-muted-foreground">
@@ -512,7 +507,9 @@ const HelpSettings = () => {
                             ))}
                         </div>
                     </div>
-
+                    <input type="hidden" name="rating" value={rating} />
+                    <input type="hidden" name="feedbackBy" value={session?.uid} />
+                    <input type="hidden" name="feedbackByName" value={session?.displayName} />
                     <Textarea 
                         name="feedbackContent"
                         placeholder="Tell us what you think..." 
@@ -636,11 +633,6 @@ const SubscriptionsSettings = ({ onNavigate }: { onNavigate: () => void }) => {
             </div>
         </div>
     );
-};
-
-const initialState = {
-  error: null,
-  success: false,
 };
 
 function SubmitButton() {
