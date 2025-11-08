@@ -7,6 +7,7 @@ import { QuestionProvider } from '@/context/question-context';
 import { SubscriptionProvider } from '@/context/subscription-context';
 import { CouponProvider } from '@/context/coupon-context';
 import { ManagerProvider } from '@/context/manager-context';
+import { JobProvider } from '@/context/job-context';
 
 export default function AdminLayout({
     children,
@@ -20,7 +21,9 @@ export default function AdminLayout({
                     <QuestionProvider>
                         <CouponProvider>
                             <ManagerProvider>
-                                {children}
+                                <JobProvider>
+                                    {children}
+                                </JobProvider>
                             </ManagerProvider>
                         </CouponProvider>
                     </QuestionProvider>

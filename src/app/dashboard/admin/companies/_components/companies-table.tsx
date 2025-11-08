@@ -24,6 +24,7 @@ import { MoreVertical, File, Search, ArrowUpDown, ArrowUp, ArrowDown, Trash, Shi
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { CompanyContext, type CompanyData } from '@/context/company-context';
+import { JobContext } from '@/context/job-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FilterSheet } from './filter-sheet';
 import { doc, writeBatch } from 'firebase/firestore';
@@ -33,7 +34,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
 
-type SortKey = 'name' | 'size' | 'createdAt';
+type SortKey = 'name' | 'size' | 'createdAt' | 'companyType' | 'jobsPosted';
 export interface FilterState {
     status: string[];
     plan: string[];
@@ -49,6 +50,7 @@ const getFiltersFromParams = (searchParams: URLSearchParams): FilterState => {
 
 export function CompaniesTable() {
   const { companies, loading } = useContext(CompanyContext);
+  const { jobs, loading: jobsLoading } = useContext(JobContext);
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>(null);
   
   const router = useRouter();
@@ -140,7 +142,12 @@ export function CompaniesTable() {
 
 
   const filteredAndSortedCompanies = useMemo(() => {
-    let filteredCompanies = companies;
+    let companyJobsCount = jobs.reduce((acc, job) => {
+        acc[job.companyId] = (acc[job.companyId] || 0) + 1;
+        return acc;
+    }, {} as Record<string, number>);
+
+    let filteredCompanies = companies.map(c => ({...c, jobsPosted: companyJobsCount[c.id] || 0}));
 
 
     if (searchQuery) {
@@ -165,8 +172,17 @@ export function CompaniesTable() {
     let sortableCompanies = [...filteredCompanies];
     if (sortConfig !== null) {
       sortableCompanies.sort((a, b) => {
-        const aValue = sortConfig.key === 'size' ? a.size.size : a[sortConfig.key];
-        const bValue = sortConfig.key === 'size' ? b.size.size : b[sortConfig.key];
+        let aValue, bValue;
+        if (sortConfig.key === 'size') {
+            aValue = a.size?.size || '';
+            bValue = b.size?.size || '';
+        } else if (sortConfig.key === 'jobsPosted') {
+            aValue = a.jobsPosted;
+            bValue = b.jobsPosted;
+        } else {
+            aValue = a[sortConfig.key as keyof typeof a] || '';
+            bValue = b[sortConfig.key as keyof typeof b] || '';
+        }
 
 
         if (aValue === null && bValue === null) return 0;
@@ -188,7 +204,7 @@ export function CompaniesTable() {
       });
     }
     return sortableCompanies;
-  }, [companies, sortConfig, searchQuery, filters]);
+  }, [companies, jobs, sortConfig, searchQuery, filters]);
 
 
   const requestSort = (key: SortKey) => {
@@ -432,6 +448,22 @@ export function CompaniesTable() {
                                     </div>
                                 </button>
                             </TableHead>
+                             <TableHead className="font-bold py-4">
+                                <button onClick={() => requestSort('companyType')} className="group flex items-center gap-2">
+                                    Company Type
+                                    <div className="p-1 group-hover:bg-accent rounded-full transition-colors">
+                                        {getSortIndicator('companyType')}
+                                    </div>
+                                </button>
+                            </TableHead>
+                            <TableHead className="font-bold py-4">
+                                <button onClick={() => requestSort('jobsPosted')} className="group flex items-center gap-2">
+                                    Jobs Posted
+                                    <div className="p-1 group-hover:bg-accent rounded-full transition-colors">
+                                        {getSortIndicator('jobsPosted')}
+                                    </div>
+                                </button>
+                            </TableHead>
                             <TableHead className="font-bold py-4">
                                 <button onClick={() => requestSort('createdAt')} className="group flex items-center gap-2">
                                     Member Since
@@ -443,11 +475,13 @@ export function CompaniesTable() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {loading ? (
-                            Array.from({length: 5}).map((_, index) => (
+                        {loading || jobsLoading ? (
+                            Array.from({length: 10}).map((_, index) => (
                                 <TableRow key={index}>
                                     <TableCell className="pl-6"><Skeleton className="h-5 w-5" /></TableCell>
                                     <TableCell><Skeleton className="h-5 w-48" /></TableCell>
+                                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                                    <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-5 w-24" /></TableCell>
@@ -486,13 +520,15 @@ export function CompaniesTable() {
                                         {company.plan}
                                       </div>
                                     </TableCell>
-                                    <TableCell>{company.size.size}</TableCell>
+                                    <TableCell>{company.size?.size || 'N/A'}</TableCell>
+                                    <TableCell>{company.companyType || 'N/A'}</TableCell>
+                                    <TableCell>{company.jobsPosted || 0}</TableCell>
                                     <TableCell>{formatDate(company.createdAt)}</TableCell>
                                 </TableRow>
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center h-24">
+                                <TableCell colSpan={8} className="text-center h-24">
                                     {searchQuery ? `No companies found for "${searchQuery}"` : 'No companies found.'}
                                 </TableCell>
                             </TableRow>
