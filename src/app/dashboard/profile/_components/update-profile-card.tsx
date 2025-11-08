@@ -67,7 +67,7 @@ const getInitials = (name: string) => {
     if (!name) return '';
     const names = name.split(' ');
     if (names.length > 1) {
-        return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
+        return `${'names[0][0]'}${names[names.length - 1][0]}`.toUpperCase();
     }
     return name.substring(0, 2).toUpperCase();
 }
@@ -1000,7 +1000,7 @@ useEffect(() => {
       { id: 'profile-details', label: 'Admin Details' }
   ];
 
-  const navItems = role === 'company' ? companyNavItems : (role === 'admin' ? adminNavItems : candidateNavItems);
+  const navItems = role === 'company' ? companyNavItems : (role === 'admin' || role === 'adminAccountManager' ? adminNavItems : candidateNavItems);
   
   const autocompleteSkills = skillsData.filter(skill => {
     if (skills.includes(skill.name)) return false;
@@ -1154,15 +1154,15 @@ const handleDeleteEducation = (id: string) => {
     if (years === 0 && remainingMonths === 0) return "Less than a month";
     
     let result = '';
-    if (years > 0) result += `${years} year${years > 1 ? 's' : ''}`;
+    if (years > 0) result += `${'years'} year${years > 1 ? 's' : ''}`;
     if (remainingMonths > 0) {
         if (years > 0) result += ', ';
-        result += `${remainingMonths} month${remainingMonths > 1 ? 's' : ''}`;
+        result += `${'remainingMonths'} month${remainingMonths > 1 ? 's' : ''}`;
     }
     return result;
   };
   
-  if (role === 'admin') {
+  if (role === 'admin' || role === 'adminAccountManager') {
       return (
           <form action={profileDetailsAction}>
             <input type="hidden" name="userId" value={session?.uid} />
@@ -1338,7 +1338,7 @@ const handleDeleteEducation = (id: string) => {
                         accept="image/png, image/jpeg, image/gif"
                       />
                       <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isAvatarPending}>
-                        <Edit className="mr-2 h-4 w-4" /> {profile.displayImageUrl ? 'Change' : 'Add'} Picture
+                        <Upload className="mr-2 h-4 w-4" /> {profile.displayImageUrl ? 'Change' : 'Add'} Picture
                       </Button>
                       {profile.displayImageUrl && (
                         <Button type="button" variant="destructive" size="sm" onClick={handleRemoveAvatar} disabled={isAvatarPending}>
@@ -1755,7 +1755,7 @@ const handleDeleteEducation = (id: string) => {
                                                     {format(new Date(proj.workedFrom.year, proj.workedFrom.month - 1), 'MMM yyyy')} - 
                                                     {proj.projectStatus === 'finished' && proj.workedTill ? ` ${format(new Date(proj.workedTill.year, proj.workedTill.month - 1), 'MMM yyyy')}` : ' Present'}
                                                 </p>
-                                                {proj.projectUrl && <LinkIcon href={proj.projectUrl} className="text-xs text-blue-500 hover:underline mt-1 flex items-center gap-1"><LinkIcon className="h-3 w-3" /> Link to project</LinkIcon>}
+                                                {proj.projectUrl && <Link href={proj.projectUrl} className="text-xs text-blue-500 hover:underline mt-1 flex items-center gap-1"><LinkIcon className="h-3 w-3" /> Link to project</Link>}
                                             </div>
                                             <div className="flex gap-2">
                                                 <Button variant="ghost" size="icon" onClick={() => setEditingProject(proj)}><Edit className="h-4 w-4" /></Button>
@@ -2155,3 +2155,5 @@ const handleDeleteEducation = (id: string) => {
     </div>
   );
 }
+
+    
