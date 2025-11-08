@@ -303,12 +303,12 @@ export default function CompanyProfilePage() {
                                         <p className="text-sm text-muted-foreground">{company.aboutCompany || 'No description provided.'}</p>
                                     </div>
                                     <div className="space-y-4">
-                                        <h4 className="font-semibold">Contact & Socials</h4>
-                                        <div className="grid grid-cols-2 gap-4 text-sm">
-                                            {company.website && <div className="flex items-center gap-2"><Globe className="h-4 w-4" /><a href={getWebsiteUrl(company.website)} target="_blank" className="text-dash-primary hover:underline">{company.website}</a></div>}
-                                            {company.socials?.linkedin && <div className="flex items-center gap-2"><Linkedin className="h-4 w-4" /><a href={getWebsiteUrl(company.socials.linkedin)} target="_blank" className="text-dash-primary hover:underline">LinkedIn</a></div>}
+                                        <h4 className="font-semibold">Contact &amp; Socials</h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                             {company.helplinePhone && <div className="flex items-center gap-2"><Phone className="h-4 w-4" /><span>{company.helplinePhone}</span></div>}
                                             {company.helplineEmail && <div className="flex items-center gap-2"><Mail className="h-4 w-4" /><span>{company.helplineEmail}</span></div>}
+                                            {company.website && <div className="flex items-center gap-2"><Globe className="h-4 w-4" /><a href={getWebsiteUrl(company.website)} target="_blank" className="text-dash-primary hover:underline">{company.website}</a></div>}
+                                            {company.socials?.linkedin && <div className="flex items-center gap-2"><Linkedin className="h-4 w-4" /><a href={getWebsiteUrl(company.socials.linkedin)} target="_blank" className="text-dash-primary hover:underline">LinkedIn</a></div>}
                                             {company.socials?.twitter && <div className="flex items-center gap-2"><Twitter className="h-4 w-4" /><a href={getWebsiteUrl(company.socials.twitter)} target="_blank" className="text-dash-primary hover:underline">Twitter / X</a></div>}
                                         </div>
                                     </div>
