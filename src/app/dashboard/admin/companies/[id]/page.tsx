@@ -1,4 +1,3 @@
-
 'use client'
 import { useEffect, useState, useContext } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -61,6 +60,7 @@ export default function CompanyProfilePage() {
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
     const router = useRouter();
+    const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
     const companyId = params.id as string;
 
@@ -290,9 +290,9 @@ export default function CompanyProfilePage() {
                                 <span className="font-medium">{company.foundedYear || 'N/A'}</span>
                             </div>
                         </CardContent>
-                         <Collapsible asChild>
-                            <CardContent className="pt-6 border-t">
-                                <CollapsibleContent className="space-y-6">
+                         <Collapsible open={isDetailsOpen} onOpenChange={setIsDetailsOpen} asChild>
+                            <div className="px-6 pb-6">
+                                <CollapsibleContent className="space-y-6 pt-6 border-t">
                                     <div className="space-y-2">
                                         <h4 className="font-semibold">About Company</h4>
                                         <p className="text-sm text-muted-foreground">{company.aboutCompany || 'No description provided.'}</p>
@@ -308,16 +308,15 @@ export default function CompanyProfilePage() {
                                         </div>
                                     </div>
                                 </CollapsibleContent>
-                                <div className="flex justify-center items-center text-sm text-muted-foreground pt-4">
+                                <div className="flex justify-center items-center text-sm text-muted-foreground">
                                     <CollapsibleTrigger asChild>
                                         <Button variant="link" className="text-sm text-muted-foreground">
-                                            <span className="group-data-[state=closed]:inline group-data-[state=open]:hidden">Show More Details</span>
-                                            <span className="group-data-[state=open]:inline group-data-[state=closed]:hidden">Show Less</span>
-                                            <ChevronDown className="ml-1 h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+                                            <span>{isDetailsOpen ? 'Show Less' : 'Show More Details'}</span>
+                                            <ChevronDown className={cn("ml-1 h-4 w-4 transition-transform", isDetailsOpen && 'rotate-180')} />
                                         </Button>
                                     </CollapsibleTrigger>
                                 </div>
-                            </CardContent>
+                            </div>
                         </Collapsible>
                     </Card>
 
