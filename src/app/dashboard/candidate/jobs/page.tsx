@@ -363,10 +363,10 @@ export default function CandidateJobsPage() {
               <div className="sticky top-20">
                 <Card className="h-full">
                     <CardHeader>
-                        <CardTitle>Advertisement</CardTitle>
+                        <CardTitle>Jobs you might like</CardTitle>
                     </CardHeader>
                     <CardContent className="flex items-center justify-center">
-                        <p className="text-muted-foreground">Ad content will be displayed here.</p>
+                        <p className="text-muted-foreground">jobs ads will be displayed here</p>
                     </CardContent>
                 </Card>
               </div>
