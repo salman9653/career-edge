@@ -112,8 +112,8 @@ const JobDetailView = ({ job, company, applicantData }: { job: Job, company: Com
     return (
         <ScrollArea className="h-full">
             <div className="p-6 space-y-6">
-                <Card>
-                    <CardHeader>
+                <div className="space-y-6">
+                    <CardHeader className="p-0">
                         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                             <div>
                                 <Badge variant="outline" className="mb-2">{job.type}</Badge>
@@ -134,7 +134,7 @@ const JobDetailView = ({ job, company, applicantData }: { job: Job, company: Com
                             </div>
                         </div>
                     </CardHeader>
-                    <CardContent className="space-y-6">
+                    <CardContent className="space-y-6 p-0">
                         <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-muted-foreground border-t border-b py-4">
                             <div className="flex items-center gap-2"><MapPin className="h-4 w-4" /><span>{locationDisplay}</span></div>
                             {job.salary.min > 0 && job.salary.max > 0 && (<div className="flex items-center gap-2"><Banknote className="h-4 w-4" /><span>{job.salary.min} LPA to {job.salary.max} LPA</span></div>)}
@@ -142,7 +142,7 @@ const JobDetailView = ({ job, company, applicantData }: { job: Job, company: Com
                             <div className="flex items-center gap-2"><Building className="h-4 w-4" /><span>{job.positions} positions</span></div>
                         </div>
                     </CardContent>
-                </Card>
+                </div>
 
                 <Tabs defaultValue="track" className="w-full">
                     <TabsList>
@@ -259,7 +259,12 @@ function ApplicationsPageContent() {
                     const companyDocRef = doc(db, 'users', job.companyId);
                     const companyDocSnap = await getDoc(companyDocRef);
                     if(companyDocSnap.exists()) {
-                       companyDetails = companyDocSnap.data() as Company;
+                       const companyData = companyDocSnap.data();
+                       companyDetails = {
+                           id: companyDocSnap.id,
+                           name: companyData.name,
+                           displayImageUrl: companyData.displayImageUrl
+                       } as Company;
                     }
                 }
                 userApplications.push({
@@ -281,8 +286,22 @@ function ApplicationsPageContent() {
       return jobs
         .filter(job => session?.favourite_jobs?.includes(job.id))
         .map(job => {
-            const company = job.companyId ? null : null; // simplified for now
-            return { ...job, companyDetails: company! };
+            let companyDetails: Company | null = null;
+            if(job.companyId) {
+                // This is not ideal as it doesn't fetch real-time, but it's a temp fix for saved jobs
+                const companyDocRef = doc(db, 'users', job.companyId);
+                getDoc(companyDocRef).then(snap => {
+                     if(snap.exists()) {
+                         const companyData = snap.data();
+                         companyDetails = {
+                           id: snap.id,
+                           name: companyData.name,
+                           displayImageUrl: companyData.displayImageUrl
+                       } as Company;
+                    }
+                });
+            }
+            return { ...job, companyDetails: companyDetails! };
         });
   }, [jobs, session?.favourite_jobs]);
 
