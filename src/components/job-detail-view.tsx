@@ -188,6 +188,8 @@ export const JobDetailView = ({ job, company, applicantData, allJobs }: JobDetai
 
         return results;
     }, [session, job]);
+    
+    const jobTitleLink = applicantData ? `/dashboard/candidate/jobs/${job.id}` : '#';
 
     if (!job) return <JobDetailSkeleton />;
 
@@ -205,7 +207,11 @@ export const JobDetailView = ({ job, company, applicantData, allJobs }: JobDetai
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                         <div>
                             <Badge variant="outline" className="mb-2">{job.type}</Badge>
-                            <CardTitle className="font-headline text-3xl">{job.title}</CardTitle>
+                             <CardTitle className="font-headline text-3xl">
+                                <Link href={jobTitleLink} className={cn(applicantData && "hover:underline")}>
+                                    {job.title}
+                                </Link>
+                            </CardTitle>
                             <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                                 <div className="flex items-center gap-2 cursor-pointer p-1 rounded-md hover:bg-accent transition-colors" onClick={() => setActiveTab('about')}>
                                     <Avatar className="h-8 w-8">
@@ -268,14 +274,16 @@ export const JobDetailView = ({ job, company, applicantData, allJobs }: JobDetai
                     </div>
 
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
-                            {hasApplied && <TabsTrigger value="track">Track Application</TabsTrigger>}
-                            <TabsTrigger value="description">Job Description</TabsTrigger>
-                            <TabsTrigger value="insights">Insights</TabsTrigger>
-                            <TabsTrigger value="analyze">Analyze Resume</TabsTrigger>
-                            <TabsTrigger value="about">About Company</TabsTrigger>
-                            <TabsTrigger value="similar">Similar Jobs</TabsTrigger>
-                        </TabsList>
+                        <div className="overflow-x-auto custom-scrollbar">
+                             <TabsList className="bg-muted flex w-max">
+                                {hasApplied && <TabsTrigger value="track">Track Application</TabsTrigger>}
+                                <TabsTrigger value="description">Job Description</TabsTrigger>
+                                <TabsTrigger value="insights">Insights</TabsTrigger>
+                                <TabsTrigger value="analyze">Analyze Resume</TabsTrigger>
+                                <TabsTrigger value="about">About Company</TabsTrigger>
+                                <TabsTrigger value="similar">Similar Jobs</TabsTrigger>
+                            </TabsList>
+                        </div>
                         {hasApplied && (
                             <TabsContent value="track" className="pt-6">
                                 <Card>
