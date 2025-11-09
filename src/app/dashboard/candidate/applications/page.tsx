@@ -246,8 +246,6 @@ function ApplicationsPageContent() {
   useEffect(() => {
     if (!session?.uid || jobsLoading) return;
 
-    const appliedJobIds = (session.applications || []).map((app: any) => app.jobId);
-    
     setLoading(true);
     const fetchApplications = async () => {
         const userApplications: Application[] = [];
