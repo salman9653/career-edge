@@ -277,7 +277,7 @@ export default function CandidateJobsPage() {
                   {isSearchActive ? 'Search Results' : 'Jobs for you'}
                   {!isSearchActive && <Sparkles className="h-5 w-5 text-dash-primary" />}
                 </h2>
-                {!isSearchActive && <p className="text-sm text-muted-foreground">Recommended by AI</p>}
+                {!isSearchActive && <p className="text-sm text-muted-foreground">AI Recommendations</p>}
             </div>
 
             {loading || isRecommendationLoading ? (
