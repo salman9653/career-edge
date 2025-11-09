@@ -127,7 +127,10 @@ function ApplicationsPageContent() {
                 const companyDetails = companies.find(c => c.id === job.companyId) || null;
                 userApplications.push({
                     ...job,
-                    companyDetails: companyDetails,
+                    companyDetails: {
+                        ...companyDetails,
+                        logoUrl: companyDetails?.displayImageUrl
+                    } as Company,
                     applicantData: applicationSnap.data() as Applicant,
                 });
             }
@@ -145,10 +148,23 @@ function ApplicationsPageContent() {
           const company = companies.find(c => c.id === job.companyId);
           return {
               ...job,
-              companyDetails: company || null
+              companyDetails: {
+                ...company,
+                logoUrl: company?.displayImageUrl
+              } as Company
           }
       });
   }, [allJobs, session?.favourite_jobs, companies]);
+
+  useEffect(() => {
+    const currentList = activeTab === 'saved' ? favoriteJobs : applications;
+    if (!selectedJobId && currentList.length > 0) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('jobId', currentList[0].id);
+      router.replace(`/dashboard/candidate/applications?${params.toString()}`);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, applications, favoriteJobs, selectedJobId]);
 
 
   const selectedJob = useMemo(() => {
@@ -191,13 +207,8 @@ function ApplicationsPageContent() {
 
   const handleTabChange = (tab: 'applied' | 'saved') => {
     const params = new URLSearchParams(searchParams.toString());
-    if (tab === 'saved') {
-      params.set('tab', 'saved');
-    } else {
-      params.delete('tab');
-    }
-    // Remove jobId when switching tabs
-    params.delete('jobId');
+    params.set('tab', tab);
+    params.delete('jobId'); // Clear jobId when switching tabs
     router.push(`/dashboard/candidate/applications?${params.toString()}`);
   }
 
@@ -269,3 +280,5 @@ export default function CandidateApplicationsPage() {
     </Suspense>
   )
 }
+
+    
