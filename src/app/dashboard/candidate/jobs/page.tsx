@@ -13,7 +13,7 @@ import Link from 'next/link';
 import { JobsToolbar, type FilterState } from './_components/jobs-toolbar';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
-import { Bookmark, MapPin, Briefcase, Calendar, Banknote, Sparkles, AlertTriangle } from 'lucide-react';
+import { Bookmark, MapPin, Briefcase, Calendar, Banknote, Sparkles, AlertTriangle, Loader2 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { toggleFavoriteJobAction } from '../actions';
@@ -124,11 +124,11 @@ export default function CandidateJobsPage() {
         const cacheKey = `recommendations-${session.uid}`;
         const cachedData = sessionStorage.getItem(cacheKey);
         const now = new Date().getTime();
-        const ONE_HOUR = 60 * 60 * 1000;
+        const TEN_MINUTES = 10 * 60 * 1000;
 
         if (cachedData) {
             const { timestamp, ids } = JSON.parse(cachedData);
-            if (now - timestamp < ONE_HOUR) {
+            if (now - timestamp < TEN_MINUTES) {
                 setRecommendedJobIds(ids);
                 setIsRecommendationLoading(false);
                 return;
@@ -375,5 +375,3 @@ export default function CandidateJobsPage() {
     </div>
   );
 }
-
-    
