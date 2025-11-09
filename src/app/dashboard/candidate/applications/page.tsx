@@ -40,7 +40,7 @@ const JobListItem = ({ job, onClick, isActive, isSavedJob }: { job: Application 
                 <CardHeader>
                     <div className="flex items-start gap-4">
                         <Avatar className="h-12 w-12 rounded-lg">
-                            <AvatarImage src={company?.logoUrl || undefined} alt={`${company?.name} logo`} />
+                            <AvatarImage src={company?.displayImageUrl || undefined} alt={`${company?.name} logo`} />
                             <AvatarFallback className="rounded-lg">{getInitials(company?.name)}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
@@ -77,7 +77,7 @@ const JobListItem = ({ job, onClick, isActive, isSavedJob }: { job: Application 
             <CardContent className="p-4">
                 <div className="flex items-start gap-4">
                     <Avatar className="h-12 w-12 rounded-lg">
-                        <AvatarImage src={company?.logoUrl} />
+                        <AvatarImage src={company?.displayImageUrl} />
                         <AvatarFallback className="rounded-lg">{getInitials(company?.name)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
@@ -130,7 +130,7 @@ function ApplicationsPageContent() {
                     ...job,
                     companyDetails: {
                         ...companyDetails,
-                        logoUrl: companyDetails?.displayImageUrl
+                        displayImageUrl: companyDetails?.displayImageUrl
                     } as Company,
                     applicantData: applicationSnap.data() as Applicant,
                 });
@@ -151,7 +151,7 @@ function ApplicationsPageContent() {
               ...job,
               companyDetails: {
                 ...company,
-                logoUrl: company?.displayImageUrl
+                displayImageUrl: company?.displayImageUrl
               } as Company
           }
       });
