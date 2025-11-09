@@ -150,19 +150,19 @@ function ApplicationsPageContent() {
       });
   }, [allJobs, session?.favourite_jobs, companies]);
 
+  const currentList = activeTab === 'saved' ? favoriteJobs : applications;
+
   useEffect(() => {
-    const currentList = activeTab === 'saved' ? favoriteJobs : applications;
+    const params = new URLSearchParams(searchParams.toString());
     if (!selectedJobId && currentList.length > 0) {
-      const params = new URLSearchParams(searchParams.toString());
       params.set('jobId', currentList[0].id);
       router.replace(`/dashboard/candidate/applications?${params.toString()}`);
     } else if (currentList.length === 0 && selectedJobId) {
-        const params = new URLSearchParams(searchParams.toString());
         params.delete('jobId');
         router.replace(`/dashboard/candidate/applications?${params.toString()}`);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeTab, applications, favoriteJobs, selectedJobId]);
+  }, [activeTab, applications, favoriteJobs]);
 
 
   const selectedJob = useMemo(() => {
@@ -209,8 +209,6 @@ function ApplicationsPageContent() {
     params.delete('jobId'); // Clear jobId when switching tabs
     router.push(`/dashboard/candidate/applications?${params.toString()}`);
   }
-  
-  const currentList = activeTab === 'saved' ? favoriteJobs : applications;
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useContext } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Job, Socials, CompanySize, Round, Question, ApplicantRoundResult, Applicant, Company } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -24,7 +24,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ScreeningQuestionsDialog } from '@/app/dashboard/candidate/jobs/[jobId]/_components/screening-questions-dialog';
 import { QuestionContext } from '@/context/question-context';
-import { useContext } from 'react';
 import { ScrollArea } from './ui/scroll-area';
 
 interface JobDetailViewProps {
@@ -231,6 +230,7 @@ export const JobDetailView = ({ job, company, applicantData, allJobs }: JobDetai
                         <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
                             {hasApplied && <TabsTrigger value="track">Track Application</TabsTrigger>}
                             <TabsTrigger value="description">Job Description</TabsTrigger>
+                            <TabsTrigger value="insights">Insights</TabsTrigger>
                             <TabsTrigger value="analyze">Analyze Resume</TabsTrigger>
                             <TabsTrigger value="about">About Company</TabsTrigger>
                             <TabsTrigger value="similar">Similar Jobs</TabsTrigger>
@@ -298,6 +298,46 @@ export const JobDetailView = ({ job, company, applicantData, allJobs }: JobDetai
                                   </CardContent>
                               </Card>
                           )}
+                        </TabsContent>
+                         <TabsContent value="insights" className="pt-6 space-y-6">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Activity on this job</CardTitle>
+                                </CardHeader>
+                                <CardContent className="grid grid-cols-2 gap-4">
+                                    <div className="flex flex-col items-center justify-center p-4 border rounded-lg">
+                                        <p className="text-2xl font-bold">128</p>
+                                        <p className="text-sm text-muted-foreground">Total applications</p>
+                                    </div>
+                                    <div className="flex flex-col items-center justify-center p-4 border rounded-lg">
+                                        <p className="text-2xl font-bold">42</p>
+                                        <p className="text-sm text-muted-foreground">Applications viewed</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                             <Card>
+                                <CardHeader>
+                                    <CardTitle>What may work for you?</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-3">
+                                    <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                                        <CheckCircle className="h-5 w-5" />
+                                        <span>Your skills in **React** and **TypeScript** match the job requirements.</span>
+                                    </div>
+                                     <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                                        <CheckCircle className="h-5 w-5" />
+                                        <span>Your **4 years** of experience is within the required **3-5 years** range.</span>
+                                    </div>
+                                     <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+                                        <XCircle className="h-5 w-5" />
+                                        <span>This is an **On-site** role in **New York**, which may not match your preference for **Remote** work.</span>
+                                    </div>
+                                     <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                                        <CheckCircle className="h-5 w-5" />
+                                        <span>The salary range **(25-35 LPA)** aligns with your expectations.</span>
+                                    </div>
+                                </CardContent>
+                            </Card>
                         </TabsContent>
                         <TabsContent value="analyze" className="pt-6">
                             <div className='text-center space-y-1 mb-4'>
