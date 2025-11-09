@@ -286,12 +286,11 @@ export const JobDetailView = ({ job, company, applicantData, allJobs }: JobDetai
                         </div>
                         {hasApplied && (
                             <TabsContent value="track" className="pt-6">
-                                <Card>
-                                <CardHeader>
-                                    <CardTitle>Application Progress</CardTitle>
-                                    <CardDescription>Follow your application journey through our hiring stages.</CardDescription>
-                                </CardHeader>
-                                <CardContent>
+                                <div>
+                                    <h3 className='text-xl font-semibold'>Application Progress</h3>
+                                    <p className='text-sm text-muted-foreground'>Follow your application journey through our hiring stages.</p>
+                                </div>
+                                <div className='py-6'>
                                     <ol className="relative border-s border-border">                  
                                         {job.rounds.map((round: Round, index) => {
                                             const isCompleted = applicantData && index < applicantData.activeRoundIndex;
@@ -324,8 +323,7 @@ export const JobDetailView = ({ job, company, applicantData, allJobs }: JobDetai
                                             <h3 className={cn("font-semibold", !applicantData || applicantData.activeRoundIndex < job.rounds.length ? 'text-muted-foreground' : '')}>Hired / Rejected</h3>
                                         </li>
                                     </ol>
-                                </CardContent>
-                                </Card>
+                                </div>
                             </TabsContent>
                         )}
                         <TabsContent value="description" className="pt-6">
