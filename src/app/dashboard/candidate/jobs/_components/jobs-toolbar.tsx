@@ -80,7 +80,7 @@ export function JobsToolbar({
   }
 
   return (
-    <form onSubmit={handleFormSubmit} className="flex flex-col md:flex-row items-center gap-4 p-4 border rounded-lg">
+    <form onSubmit={handleFormSubmit} className="flex flex-col md:flex-row items-center gap-4">
       <div className="relative flex-1 w-full">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
