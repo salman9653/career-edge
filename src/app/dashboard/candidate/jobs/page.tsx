@@ -1,4 +1,3 @@
-
 'use client';
 import { useSession } from '@/hooks/use-session';
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
@@ -21,6 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { recommendJobs } from '@/ai/flows/recommend-jobs-flow';
 import type { Job } from '@/lib/types';
+import { generateJobSearchKeywords } from '@/ai/flows/generate-job-search-keywords-flow';
 
 const getFiltersFromParams = (searchParams: URLSearchParams): FilterState => {
     return {
@@ -113,35 +113,45 @@ export default function CandidateJobsPage() {
   }, [jobs, companies]);
 
   useEffect(() => {
-    if (session && jobsWithCompany.length > 0 && !isSearchActive) {
-      setIsRecommendationLoading(true);
-      const getRecommendations = async () => {
-        try {
-          const result = await recommendJobs({
-            candidateProfile: {
-              jobTitle: session.jobTitle,
-              keySkills: session.keySkills,
-              experience: session.experience,
-            },
-            allJobs: jobsWithCompany.map(j => ({ id: j.id, title: j.title, description: j.description, workExperience: j.workExperience, keySkills: j.keySkills || [] })),
-          });
-          setRecommendedJobIds(result.recommendedJobIds);
-        } catch (error) {
-          console.error("Failed to get job recommendations:", error);
-          toast({
-            variant: "destructive",
-            title: "AI Recommendation Error",
-            description: "Could not fetch personalized job recommendations.",
-          });
-        } finally {
-          setIsRecommendationLoading(false);
+    const getRecommendations = async () => {
+        if (!session || !session.uid || jobsWithCompany.length === 0 || isSearchActive) {
+            setIsRecommendationLoading(false);
+            return;
         }
-      };
-      getRecommendations();
-    } else if (!isSearchActive) {
-        setIsRecommendationLoading(false);
-    }
+
+        const cachedRecommendations = sessionStorage.getItem(`recommendations-${session.uid}`);
+        if(cachedRecommendations) {
+            setRecommendedJobIds(JSON.parse(cachedRecommendations));
+            setIsRecommendationLoading(false);
+            return;
+        }
+
+        setIsRecommendationLoading(true);
+        try {
+            const result = await recommendJobs({
+                candidateProfile: {
+                    jobTitle: session.jobTitle,
+                    keySkills: session.keySkills,
+                    experience: session.experience,
+                },
+                allJobs: jobsWithCompany.map(j => ({ id: j.id, title: j.title, description: j.description, workExperience: j.workExperience, keySkills: j.keySkills || [] })),
+            });
+            setRecommendedJobIds(result.recommendedJobIds);
+            sessionStorage.setItem(`recommendations-${session.uid}`, JSON.stringify(result.recommendedJobIds));
+        } catch (error) {
+            console.error("Failed to get job recommendations:", error);
+            toast({
+                variant: "destructive",
+                title: "AI Recommendation Error",
+                description: "Could not fetch personalized job recommendations.",
+            });
+        } finally {
+            setIsRecommendationLoading(false);
+        }
+    };
+    getRecommendations();
   }, [session, jobsWithCompany, isSearchActive, toast]);
+
 
   const displayedJobs = useMemo(() => {
     let filtered = jobsWithCompany;

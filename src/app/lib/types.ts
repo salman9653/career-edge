@@ -64,6 +64,8 @@ export interface Job {
         name: string;
     };
     workExperience: string;
+    keySkills?: string[];
+    searchKeywords?: string[];
     salary: {
         min: number;
         max: number;
@@ -314,6 +316,11 @@ export interface UserProfile {
     phone: string;
     displayImageUrl: string | null;
     emailVerified: boolean;
+    applications?: number;
+    createdAt?: string | null;
+    status?: string;
+    subscription?: string;
+    favourite_jobs?: string[];
     // Company specific
     companySize?: CompanySize;
     website?: string;
@@ -340,6 +347,7 @@ export interface UserProfile {
     hasResume?: boolean;
     profileSummary?: string;
     keySkills?: string[];
+    searchKeywords?: string[];
     employment?: Employment[];
     education?: Education[];
     projects?: Project[];

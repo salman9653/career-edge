@@ -64,6 +64,8 @@ export interface Job {
         name: string;
     };
     workExperience: string;
+    keySkills?: string[];
+    searchKeywords?: string[];
     salary: {
         min: number;
         max: number;
@@ -203,7 +205,7 @@ export interface Notification {
   recipientId: string;
   senderId: string;
   senderName: string;
-  type: 'NEW_APPLICATION' | 'STATUS_UPDATE' | 'NEW_COMPANY_SIGNUP';
+  type: 'NEW_APPLICATION' | 'STATUS_UPDATE';
   message: string;
   link: string;
   isRead: boolean;

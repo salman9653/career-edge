@@ -23,6 +23,7 @@ import type { GenerateAiQuestionsInput, GenerateAiQuestionsOutput } from '@/ai/f
 import { enhanceText, generateTextFromPrompt } from '@/ai/flows/text-generation-flows';
 import { generateAtsResume } from '@/ai/flows/generate-ats-resume-flow';
 import type { GenerateAtsResumeInput, GeneratedResume } from '@/ai/flows/generate-ats-resume-flow-types';
+import { generateJobSearchKeywords } from '@/ai/flows/generate-job-search-keywords-flow';
 
 async function fileToDataURI(file: File) {
     const arrayBuffer = await file.arrayBuffer();
@@ -1091,15 +1092,28 @@ export async function deleteAssessmentAction(assessmentId: string) {
     redirect('/dashboard/company/assessments');
 }
 
-export async function createJobAction(jobData: Omit<Job, 'id' | 'datePosted' | 'recruiter'>, rounds: Round[], createdBy: string, createdByName: string) {
+export async function createJobAction(jobData: Omit<Job, 'id' | 'datePosted' | 'recruiter' | 'applicants' >, rounds: Round[], createdBy: string, createdByName: string) {
   if (!createdBy || !createdByName) {
     throw new Error('You must be logged in to create a job.');
   }
 
   const { applicants, ...restOfJobData } = jobData;
+  
+  // Create a combined string of important fields for searching
+  const searchableString = [
+      restOfJobData.title,
+      restOfJobData.description,
+      restOfJobData.location,
+      restOfJobData.type,
+      ...(restOfJobData.keySkills || [])
+  ].join(' ').toLowerCase();
+
+  // Create an array of keywords
+  const searchKeywords = Array.from(new Set(searchableString.split(/\s+/).filter(Boolean)));
 
   const finalJobData = {
     ...restOfJobData,
+    searchKeywords,
     rounds,
     createdBy: createdBy,
     createdByName: createdByName,
@@ -1119,8 +1133,21 @@ export async function createJobAction(jobData: Omit<Job, 'id' | 'datePosted' | '
 }
     
 export async function updateJobAction(jobId: string, jobData: Omit<Job, 'id' | 'datePosted' | 'recruiter' | 'createdBy' | 'createdByName' | 'createdAt' | 'updatedAt' | 'status' | 'applicants'>, rounds: Round[]) {
+  // Create a combined string of important fields for searching
+  const searchableString = [
+      jobData.title,
+      jobData.description,
+      jobData.location,
+      jobData.type,
+      ...(jobData.keySkills || [])
+  ].join(' ').toLowerCase();
+
+  // Create an array of keywords
+  const searchKeywords = Array.from(new Set(searchableString.split(/\s+/).filter(Boolean)));
+
   const finalJobData = {
     ...jobData,
+    searchKeywords,
     rounds,
     updatedAt: serverTimestamp(),
   };
