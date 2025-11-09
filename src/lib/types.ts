@@ -347,6 +347,7 @@ export interface UserProfile {
     hasResume?: boolean;
     profileSummary?: string;
     keySkills?: string[];
+    searchKeywords?: string[];
     employment?: Employment[];
     education?: Education[];
     projects?: Project[];

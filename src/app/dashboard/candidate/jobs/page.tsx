@@ -128,16 +128,31 @@ export default function CandidateJobsPage() {
 
         setIsRecommendationLoading(true);
         try {
-            const result = await recommendJobs({
-                candidateProfile: {
-                    jobTitle: session.jobTitle,
-                    keySkills: session.keySkills,
-                    experience: session.experience,
-                },
-                allJobs: jobsWithCompany.map(j => ({ id: j.id, title: j.title, description: j.description, workExperience: j.workExperience, keySkills: j.keySkills || [] })),
+            const keywords = await generateJobSearchKeywords({
+              candidateProfile: {
+                jobTitle: session.jobTitle || '',
+                keySkills: session.keySkills || [],
+                profileSummary: session.profileSummary || '',
+              },
+              searchHistory: [], // TODO: Implement search history tracking
             });
-            setRecommendedJobIds(result.recommendedJobIds);
-            sessionStorage.setItem(`recommendations-${session.uid}`, JSON.stringify(result.recommendedJobIds));
+
+            if (keywords.keywords.length === 0) {
+              setRecommendedJobIds([]);
+              setIsRecommendationLoading(false);
+              return;
+            }
+
+            const recommendedJobsQuery = query(
+              collection(db, 'jobs'),
+              where('searchKeywords', 'array-contains-any', keywords.keywords.slice(0, 10)) // Firestore 'array-contains-any' limit
+            );
+            const querySnapshot = await getDocs(recommendedJobsQuery);
+            const jobIds = querySnapshot.docs.map(doc => doc.id);
+            
+            setRecommendedJobIds(jobIds);
+            sessionStorage.setItem(`recommendations-${session.uid}`, JSON.stringify(jobIds));
+
         } catch (error) {
             console.error("Failed to get job recommendations:", error);
             toast({
