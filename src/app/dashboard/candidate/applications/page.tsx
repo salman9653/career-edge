@@ -3,7 +3,7 @@
 import { useSession } from '@/hooks/use-session';
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { MobileSearch } from '@/components/mobile-search';
-import { useContext, useEffect, useState, Suspense } from 'react';
+import { useContext, useEffect, useState, Suspense, useMemo } from 'react';
 import type { Job, Applicant, Round, Company, ResumeAnalysisResult } from '@/lib/types';
 import { collection, query, where, onSnapshot, doc, getDoc, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
