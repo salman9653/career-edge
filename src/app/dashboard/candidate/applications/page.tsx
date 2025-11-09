@@ -8,7 +8,6 @@ import type { Job, Applicant, Company } from '@/lib/types';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { JobContext } from '@/context/job-context';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -112,6 +111,7 @@ function ApplicationsPageContent() {
   const searchParams = useSearchParams();
 
   const selectedJobId = searchParams.get('jobId');
+  const activeTab = searchParams.get('tab') || 'applied';
 
   useEffect(() => {
     if (!session?.uid || jobsLoading) return;
@@ -184,8 +184,22 @@ function ApplicationsPageContent() {
   }
 
   const handleJobSelect = (jobId: string) => {
-    router.push(`/dashboard/candidate/applications?jobId=${jobId}`);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('jobId', jobId);
+    router.push(`/dashboard/candidate/applications?${params.toString()}`);
   };
+
+  const handleTabChange = (tab: 'applied' | 'saved') => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (tab === 'saved') {
+      params.set('tab', 'saved');
+    } else {
+      params.delete('tab');
+    }
+    // Remove jobId when switching tabs
+    params.delete('jobId');
+    router.push(`/dashboard/candidate/applications?${params.toString()}`);
+  }
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
@@ -199,14 +213,13 @@ function ApplicationsPageContent() {
           <ResizablePanelGroup direction="horizontal" className="flex-1">
             <ResizablePanel defaultSize={35} minSize={25}>
                <div className="flex flex-col h-full">
-                <div className="w-full mb-4">
-                   <div className="w-full mb-4">
+                  <div className="w-full mb-4">
                       <div className="grid grid-cols-2 gap-2 rounded-lg bg-muted p-1">
-                          <Button variant={searchParams.get('tab') !== 'saved' ? 'secondary' : 'ghost'} onClick={() => router.push('/dashboard/candidate/applications')} className="rounded-md">Applied Jobs</Button>
-                          <Button variant={searchParams.get('tab') === 'saved' ? 'secondary' : 'ghost'} onClick={() => router.push('/dashboard/candidate/applications?tab=saved')} className="rounded-md">Saved Jobs</Button>
+                          <Button variant={activeTab === 'applied' ? 'secondary' : 'ghost'} onClick={() => handleTabChange('applied')} className="rounded-md">Applied Jobs</Button>
+                          <Button variant={activeTab === 'saved' ? 'secondary' : 'ghost'} onClick={() => handleTabChange('saved')} className="rounded-md">Saved Jobs</Button>
                       </div>
                   </div>
-                  {searchParams.get('tab') === 'saved' ? (
+                  {activeTab === 'saved' ? (
                      <div className="flex-1 overflow-auto custom-scrollbar pr-4">
                        <div className="space-y-2">
                         {favoriteJobs.map(job => (
@@ -223,27 +236,24 @@ function ApplicationsPageContent() {
                       </div>
                     </div>
                   )}
-                </div>
               </div>
             </ResizablePanel>
             <ResizableHandle withHandle />
             <ResizablePanel defaultSize={65} minSize={40}>
-                <Card className="h-full">
-                    {selectedJob ? (
-                        <JobDetailView 
-                            job={selectedJob} 
-                            company={selectedCompany} 
-                            applicantData={'applicantData' in selectedJob ? selectedJob.applicantData : null}
-                            allJobs={allJobs}
-                        />
-                    ) : (
-                        <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                            <Briefcase className="h-16 w-16 text-muted-foreground" />
-                            <h3 className="mt-4 text-lg font-semibold">Select a Job</h3>
-                            <p className="text-muted-foreground">Choose a job from the list to see its details.</p>
-                        </div>
-                    )}
-                </Card>
+                {selectedJob ? (
+                    <JobDetailView 
+                        job={selectedJob} 
+                        company={selectedCompany} 
+                        applicantData={'applicantData' in selectedJob ? selectedJob.applicantData : null}
+                        allJobs={allJobs}
+                    />
+                ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                        <Briefcase className="h-16 w-16 text-muted-foreground" />
+                        <h3 className="mt-4 text-lg font-semibold">Select a Job</h3>
+                        <p className="text-muted-foreground">Choose a job from the list to see its details.</p>
+                    </div>
+                )}
             </ResizablePanel>
           </ResizablePanelGroup>
         </main>
