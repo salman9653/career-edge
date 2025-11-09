@@ -2,9 +2,8 @@
 'use client';
 import { useSession } from '@/hooks/use-session';
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import Image from 'next/image';
 import { MobileSearch } from '@/components/mobile-search';
 import { useContext, useMemo, useState, useTransition, useEffect } from 'react';
 import { JobContext } from '@/context/job-context';
@@ -13,13 +12,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { JobsToolbar, type FilterState } from './_components/jobs-toolbar';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { format, formatDistanceToNow } from 'date-fns';
-import { Bookmark, MapPin, Briefcase, Calendar, Banknote } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { Bookmark, MapPin, Briefcase, Calendar, Banknote, Sparkles, AlertTriangle } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { toggleFavoriteJobAction } from '../actions';
 import { useToast } from '@/hooks/use-toast';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { recommendJobs } from '@/ai/flows/recommend-jobs-flow';
+import type { Job } from '@/lib/types';
 
 const getFiltersFromParams = (searchParams: URLSearchParams): FilterState => {
     return {
@@ -40,10 +41,15 @@ export default function CandidateJobsPage() {
   const { toast } = useToast();
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
+  const [locationQuery, setLocationQuery] = useState(searchParams.get('loc') || '');
   const [filters, setFilters] = useState<FilterState>(() => getFiltersFromParams(searchParams));
-  const [isPending, startTransition] = useTransition();
-  
+  const [isTransitionPending, startTransition] = useTransition();
+
   const [favoriteJobs, setFavoriteJobs] = useState<string[]>(session?.favourite_jobs || []);
+  const [recommendedJobIds, setRecommendedJobIds] = useState<string[]>([]);
+  const [isRecommendationLoading, setIsRecommendationLoading] = useState(true);
+  
+  const [isSearchActive, setIsSearchActive] = useState(!!searchParams.get('q') || !!searchParams.get('loc') || filters.jobType.length > 0 || filters.location.length > 0 || filters.workExperience.length > 0);
 
   useEffect(() => {
     if (session?.favourite_jobs) {
@@ -59,19 +65,17 @@ export default function CandidateJobsPage() {
     setFilters(getFiltersFromParams(searchParams));
   }, [searchParams]);
 
-  useEffect(() => {
+  const handleSearchSubmit = () => {
     const params = new URLSearchParams(searchParams.toString());
-    if (searchQuery) {
-        params.set('q', searchQuery);
-    } else {
-        params.delete('q');
-    }
+    if (searchQuery) params.set('q', searchQuery); else params.delete('q');
+    if (locationQuery) params.set('loc', locationQuery); else params.delete('loc');
+    
     startTransition(() => {
         router.replace(`${pathname}?${params.toString()}`);
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery]);
-
+    setIsSearchActive(true);
+  }
+  
   const handleFilterChange = (newFilters: FilterState) => {
     const params = new URLSearchParams(searchParams.toString());
     
@@ -86,6 +90,7 @@ export default function CandidateJobsPage() {
      startTransition(() => {
         router.replace(`${pathname}?${params.toString()}`);
     });
+     setIsSearchActive(true);
   }
   
   const getInitials = (name: string) => {
@@ -95,8 +100,7 @@ export default function CandidateJobsPage() {
         return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
     }
     return name.substring(0, 2).toUpperCase();
-}
-
+  }
 
   const jobsWithCompany = useMemo(() => {
     return jobs.map(job => {
@@ -108,27 +112,78 @@ export default function CandidateJobsPage() {
     })
   }, [jobs, companies]);
 
-  const filteredJobs = useMemo(() => {
-    let filtered = jobsWithCompany;
-    if (searchQuery) {
-        filtered = filtered.filter(job => 
-            job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            job.company.name.toLowerCase().includes(searchQuery.toLowerCase())
-        );
+  useEffect(() => {
+    if (session && jobsWithCompany.length > 0 && !isSearchActive) {
+      setIsRecommendationLoading(true);
+      const getRecommendations = async () => {
+        try {
+          const result = await recommendJobs({
+            candidateProfile: {
+              jobTitle: session.jobTitle,
+              keySkills: session.keySkills,
+              experience: session.experience,
+            },
+            allJobs: jobsWithCompany.map(j => ({ id: j.id, title: j.title, description: j.description, workExperience: j.workExperience, keySkills: j.keySkills || [] })),
+          });
+          setRecommendedJobIds(result.recommendedJobIds);
+        } catch (error) {
+          console.error("Failed to get job recommendations:", error);
+          toast({
+            variant: "destructive",
+            title: "AI Recommendation Error",
+            description: "Could not fetch personalized job recommendations.",
+          });
+        } finally {
+          setIsRecommendationLoading(false);
+        }
+      };
+      getRecommendations();
+    } else if (!isSearchActive) {
+        setIsRecommendationLoading(false);
     }
-    if (filters.jobType.length > 0) {
-        filtered = filtered.filter(job => filters.jobType.includes(job.type));
-    }
-    if (filters.location.length > 0) {
-        filtered = filtered.filter(job => filters.location.includes(job.location));
-    }
-    if (filters.workExperience.length > 0) {
-        filtered = filtered.filter(job => filters.workExperience.includes(job.workExperience));
-    }
-    return filtered;
-  }, [jobsWithCompany, searchQuery, filters]);
+  }, [session, jobsWithCompany, isSearchActive, toast]);
 
-  const loading = sessionLoading || jobsLoading || companiesLoading;
+  const displayedJobs = useMemo(() => {
+    let filtered = jobsWithCompany;
+
+    if (isSearchActive) {
+        if (searchQuery) {
+            const lowerCaseQuery = searchQuery.toLowerCase();
+            filtered = filtered.filter(job => 
+                job.title.toLowerCase().includes(lowerCaseQuery) ||
+                job.company.name.toLowerCase().includes(lowerCaseQuery) ||
+                job.keySkills?.some(skill => skill.toLowerCase().includes(lowerCaseQuery))
+            );
+        }
+        if(locationQuery) {
+             filtered = filtered.filter(job => 
+                job.location.toLowerCase().includes(locationQuery.toLowerCase())
+            );
+        }
+        if (filters.jobType.length > 0) {
+            filtered = filtered.filter(job => filters.jobType.includes(job.type));
+        }
+        if (filters.location.length > 0) {
+            filtered = filtered.filter(job => filters.location.includes(job.location));
+        }
+        if (filters.workExperience.length > 0) {
+            filtered = filtered.filter(job => filters.workExperience.includes(job.workExperience));
+        }
+    } else {
+        if (recommendedJobIds.length > 0) {
+             filtered = recommendedJobIds.map(id => jobsWithCompany.find(job => job.id === id)).filter((j): j is Job & { company: any } => !!j);
+        } else if (!isRecommendationLoading) {
+            // Fallback to all jobs if recommendations are empty or failed
+            filtered = jobsWithCompany;
+        } else {
+            filtered = [];
+        }
+    }
+    
+    return filtered;
+  }, [jobsWithCompany, searchQuery, locationQuery, filters, isSearchActive, recommendedJobIds, isRecommendationLoading]);
+
+  const loading = sessionLoading || jobsLoading || companiesLoading || isTransitionPending;
 
   const formatDatePosted = (date: any) => {
     if (!date) return 'N/A';
@@ -141,7 +196,6 @@ export default function CandidateJobsPage() {
     
     const isFavorited = favoriteJobs.includes(jobId);
     
-    // Optimistic UI update
     const newFavoriteJobs = isFavorited
         ? favoriteJobs.filter(id => id !== jobId)
         : [...favoriteJobs, jobId];
@@ -150,7 +204,6 @@ export default function CandidateJobsPage() {
 
     const result = await toggleFavoriteJobAction(jobId, session);
     if (result.error) {
-        // Revert UI on error
         setFavoriteJobs(favoriteJobs);
         updateSession({ favourite_jobs: favoriteJobs });
         toast({
@@ -160,36 +213,6 @@ export default function CandidateJobsPage() {
         });
     }
   };
-
-
-  if (loading) {
-    return (
-      <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-        <DashboardSidebar role="candidate" user={session} />
-        <div className="flex flex-col max-h-screen">
-          <header className="flex h-16 shrink-0 items-center justify-between gap-4 bg-background px-4 md:px-6 sticky top-0 z-30 md:static">
-              <h1 className="font-headline text-xl font-semibold md:ml-0 ml-12">Find Jobs</h1>
-              <MobileSearch />
-          </header>
-          <main className="flex flex-1 flex-col gap-4 overflow-auto p-4 md:p-6 custom-scrollbar">
-             <div className="flex items-center gap-2 mb-4">
-                <Skeleton className="h-10 flex-1 md:flex-none md:w-64" />
-                <Skeleton className="h-10 w-24 hidden md:block" />
-            </div>
-            <div className="grid gap-6">
-                {Array.from({ length: 3 }).map((_, i) => (
-                    <Card key={i}>
-                        <CardContent className="p-4">
-                            <Skeleton className="h-24 w-full" />
-                        </CardContent>
-                    </Card>
-                ))}
-            </div>
-          </main>
-        </div>
-      </div>
-    );
-  }
 
   if (!session) {
     return (
@@ -206,45 +229,66 @@ export default function CandidateJobsPage() {
             <JobsToolbar 
                 searchQuery={searchQuery}
                 onSearchQueryChange={setSearchQuery}
+                locationQuery={locationQuery}
+                onLocationQueryChange={setLocationQuery}
+                onSearchSubmit={handleSearchSubmit}
                 filters={filters}
                 onFilterChange={handleFilterChange}
                 uniqueJobTypes={uniqueJobTypes}
                 uniqueLocations={uniqueLocations}
             />
-            {filteredJobs.length > 0 ? (
+            
+            <div className="flex items-center gap-2">
+                <h2 className="text-xl font-semibold">{isSearchActive ? 'Search Results' : 'Recommended For You'}</h2>
+                {!isSearchActive && <Sparkles className="h-5 w-5 text-dash-primary" />}
+            </div>
+
+            {loading || isRecommendationLoading ? (
+                <div className="grid gap-6">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                        <Card key={i}>
+                            <CardContent className="p-4">
+                                <Skeleton className="h-24 w-full" />
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+            ) : displayedJobs.length > 0 ? (
                  <div className="grid gap-4">
-                    {filteredJobs.map(job => {
+                    {displayedJobs.map(job => {
                        const isFavorite = favoriteJobs.includes(job.id);
                        return (
-                        <Link href={`/dashboard/candidate/jobs/${job.id}`} key={job.id} className="block">
-                            <Card className="hover:bg-accent transition-colors relative group">
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                       <Button 
-                                            variant="ghost" 
-                                            size="icon" 
-                                            className="absolute top-2 right-2 h-8 w-8 text-muted-foreground hover:text-dash-primary z-10" 
-                                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleToggleFavorite(job.id); }}>
-                                            <Bookmark className={cn("h-5 w-5", isFavorite && "fill-current text-dash-primary")} />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>{isFavorite ? "Remove from saved" : "Save this job"}</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                                <CardContent className="p-4 flex flex-col gap-4">
+                        <Card asChild key={job.id} className="hover:bg-accent transition-colors relative group">
+                            <Link href={`/dashboard/candidate/jobs/${job.id}`}>
+                               <CardHeader>
                                     <div className="flex items-start gap-4">
-                                        <Avatar className="h-12 w-12 rounded-full">
+                                        <Avatar className="h-12 w-12 rounded-lg">
                                             <AvatarImage src={job.company.logoUrl || undefined} alt={`${job.company.name} logo`} />
-                                            <AvatarFallback>{getInitials(job.company.name)}</AvatarFallback>
+                                            <AvatarFallback className="rounded-lg">{getInitials(job.company.name)}</AvatarFallback>
                                         </Avatar>
                                         <div className="flex-1">
-                                            <p className="font-semibold text-lg line-clamp-1 pr-10">{job.title}</p>
+                                            <p className="font-semibold text-lg line-clamp-1">{job.title}</p>
                                             <p className="text-sm text-muted-foreground">{job.company.name}</p>
                                         </div>
+                                         <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                <Button 
+                                                        variant="ghost" 
+                                                        size="icon" 
+                                                        className="h-8 w-8 text-muted-foreground hover:text-dash-primary z-10" 
+                                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleToggleFavorite(job.id); }}>
+                                                        <Bookmark className={cn("h-5 w-5", isFavorite && "fill-current text-dash-primary")} />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>{isFavorite ? "Remove from saved" : "Save this job"}</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
                                     </div>
+                               </CardHeader>
+                               <CardContent className="space-y-4">
                                     <div className="flex items-center flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
                                         <div className="flex items-center gap-2"><MapPin className="h-4 w-4" /> {job.location}</div>
                                         <div className="flex items-center gap-2"><Briefcase className="h-4 w-4" /> {job.type}</div>
@@ -256,18 +300,22 @@ export default function CandidateJobsPage() {
                                             </div>
                                         )}
                                     </div>
-                                </CardContent>
-                                 <div className="absolute bottom-4 right-4 flex items-center gap-1 text-xs text-muted-foreground">
+                               </CardContent>
+                               <div className="absolute bottom-4 right-4 flex items-center gap-1 text-xs text-muted-foreground">
                                     <Calendar className="h-3 w-3" />
                                     {formatDatePosted(job.createdAt)}
                                 </div>
-                            </Card>
-                       </Link>
+                            </Link>
+                       </Card>
                     )})}
                 </div>
             ) : (
-                <div className="text-center py-12">
-                    <p className="text-muted-foreground">No jobs found matching your criteria.</p>
+                <div className="text-center py-12 border-2 border-dashed rounded-lg">
+                    <AlertTriangle className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <h3 className="mt-4 text-lg font-semibold">No Jobs Found</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                        {isSearchActive ? "Try adjusting your search or filters." : "We couldn't find any recommendations for you yet. Try adding more skills to your profile!"}
+                    </p>
                 </div>
             )}
         </div>

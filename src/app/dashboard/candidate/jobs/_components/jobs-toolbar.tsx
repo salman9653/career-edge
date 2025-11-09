@@ -4,12 +4,13 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, ListFilter, X } from 'lucide-react';
+import { Search, ListFilter, X, MapPin } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from '@/components/ui/sheet';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Card, CardContent } from '@/components/ui/card';
 
 export interface FilterState {
     jobType: string[];
@@ -29,6 +30,9 @@ const workExperienceOptions = [
 interface JobsToolbarProps {
     searchQuery: string;
     onSearchQueryChange: (query: string) => void;
+    locationQuery: string;
+    onLocationQueryChange: (query: string) => void;
+    onSearchSubmit: () => void;
     filters: FilterState;
     onFilterChange: (filters: FilterState) => void;
     uniqueJobTypes: string[];
@@ -38,12 +42,14 @@ interface JobsToolbarProps {
 export function JobsToolbar({
     searchQuery,
     onSearchQueryChange,
+    locationQuery,
+    onLocationQueryChange,
+    onSearchSubmit,
     filters,
     onFilterChange,
     uniqueJobTypes,
     uniqueLocations
 }: JobsToolbarProps) {
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [localFilters, setLocalFilters] = useState<FilterState>(filters);
 
@@ -68,27 +74,43 @@ export function JobsToolbar({
   };
 
   const activeFilterCount = filters.jobType.length + filters.location.length + filters.workExperience.length;
+  
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSearchSubmit();
+  }
 
   return (
-    <div className="flex items-center gap-2">
-        <div className={cn("relative", isSearchFocused ? "flex-1" : "md:flex-1")}>
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+    <Card>
+      <CardContent className="p-4">
+        <form onSubmit={handleFormSubmit} className="flex flex-col md:flex-row items-center gap-4">
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-                type="search"
-                placeholder="Search jobs..."
-                className="w-full rounded-lg bg-background pl-8"
-                value={searchQuery}
-                onChange={(e) => onSearchQueryChange(e.target.value)}
-                onFocus={() => setIsSearchFocused(true)}
-                onBlur={() => setIsSearchFocused(false)}
+              type="search"
+              placeholder="Job title, keywords, or company"
+              className="w-full rounded-md bg-background pl-9 h-12"
+              value={searchQuery}
+              onChange={(e) => onSearchQueryChange(e.target.value)}
             />
-        </div>
-        <div className={cn("flex items-center gap-2", isSearchFocused && "hidden md:flex")}>
+          </div>
+          <div className="relative flex-1 w-full">
+            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Location"
+              className="w-full rounded-md bg-background pl-9 h-12"
+              value={locationQuery}
+              onChange={(e) => onLocationQueryChange(e.target.value)}
+            />
+          </div>
+
+          <div className="flex items-center gap-2 w-full md:w-auto">
             <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <div className="relative">
                 <SheetTrigger asChild>
-                  <Button variant="secondary" size="sm" className="h-10 gap-1">
-                    <ListFilter className="h-3.5 w-3.5" />
+                  <Button variant="outline" size="lg" className="h-12 gap-1 w-full md:w-auto">
+                    <ListFilter className="h-4 w-4" />
                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                       Filter
                     </span>
@@ -96,11 +118,11 @@ export function JobsToolbar({
                 </SheetTrigger>
                 {activeFilterCount > 0 && (
                   <div className="absolute -top-2 -right-2">
-                    <button 
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
                         clearFilters();
-                      }} 
+                      }}
                       className="relative group"
                     >
                       <Badge
@@ -183,7 +205,12 @@ export function JobsToolbar({
                 </SheetFooter>
               </SheetContent>
             </Sheet>
-        </div>
-    </div>
+            <Button type="submit" size="lg" className="h-12 w-full md:w-auto">
+              Find Jobs
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
