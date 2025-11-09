@@ -1,4 +1,5 @@
 
+
 'use client';
 import { useSession } from '@/hooks/use-session';
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
@@ -24,13 +25,14 @@ import { allBenefits } from '@/lib/benefits';
 import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { CompanyContext } from '@/context/company-context';
 
 export interface Application extends Job {
     companyDetails: Company;
     applicantData: Applicant;
 }
 
-const JobListItem = ({ job, onClick, isActive }: { job: Application | Job, onClick: () => void, isActive: boolean }) => {
+const JobListItem = ({ job, onClick, isActive, isSavedJob }: { job: Application | Job, onClick: () => void, isActive: boolean, isSavedJob?: boolean }) => {
     const getInitials = (name?: string) => {
         if (!name) return '';
         const names = name.split(' ');
@@ -39,6 +41,44 @@ const JobListItem = ({ job, onClick, isActive }: { job: Application | Job, onCli
     const company = 'companyDetails' in job ? job.companyDetails : null;
     const applicantData = 'applicantData' in job ? job.applicantData : null;
     
+    if (isSavedJob) {
+        return (
+            <Card onClick={onClick} className={cn("cursor-pointer hover:bg-accent transition-colors", isActive && "bg-accent border-dash-primary")}>
+                <CardHeader>
+                    <div className="flex items-start gap-4">
+                        <Avatar className="h-12 w-12 rounded-lg">
+                            <AvatarImage src={company?.logoUrl || undefined} alt={`${company?.name} logo`} />
+                            <AvatarFallback className="rounded-lg">{getInitials(company?.name)}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                            <p className="font-semibold text-lg line-clamp-1">{job.title}</p>
+                            <p className="text-sm text-muted-foreground">{company?.name}</p>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div className="flex items-center flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2"><MapPin className="h-4 w-4" /> {job.location}</div>
+                        <div className="flex items-center gap-2"><Briefcase className="h-4 w-4" /> {job.type}</div>
+                        <div className="flex items-center gap-2"><Briefcase className="h-4 w-4" /> {job.workExperience}</div>
+                        {job.salary.min > 0 && job.salary.max > 0 && (
+                            <div className="flex items-center gap-2">
+                                <Banknote className="h-4 w-4" />
+                                <span>{job.salary.min} - {job.salary.max} LPA</span>
+                            </div>
+                        )}
+                    </div>
+                </CardContent>
+                <CardFooter className="p-4 pt-0">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Calendar className="h-3 w-3" />
+                        Posted {formatDistanceToNow(job.createdAt.toDate(), { addSuffix: true })}
+                    </div>
+                </CardFooter>
+            </Card>
+        )
+    }
+
     return (
         <Card onClick={onClick} className={cn("cursor-pointer hover:bg-accent transition-colors", isActive && "bg-accent border-dash-primary")}>
             <CardContent className="p-4">
@@ -138,44 +178,44 @@ const JobDetailView = ({ job, company, applicantData }: { job: Job, company: Com
                 </CardContent>
 
                 <Tabs defaultValue="track" className="w-full">
-                    <TabsList className="w-full grid grid-cols-3">
-                        {applicantData && <TabsTrigger value="track">Track Application</TabsTrigger>}
-                        <TabsTrigger value="description">Job Description</TabsTrigger>
-                        <TabsTrigger value="about">About Company</TabsTrigger>
-                    </TabsList>
+                    <div className="w-full mb-4">
+                        <TabsList className="w-full grid grid-cols-3">
+                            {applicantData && <TabsTrigger value="track">Track Application</TabsTrigger>}
+                            <TabsTrigger value="description">Job Description</TabsTrigger>
+                            <TabsTrigger value="about">About Company</TabsTrigger>
+                        </TabsList>
+                    </div>
                     {applicantData && (
                         <TabsContent value="track" className="pt-6">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Application Progress</CardTitle>
-                                    <CardDescription>Follow your application journey through the hiring stages.</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <ol className="relative border-s border-border">                  
-                                        {job.rounds.map((round: Round, index) => {
-                                            const isCompleted = applicantData && index < applicantData.activeRoundIndex;
-                                            const isCurrent = applicantData && index === applicantData.activeRoundIndex;
-                                            const isUpcoming = !applicantData || index > applicantData.activeRoundIndex;
-                                            const roundResult = applicantData?.roundResults.find(r => r.roundId === round.id);
+                           
+                                <CardTitle>Application Progress</CardTitle>
+                                <CardDescription>Follow your application journey through the hiring stages.</CardDescription>
+                            
+                            
+                                <ol className="relative border-s border-border mt-6">                  
+                                    {job.rounds.map((round: Round, index) => {
+                                        const isCompleted = applicantData && index < applicantData.activeRoundIndex;
+                                        const isCurrent = applicantData && index === applicantData.activeRoundIndex;
+                                        const isUpcoming = !applicantData || index > applicantData.activeRoundIndex;
+                                        const roundResult = applicantData?.roundResults.find(r => r.roundId === round.id);
 
-                                            return (
-                                                <li key={round.id} className="mb-10 ms-6">            
-                                                    <span className={cn(
-                                                        "absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 ring-4 ring-background",
-                                                        isCompleted && "bg-green-500 text-white",
-                                                        isCurrent && "bg-dash-primary text-dash-primary-foreground",
-                                                        isUpcoming && "bg-muted"
-                                                    )}>
-                                                        {isCompleted ? <CheckCircle className="w-4 h-4" /> : isCurrent ? <CircleDot className="w-4 h-4" /> : <div className="w-2 h-2 rounded-full bg-muted-foreground" />}
-                                                    </span>
-                                                    <h3 className={cn("font-semibold", isUpcoming && 'text-muted-foreground')}>{round.name}</h3>
-                                                    <p className="text-sm text-muted-foreground">{round.type}</p>
-                                                </li>
-                                            )
-                                        })}
-                                    </ol>
-                                </CardContent>
-                            </Card>
+                                        return (
+                                            <li key={round.id} className="mb-10 ms-6">            
+                                                <span className={cn(
+                                                    "absolute flex items-center justify-center w-6 h-6 rounded-full -start-3 ring-4 ring-background",
+                                                    isCompleted && "bg-green-500 text-white",
+                                                    isCurrent && "bg-dash-primary text-dash-primary-foreground",
+                                                    isUpcoming && "bg-muted"
+                                                )}>
+                                                    {isCompleted ? <CheckCircle className="w-4 h-4" /> : isCurrent ? <CircleDot className="w-4 h-4" /> : <div className="w-2 h-2 rounded-full bg-muted-foreground" />}
+                                                </span>
+                                                <h3 className={cn("font-semibold", isUpcoming && 'text-muted-foreground')}>{round.name}</h3>
+                                                <p className="text-sm text-muted-foreground">{round.type}</p>
+                                            </li>
+                                        )
+                                    })}
+                                </ol>
+                           
                         </TabsContent>
                     )}
                     <TabsContent value="description" className="pt-6">
@@ -229,6 +269,7 @@ const JobDetailView = ({ job, company, applicantData }: { job: Job, company: Com
 function ApplicationsPageContent() {
   const { session, loading: sessionLoading } = useSession();
   const { jobs, loading: jobsLoading } = useContext(JobContext);
+  const { companies, loading: companiesLoading } = useContext(CompanyContext);
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -249,14 +290,12 @@ function ApplicationsPageContent() {
             if (applicationSnap.exists()) {
                 let companyDetails: Company | null = null;
                 if(job.companyId) {
-                    const companyDocRef = doc(db, 'users', job.companyId);
-                    const companyDocSnap = await getDoc(companyDocRef);
-                    if(companyDocSnap.exists()) {
-                       const companyData = companyDocSnap.data();
+                    const companyDoc = companies.find(c => c.id === job.companyId)
+                    if(companyDoc) {
                        companyDetails = {
-                           id: companyDocSnap.id,
-                           name: companyData.name,
-                           logoUrl: companyData.displayImageUrl
+                           id: companyDoc.id,
+                           name: companyDoc.name,
+                           logoUrl: companyDoc.displayImageUrl
                        } as Company;
                     }
                 }
@@ -273,11 +312,21 @@ function ApplicationsPageContent() {
 
     fetchApplications();
     
-  }, [session, jobs, jobsLoading]);
+  }, [session, jobs, jobsLoading, companies]);
 
   const favoriteJobs = useMemo(() => {
-      return jobs.filter(job => session?.favourite_jobs?.includes(job.id));
-  }, [jobs, session?.favourite_jobs]);
+      return jobs.filter(job => session?.favourite_jobs?.includes(job.id)).map(job => {
+          const company = companies.find(c => c.id === job.companyId);
+          return {
+              ...job,
+              companyDetails: company ? {
+                  id: company.id,
+                  name: company.name,
+                  logoUrl: company.displayImageUrl,
+              } : null
+          }
+      });
+  }, [jobs, session?.favourite_jobs, companies]);
 
 
   const selectedJob = useMemo(() => {
@@ -290,23 +339,7 @@ function ApplicationsPageContent() {
 
   const selectedCompany = useMemo(() => {
     if(!selectedJob) return null;
-    if('companyDetails' in selectedJob) return selectedJob.companyDetails;
-
-    // Fallback for saved jobs which might not have companyDetails populated initially
-    if(selectedJob.companyId) {
-        // This is a temporary solution, ideally the context would handle this join
-        const fetchCompany = async () => {
-            const companyDoc = await getDoc(doc(db, 'users', selectedJob.companyId));
-            if(companyDoc.exists()) {
-                const data = companyDoc.data();
-                return { id: data.id, name: data.name, logoUrl: data.displayImageUrl } as Company
-            }
-            return null;
-        }
-        // This is not ideal as it's async inside a sync hook, but for now it might work with a flicker
-        // A better approach would be to have a companies context.
-        return null;
-    }
+    if('companyDetails' in selectedJob && selectedJob.companyDetails) return selectedJob.companyDetails;
     return null;
   }, [selectedJob]);
 
@@ -362,7 +395,7 @@ function ApplicationsPageContent() {
                     <TabsContent value="saved" className="flex-1 overflow-auto custom-scrollbar pr-4">
                        <div className="space-y-2">
                         {favoriteJobs.map(job => (
-                            <JobListItem key={job.id} job={job} onClick={() => handleJobSelect(job.id)} isActive={selectedJobId === job.id} />
+                            <JobListItem key={job.id} job={job} onClick={() => handleJobSelect(job.id)} isActive={selectedJobId === job.id} isSavedJob={true} />
                         ))}
                       </div>
                     </TabsContent>
@@ -398,3 +431,4 @@ export default function CandidateApplicationsPage() {
     </Suspense>
   )
 }
+
