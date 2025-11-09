@@ -1,7 +1,8 @@
+
 'use client';
 import { useSession } from '@/hooks/use-session';
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MobileSearch } from '@/components/mobile-search';
 import { useContext, useMemo, useState, useTransition, useEffect } from 'react';
@@ -18,9 +19,10 @@ import { cn } from '@/lib/utils';
 import { toggleFavoriteJobAction } from '../actions';
 import { useToast } from '@/hooks/use-toast';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
-import { recommendJobs } from '@/ai/flows/recommend-jobs-flow';
-import type { Job } from '@/lib/types';
 import { generateJobSearchKeywords } from '@/ai/flows/generate-job-search-keywords-flow';
+import type { Job } from '@/lib/types';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { db } from '@/lib/firebase/config';
 
 const getFiltersFromParams = (searchParams: URLSearchParams): FilterState => {
     return {
@@ -114,16 +116,23 @@ export default function CandidateJobsPage() {
 
   useEffect(() => {
     const getRecommendations = async () => {
-        if (!session || !session.uid || jobsWithCompany.length === 0 || isSearchActive) {
+        if (!session?.uid || jobsWithCompany.length === 0 || isSearchActive) {
             setIsRecommendationLoading(false);
             return;
         }
+        
+        const cacheKey = `recommendations-${session.uid}`;
+        const cachedData = sessionStorage.getItem(cacheKey);
+        const now = new Date().getTime();
+        const ONE_HOUR = 60 * 60 * 1000;
 
-        const cachedRecommendations = sessionStorage.getItem(`recommendations-${session.uid}`);
-        if(cachedRecommendations) {
-            setRecommendedJobIds(JSON.parse(cachedRecommendations));
-            setIsRecommendationLoading(false);
-            return;
+        if (cachedData) {
+            const { timestamp, ids } = JSON.parse(cachedData);
+            if (now - timestamp < ONE_HOUR) {
+                setRecommendedJobIds(ids);
+                setIsRecommendationLoading(false);
+                return;
+            }
         }
 
         setIsRecommendationLoading(true);
@@ -151,7 +160,7 @@ export default function CandidateJobsPage() {
             const jobIds = querySnapshot.docs.map(doc => doc.id);
             
             setRecommendedJobIds(jobIds);
-            sessionStorage.setItem(`recommendations-${session.uid}`, JSON.stringify(jobIds));
+            sessionStorage.setItem(cacheKey, JSON.stringify({ timestamp: now, ids: jobIds }));
 
         } catch (error) {
             console.error("Failed to get job recommendations:", error);
@@ -326,10 +335,12 @@ export default function CandidateJobsPage() {
                                         )}
                                     </div>
                                </CardContent>
-                               <div className="absolute bottom-4 right-4 flex items-center gap-1 text-xs text-muted-foreground">
-                                    <Calendar className="h-3 w-3" />
-                                    {formatDatePosted(job.createdAt)}
+                               <CardFooter className="p-4 pt-0">
+                                <div className="absolute bottom-4 right-4 flex items-center gap-1 text-xs text-muted-foreground">
+                                        <Calendar className="h-3 w-3" />
+                                        {formatDatePosted(job.createdAt)}
                                 </div>
+                               </CardFooter>
                             </Link>
                        </Card>
                     )})}
@@ -364,3 +375,5 @@ export default function CandidateJobsPage() {
     </div>
   );
 }
+
+    
