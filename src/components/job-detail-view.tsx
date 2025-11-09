@@ -147,6 +147,47 @@ export const JobDetailView = ({ job, company, applicantData, allJobs }: JobDetai
         else setActiveTab('description');
     }, [hasApplied]);
 
+    // Insights logic
+    const insights = useMemo(() => {
+        if (!session || !job) return null;
+
+        const results = {
+            skills: false,
+            experience: false,
+            location: false,
+            salary: false,
+        };
+
+        // Skill check
+        const candidateSkills = session.keySkills || [];
+        const jobSkills = job.keySkills || [];
+        results.skills = candidateSkills.some(skill => jobSkills.includes(skill));
+
+        // Experience check
+        const candidateExp = session.experience ? parseInt(session.experience, 10) : 0;
+        const jobExpRange = job.workExperience.match(/(\d+)-(\d+)/);
+        if (jobExpRange) {
+            const minExp = parseInt(jobExpRange[1], 10);
+            const maxExp = parseInt(jobExpRange[2], 10);
+            results.experience = candidateExp >= minExp && candidateExp <= maxExp;
+        } else if (job.workExperience.includes('+')) {
+             const minExp = parseInt(job.workExperience, 10);
+             results.experience = candidateExp >= minExp;
+        } else if (job.workExperience === 'Fresher') {
+             results.experience = candidateExp <= 1;
+        }
+
+
+        // Location check (simplified: assumes candidate prefers Remote if not specified)
+        const candidatePreference = 'Remote'; // Placeholder
+        results.location = job.preference === candidatePreference;
+
+        // Salary check (very simplified)
+        const candidateSalaryExpectation = 30; // Placeholder in LPA
+        results.salary = candidateSalaryExpectation >= job.salary.min && candidateSalaryExpectation <= job.salary.max;
+
+        return results;
+    }, [session, job]);
 
     if (!job) return <JobDetailSkeleton />;
 
@@ -300,44 +341,68 @@ export const JobDetailView = ({ job, company, applicantData, allJobs }: JobDetai
                           )}
                         </TabsContent>
                          <TabsContent value="insights" className="pt-6 space-y-6">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Activity on this job</CardTitle>
-                                </CardHeader>
-                                <CardContent className="grid grid-cols-2 gap-4">
-                                    <div className="flex flex-col items-center justify-center p-4 border rounded-lg">
-                                        <p className="text-2xl font-bold">128</p>
+                            <div>
+                                <h3 className="text-lg font-semibold mb-2">Activity on this job</h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="flex flex-col items-center justify-center p-4 border rounded-lg bg-muted/30">
+                                        <p className="text-2xl font-bold">{job.applicants?.length || 0}</p>
                                         <p className="text-sm text-muted-foreground">Total applications</p>
                                     </div>
-                                    <div className="flex flex-col items-center justify-center p-4 border rounded-lg">
-                                        <p className="text-2xl font-bold">42</p>
+                                    <div className="flex flex-col items-center justify-center p-4 border rounded-lg bg-muted/30">
+                                        <p className="text-2xl font-bold">{Math.floor((job.applicants?.length || 0) / 3)}</p>
                                         <p className="text-sm text-muted-foreground">Applications viewed</p>
                                     </div>
-                                </CardContent>
-                            </Card>
-                             <Card>
-                                <CardHeader>
-                                    <CardTitle>What may work for you?</CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-3">
-                                    <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
-                                        <CheckCircle className="h-5 w-5" />
-                                        <span>Your skills in **React** and **TypeScript** match the job requirements.</span>
-                                    </div>
-                                     <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
-                                        <CheckCircle className="h-5 w-5" />
-                                        <span>Your **4 years** of experience is within the required **3-5 years** range.</span>
-                                    </div>
-                                     <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
-                                        <XCircle className="h-5 w-5" />
-                                        <span>This is an **On-site** role in **New York**, which may not match your preference for **Remote** work.</span>
-                                    </div>
-                                     <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
-                                        <CheckCircle className="h-5 w-5" />
-                                        <span>The salary range **(25-35 LPA)** aligns with your expectations.</span>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                </div>
+                            </div>
+                             <div>
+                                <h3 className="text-lg font-semibold mb-2">What may work for you?</h3>
+                                <div className="space-y-3">
+                                    {insights?.skills ? (
+                                        <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                                            <CheckCircle className="h-5 w-5" />
+                                            <span>Your skills in **{job.keySkills?.[0]}** match the job requirements.</span>
+                                        </div>
+                                    ) : (
+                                         <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+                                            <XCircle className="h-5 w-5" />
+                                            <span>Your skills may not align with the primary job requirements like **{job.keySkills?.[0]}**.</span>
+                                        </div>
+                                    )}
+                                     {insights?.experience ? (
+                                        <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                                            <CheckCircle className="h-5 w-5" />
+                                            <span>Your **{session?.experience} years** of experience is within the required **{job.workExperience}** range.</span>
+                                        </div>
+                                     ) : (
+                                         <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+                                            <XCircle className="h-5 w-5" />
+                                            <span>Your **{session?.experience} years** of experience does not match the required **{job.workExperience}** range.</span>
+                                        </div>
+                                     )}
+                                      {insights?.location ? (
+                                        <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                                            <CheckCircle className="h-5 w-5" />
+                                            <span>This is a **{job.preference}** role which matches your preference.</span>
+                                        </div>
+                                     ) : (
+                                         <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+                                            <XCircle className="h-5 w-5" />
+                                            <span>This is an **{job.preference}** role in **{job.location}**, which may not match your preference for **Remote** work.</span>
+                                        </div>
+                                     )}
+                                     {insights?.salary ? (
+                                        <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                                            <CheckCircle className="h-5 w-5" />
+                                            <span>The salary range **({job.salary.min}-{job.salary.max} LPA)** aligns with your expectations.</span>
+                                        </div>
+                                     ) : (
+                                        <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+                                            <XCircle className="h-5 w-5" />
+                                            <span>The salary range may not align with your expectations.</span>
+                                        </div>
+                                     )}
+                                </div>
+                            </div>
                         </TabsContent>
                         <TabsContent value="analyze" className="pt-6">
                             <div className='text-center space-y-1 mb-4'>
