@@ -12,7 +12,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/componen
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Loader2, Briefcase, MapPin, Calendar, CheckCircle, Banknote } from 'lucide-react';
+import { Loader2, Briefcase, MapPin, Calendar, CheckCircle, Banknote, Bookmark } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -88,7 +88,7 @@ const JobListItem = ({ job, onClick, isActive, isSavedJob }: { job: Application 
                     </div>
                 </div>
                  {applicantData && (
-                    <div className="mt-3 inline-flex items-center gap-2 rounded-full border bg-green-50 dark:bg-green-900/20 px-3 py-1 text-sm">
+                    <div className="mt-3 inline-flex items-center gap-2 rounded-full border bg-green-500/10 px-3 py-1 text-sm">
                         <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
                         <span className="text-green-700 dark:text-green-300 font-medium">
                             Application sent {applicantData.appliedAt ? formatDistanceToNow(applicantData.appliedAt.toDate(), { addSuffix: true }) : ''}
@@ -162,6 +162,10 @@ function ApplicationsPageContent() {
       const params = new URLSearchParams(searchParams.toString());
       params.set('jobId', currentList[0].id);
       router.replace(`/dashboard/candidate/applications?${params.toString()}`);
+    } else if (currentList.length === 0 && selectedJobId) {
+        const params = new URLSearchParams(searchParams.toString());
+        params.delete('jobId');
+        router.replace(`/dashboard/candidate/applications?${params.toString()}`);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, applications, favoriteJobs, selectedJobId]);
@@ -211,6 +215,8 @@ function ApplicationsPageContent() {
     params.delete('jobId'); // Clear jobId when switching tabs
     router.push(`/dashboard/candidate/applications?${params.toString()}`);
   }
+  
+  const currentList = activeTab === 'saved' ? favoriteJobs : applications;
 
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
@@ -225,28 +231,44 @@ function ApplicationsPageContent() {
             <ResizablePanel defaultSize={35} minSize={25}>
                <div className="flex flex-col h-full">
                   <div className="w-full mb-4">
-                      <div className="grid grid-cols-2 gap-2 rounded-lg bg-muted p-1">
+                      <div className="grid w-full grid-cols-2 gap-2 rounded-lg bg-muted p-1">
                           <Button variant={activeTab === 'applied' ? 'secondary' : 'ghost'} onClick={() => handleTabChange('applied')} className="rounded-md">Applied Jobs</Button>
                           <Button variant={activeTab === 'saved' ? 'secondary' : 'ghost'} onClick={() => handleTabChange('saved')} className="rounded-md">Saved Jobs</Button>
                       </div>
                   </div>
-                  {activeTab === 'saved' ? (
-                     <div className="flex-1 overflow-auto custom-scrollbar pr-4">
+                   <div className="flex-1 overflow-auto custom-scrollbar pr-4">
                        <div className="space-y-2">
-                        {favoriteJobs.map(job => (
-                            <JobListItem key={job.id} job={job} onClick={() => handleJobSelect(job.id)} isActive={selectedJobId === job.id} isSavedJob={true} />
-                        ))}
+                        {currentList.length > 0 ? (
+                            currentList.map(job => (
+                                <JobListItem 
+                                    key={job.id} 
+                                    job={job} 
+                                    onClick={() => handleJobSelect(job.id)} 
+                                    isActive={selectedJobId === job.id} 
+                                    isSavedJob={activeTab === 'saved'} 
+                                />
+                            ))
+                        ) : activeTab === 'applied' ? (
+                            <div className="text-center py-12">
+                                <Briefcase className="mx-auto h-12 w-12 text-muted-foreground" />
+                                <h3 className="mt-4 text-lg font-semibold">No Applied Jobs</h3>
+                                <p className="mt-1 text-sm text-muted-foreground">You haven't applied to any jobs yet.</p>
+                                <Button asChild className="mt-4">
+                                    <Link href="/dashboard/candidate/jobs">Find Jobs</Link>
+                                </Button>
+                            </div>
+                        ) : (
+                             <div className="text-center py-12">
+                                <Bookmark className="mx-auto h-12 w-12 text-muted-foreground" />
+                                <h3 className="mt-4 text-lg font-semibold">No Saved Jobs</h3>
+                                <p className="mt-1 text-sm text-muted-foreground">Save jobs you're interested in to see them here.</p>
+                                <Button asChild className="mt-4">
+                                    <Link href="/dashboard/candidate/jobs">Find Jobs</Link>
+                                </Button>
+                            </div>
+                        )}
                       </div>
                     </div>
-                  ) : (
-                    <div className="flex-1 overflow-auto custom-scrollbar pr-4">
-                      <div className="space-y-2">
-                        {applications.map(app => (
-                            <JobListItem key={app.id} job={app} onClick={() => handleJobSelect(app.id)} isActive={selectedJobId === app.id} />
-                        ))}
-                      </div>
-                    </div>
-                  )}
               </div>
             </ResizablePanel>
             <ResizableHandle withHandle />
@@ -255,16 +277,16 @@ function ApplicationsPageContent() {
                     <JobDetailView 
                         job={selectedJob} 
                         company={selectedCompany} 
-                        applicantData={'applicantData' in selectedJob ? selectedJob.applicantData : null}
+                        applicantData={activeTab === 'applied' && 'applicantData' in selectedJob ? selectedJob.applicantData : null}
                         allJobs={allJobs}
                     />
-                ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                ) : currentList.length > 0 ? (
+                     <div className="flex flex-col items-center justify-center h-full text-center p-8">
                         <Briefcase className="h-16 w-16 text-muted-foreground" />
                         <h3 className="mt-4 text-lg font-semibold">Select a Job</h3>
                         <p className="text-muted-foreground">Choose a job from the list to see its details.</p>
                     </div>
-                )}
+                ) : null}
             </ResizablePanel>
           </ResizablePanelGroup>
         </main>
@@ -280,5 +302,3 @@ export default function CandidateApplicationsPage() {
     </Suspense>
   )
 }
-
-    
