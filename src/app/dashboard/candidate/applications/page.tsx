@@ -38,17 +38,6 @@ const JobListItem = ({ job, onClick, isActive }: { job: Application | Job, onCli
     }
     const company = 'companyDetails' in job ? job.companyDetails : null;
     const applicantData = 'applicantData' in job ? job.applicantData : null;
-
-    const getStatusVariant = (status?: Applicant['status']) => {
-        if (!status) return 'outline';
-        switch (status) {
-            case 'Screening Passed': return 'default';
-            case 'Screening Failed': return 'destructive';
-            case 'Hired': return 'default';
-            case 'Rejected': return 'destructive';
-            default: return 'outline';
-        }
-    }
     
     return (
         <Card onClick={onClick} className={cn("cursor-pointer hover:bg-accent transition-colors", isActive && "bg-accent border-dash-primary")}>
@@ -63,11 +52,17 @@ const JobListItem = ({ job, onClick, isActive }: { job: Application | Job, onCli
                         <p className="text-sm text-muted-foreground">{company?.name}</p>
                         <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2">
                            <div className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {job.location}</div>
-                           {applicantData && <div className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {format(applicantData.appliedAt.toDate(), 'dd MMM yy')}</div>}
                         </div>
                     </div>
                 </div>
-                 {applicantData && <Badge variant={getStatusVariant(applicantData.status)} className="mt-3">{applicantData.status || "Submitted"}</Badge>}
+                 {applicantData && (
+                    <div className="mt-3 inline-flex items-center gap-2 rounded-full border bg-green-50 dark:bg-green-900/20 px-3 py-1 text-sm">
+                        <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        <span className="text-green-700 dark:text-green-300 font-medium">
+                            Application sent {formatDistanceToNow(applicantData.appliedAt.toDate(), { addSuffix: true })}
+                        </span>
+                    </div>
+                 )}
             </CardContent>
         </Card>
     );
@@ -348,28 +343,32 @@ function ApplicationsPageContent() {
         <main className="flex flex-1 flex-col gap-4 overflow-hidden p-4 md:p-6">
           <ResizablePanelGroup direction="horizontal" className="flex-1">
             <ResizablePanel defaultSize={35} minSize={25}>
-              <Tabs defaultValue="applied" className="flex flex-col h-full">
+               <div className="flex flex-col h-full">
                 <div className="w-full mb-4">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="applied">Applied Jobs</TabsTrigger>
-                    <TabsTrigger value="saved">Saved Jobs</TabsTrigger>
-                  </TabsList>
+                  <Tabs defaultValue="applied" className="w-full">
+                    <div className="w-full mb-4">
+                        <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="applied">Applied Jobs</TabsTrigger>
+                            <TabsTrigger value="saved">Saved Jobs</TabsTrigger>
+                        </TabsList>
+                    </div>
+                    <TabsContent value="applied" className="flex-1 overflow-auto custom-scrollbar pr-4">
+                      <div className="space-y-2">
+                        {applications.map(app => (
+                            <JobListItem key={app.id} job={app} onClick={() => handleJobSelect(app.id)} isActive={selectedJobId === app.id} />
+                        ))}
+                      </div>
+                    </TabsContent>
+                    <TabsContent value="saved" className="flex-1 overflow-auto custom-scrollbar pr-4">
+                       <div className="space-y-2">
+                        {favoriteJobs.map(job => (
+                            <JobListItem key={job.id} job={job} onClick={() => handleJobSelect(job.id)} isActive={selectedJobId === job.id} />
+                        ))}
+                      </div>
+                    </TabsContent>
+                  </Tabs>
                 </div>
-                <TabsContent value="applied" className="flex-1 overflow-auto custom-scrollbar pr-4">
-                  <div className="space-y-2">
-                    {applications.map(app => (
-                        <JobListItem key={app.id} job={app} onClick={() => handleJobSelect(app.id)} isActive={selectedJobId === app.id} />
-                    ))}
-                  </div>
-                </TabsContent>
-                <TabsContent value="saved" className="flex-1 overflow-auto custom-scrollbar pr-4">
-                   <div className="space-y-2">
-                    {favoriteJobs.map(job => (
-                        <JobListItem key={job.id} job={job} onClick={() => handleJobSelect(job.id)} isActive={selectedJobId === job.id} />
-                    ))}
-                  </div>
-                </TabsContent>
-              </Tabs>
+              </div>
             </ResizablePanel>
             <ResizableHandle withHandle />
             <ResizablePanel defaultSize={65} minSize={40}>
