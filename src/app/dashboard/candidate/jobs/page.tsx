@@ -276,9 +276,8 @@ export default function CandidateJobsPage() {
                 <div className="space-y-1">
                     <h2 className="text-xl font-semibold flex items-center gap-2">
                     {isSearchActive ? 'Search Results' : 'Jobs for you'}
-                    {!isSearchActive && <Sparkles className="h-5 w-5 text-dash-primary" />}
                     </h2>
-                    {!isSearchActive && <p className="text-sm text-muted-foreground">AI Recommendations</p>}
+                    {!isSearchActive && <p className="text-sm text-muted-foreground flex items-center gap-1"><Sparkles className="h-4 w-4 text-dash-primary" />AI Recommendations</p>}
                 </div>
 
                 {loading || isRecommendationLoading ? (
@@ -360,16 +359,14 @@ export default function CandidateJobsPage() {
                 )}
             </div>
             <div className="hidden lg:block">
-              <div className="sticky top-20">
-                <Card className="h-full">
-                    <CardHeader>
-                        <CardTitle>Jobs you might like</CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex items-center justify-center">
-                        <p className="text-muted-foreground">jobs ads will be displayed here</p>
-                    </CardContent>
-                </Card>
-              </div>
+              <Card className="sticky top-20 h-[calc(100vh-11rem)]">
+                <CardHeader>
+                    <CardTitle>Jobs you might like</CardTitle>
+                </CardHeader>
+                <CardContent className="flex h-full items-center justify-center">
+                    <p className="text-muted-foreground">jobs ads will be displayed here</p>
+                </CardContent>
+              </Card>
             </div>
         </div>
       );
