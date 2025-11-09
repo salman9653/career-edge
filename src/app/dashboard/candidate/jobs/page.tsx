@@ -273,9 +273,9 @@ export default function CandidateJobsPage() {
                     uniqueLocations={uniqueLocations}
                 />
                 
-                <div className="space-y-1">
-                    <h2 className="text-xl font-semibold flex items-center gap-2">
-                    {isSearchActive ? 'Search Results' : 'Jobs for you'}
+                <div className="flex items-baseline gap-4">
+                    <h2 className="text-xl font-semibold">
+                        {isSearchActive ? 'Search Results' : 'Jobs for you'}
                     </h2>
                     {!isSearchActive && <p className="text-sm text-muted-foreground flex items-center gap-1"><Sparkles className="h-4 w-4 text-dash-primary" />AI Recommendations</p>}
                 </div>
