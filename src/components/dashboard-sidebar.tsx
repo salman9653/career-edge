@@ -41,7 +41,7 @@ import { Kbd } from "./ui/kbd"
 
 const candidateNavItems: NavItem[] = [
     { href: "/dashboard", label: "Dashboard", icon: Home },
-    { href: "/dashboard/candidate/jobs", label: "Jobs", icon: Briefcase },
+    { href: "/dashboard/candidate/jobs", label: "Find Jobs", icon: Briefcase },
     { href: "/dashboard/candidate/applications", label: "My Applications", icon: Package },
     { href: "/dashboard/candidate/resume-builder", label: "Resume Builder", icon: ResumeIcon },
     { href: "/dashboard/candidate/practice", label: "Practice", icon: Book },

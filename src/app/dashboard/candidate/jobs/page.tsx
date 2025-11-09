@@ -2,7 +2,7 @@
 'use client';
 import { useSession } from '@/hooks/use-session';
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
-import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MobileSearch } from '@/components/mobile-search';
 import { useContext, useMemo, useState, useTransition, useEffect } from 'react';
@@ -272,9 +272,12 @@ export default function CandidateJobsPage() {
                 uniqueLocations={uniqueLocations}
             />
             
-            <div className="flex items-center gap-2">
-                <h2 className="text-xl font-semibold">{isSearchActive ? 'Search Results' : 'Recommended For You'}</h2>
-                {!isSearchActive && <Sparkles className="h-5 w-5 text-dash-primary" />}
+            <div className="space-y-1">
+                <h2 className="text-xl font-semibold flex items-center gap-2">
+                  {isSearchActive ? 'Search Results' : 'Jobs for you'}
+                  {!isSearchActive && <Sparkles className="h-5 w-5 text-dash-primary" />}
+                </h2>
+                {!isSearchActive && <p className="text-sm text-muted-foreground">Recommended by AI</p>}
             </div>
 
             {loading || isRecommendationLoading ? (
