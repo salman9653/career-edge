@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState, useMemo, useContext } from 'react';
@@ -287,10 +286,8 @@ export const JobDetailView = ({ job, company, applicantData, allJobs }: JobDetai
                         {hasApplied && (
                             <TabsContent value="track" className="pt-6">
                                 <div>
-                                    <h3 className='text-xl font-semibold'>Application Progress</h3>
-                                    <p className='text-sm text-muted-foreground'>Follow your application journey through our hiring stages.</p>
-                                </div>
-                                <div className='py-6'>
+                                    <h2 className="text-xl font-bold">Application Progress</h2>
+                                    <p className="text-muted-foreground mb-6">Follow your application journey through our hiring stages.</p>
                                     <ol className="relative border-s border-border">                  
                                         {job.rounds.map((round: Round, index) => {
                                             const isCompleted = applicantData && index < applicantData.activeRoundIndex;
