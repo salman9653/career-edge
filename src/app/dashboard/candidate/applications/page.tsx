@@ -54,12 +54,6 @@ const JobListItem = ({ job, onClick, isActive, isSavedJob }: { job: Application 
                         <div className="flex items-center gap-2"><MapPin className="h-4 w-4" /> {job.location}</div>
                         <div className="flex items-center gap-2"><Briefcase className="h-4 w-4" /> {job.type}</div>
                         <div className="flex items-center gap-2"><Briefcase className="h-4 w-4" /> {job.workExperience}</div>
-                        {job.salary.min > 0 && job.salary.max > 0 && (
-                            <div className="flex items-center gap-2">
-                                <Banknote className="h-4 w-4" />
-                                <span>{job.salary.min} - {job.salary.max} LPA</span>
-                            </div>
-                        )}
                     </div>
                 </CardContent>
                 <CardFooter className="p-4 pt-0">
