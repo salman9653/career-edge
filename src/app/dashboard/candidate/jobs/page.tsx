@@ -359,15 +359,17 @@ export default function CandidateJobsPage() {
                     </div>
                 )}
             </div>
-             <div className="hidden lg:block">
-                <Card className="h-full sticky top-20">
+            <div className="hidden lg:block">
+              <div className="sticky top-20">
+                <Card className="h-full">
                     <CardHeader>
                         <CardTitle>Advertisement</CardTitle>
                     </CardHeader>
-                    <CardContent className="flex items-center justify-center h-full">
+                    <CardContent className="flex items-center justify-center">
                         <p className="text-muted-foreground">Ad content will be displayed here.</p>
                     </CardContent>
                 </Card>
+              </div>
             </div>
         </div>
       );
@@ -390,5 +392,3 @@ export default function CandidateJobsPage() {
     </div>
   );
 }
-
-    
