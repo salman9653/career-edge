@@ -18,6 +18,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { JobDetailView, JobDetailSkeleton } from '@/components/job-detail-view';
 import { CompanyContext } from '@/context/company-context';
+import Link from 'next/link';
 
 export interface Application extends Job {
     companyDetails: Company | null;
@@ -230,11 +231,9 @@ function ApplicationsPageContent() {
           <ResizablePanelGroup direction="horizontal" className="flex-1">
             <ResizablePanel defaultSize={35} minSize={25}>
                <div className="flex flex-col h-full">
-                  <div className="w-full mb-4">
-                      <div className="grid w-full grid-cols-2 gap-2 rounded-lg bg-muted p-1">
-                          <Button variant={activeTab === 'applied' ? 'secondary' : 'ghost'} onClick={() => handleTabChange('applied')} className="rounded-md">Applied Jobs</Button>
-                          <Button variant={activeTab === 'saved' ? 'secondary' : 'ghost'} onClick={() => handleTabChange('saved')} className="rounded-md">Saved Jobs</Button>
-                      </div>
+                  <div className="grid w-full grid-cols-2 gap-2 rounded-lg bg-muted p-1 mb-4">
+                      <Button variant={activeTab === 'applied' ? 'secondary' : 'ghost'} onClick={() => handleTabChange('applied')} className="rounded-md">Applied Jobs</Button>
+                      <Button variant={activeTab === 'saved' ? 'secondary' : 'ghost'} onClick={() => handleTabChange('saved')} className="rounded-md">Saved Jobs</Button>
                   </div>
                    <div className="flex-1 overflow-auto custom-scrollbar pr-4">
                        <div className="space-y-2">
@@ -297,7 +296,11 @@ function ApplicationsPageContent() {
 
 export default function CandidateApplicationsPage() {
   return (
-    <Suspense>
+    <Suspense fallback={
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    }>
       <ApplicationsPageContent />
     </Suspense>
   )
