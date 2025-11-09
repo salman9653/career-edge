@@ -104,7 +104,7 @@ const JobListItem = ({ job, onClick, isActive, isSavedJob }: { job: Application 
 
 function ApplicationsPageContent() {
   const { session, loading: sessionLoading } = useSession();
-  const { jobs, loading: jobsLoading } = useContext(JobContext);
+  const { jobs: allJobs, loading: jobsLoading } = useContext(JobContext);
   const { companies, loading: companiesLoading } = useContext(CompanyContext);
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
@@ -120,7 +120,7 @@ function ApplicationsPageContent() {
     const fetchApplications = async () => {
         const userApplications: Application[] = [];
         
-        for (const job of jobs) {
+        for (const job of allJobs) {
             const applicationRef = doc(db, 'jobs', job.id, 'applicants', session.uid);
             const applicationSnap = await getDoc(applicationRef);
             if (applicationSnap.exists()) {
@@ -138,17 +138,17 @@ function ApplicationsPageContent() {
 
     fetchApplications();
     
-  }, [session, jobs, jobsLoading, companies]);
+  }, [session, allJobs, jobsLoading, companies]);
 
   const favoriteJobs = useMemo(() => {
-      return jobs.filter(job => session?.favourite_jobs?.includes(job.id)).map(job => {
+      return allJobs.filter(job => session?.favourite_jobs?.includes(job.id)).map(job => {
           const company = companies.find(c => c.id === job.companyId);
           return {
               ...job,
               companyDetails: company || null
           }
       });
-  }, [jobs, session?.favourite_jobs, companies]);
+  }, [allJobs, session?.favourite_jobs, companies]);
 
 
   const selectedJob = useMemo(() => {
