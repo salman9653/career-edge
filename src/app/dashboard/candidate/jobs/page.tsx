@@ -2,7 +2,7 @@
 'use client';
 import { useSession } from '@/hooks/use-session';
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MobileSearch } from '@/components/mobile-search';
 import { useContext, useMemo, useState, useTransition, useEffect } from 'react';
@@ -259,104 +259,116 @@ export default function CandidateJobsPage() {
   const renderContent = () => {
     if (session.role === 'candidate') {
       return (
-        <div className="space-y-4">
-            <JobsToolbar 
-                searchQuery={searchQuery}
-                onSearchQueryChange={setSearchQuery}
-                locationQuery={locationQuery}
-                onLocationQueryChange={setLocationQuery}
-                onSearchSubmit={handleSearchSubmit}
-                filters={filters}
-                onFilterChange={handleFilterChange}
-                uniqueJobTypes={uniqueJobTypes}
-                uniqueLocations={uniqueLocations}
-            />
-            
-            <div className="space-y-1">
-                <h2 className="text-xl font-semibold flex items-center gap-2">
-                  {isSearchActive ? 'Search Results' : 'Jobs for you'}
-                  {!isSearchActive && <Sparkles className="h-5 w-5 text-dash-primary" />}
-                </h2>
-                {!isSearchActive && <p className="text-sm text-muted-foreground">AI Recommendations</p>}
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
+            <div className="space-y-4">
+                <JobsToolbar 
+                    searchQuery={searchQuery}
+                    onSearchQueryChange={setSearchQuery}
+                    locationQuery={locationQuery}
+                    onLocationQueryChange={setLocationQuery}
+                    onSearchSubmit={handleSearchSubmit}
+                    filters={filters}
+                    onFilterChange={handleFilterChange}
+                    uniqueJobTypes={uniqueJobTypes}
+                    uniqueLocations={uniqueLocations}
+                />
+                
+                <div className="space-y-1">
+                    <h2 className="text-xl font-semibold flex items-center gap-2">
+                    {isSearchActive ? 'Search Results' : 'Jobs for you'}
+                    {!isSearchActive && <Sparkles className="h-5 w-5 text-dash-primary" />}
+                    </h2>
+                    {!isSearchActive && <p className="text-sm text-muted-foreground">AI Recommendations</p>}
+                </div>
 
-            {loading || isRecommendationLoading ? (
-                <div className="grid gap-6">
-                    {Array.from({ length: 3 }).map((_, i) => (
-                        <Card key={i}>
-                            <CardContent className="p-4">
-                                <Skeleton className="h-24 w-full" />
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
-            ) : displayedJobs.length > 0 ? (
-                 <div className="grid gap-4">
-                    {displayedJobs.map(job => {
-                       const isFavorite = favoriteJobs.includes(job.id);
-                       return (
-                        <Card asChild key={job.id} className="hover:bg-accent transition-colors relative group">
-                            <Link href={`/dashboard/candidate/jobs/${job.id}`}>
-                               <CardHeader>
-                                    <div className="flex items-start gap-4">
-                                        <Avatar className="h-12 w-12 rounded-lg">
-                                            <AvatarImage src={job.company.logoUrl || undefined} alt={`${job.company.name} logo`} />
-                                            <AvatarFallback className="rounded-lg">{getInitials(job.company.name)}</AvatarFallback>
-                                        </Avatar>
-                                        <div className="flex-1">
-                                            <p className="font-semibold text-lg line-clamp-1">{job.title}</p>
-                                            <p className="text-sm text-muted-foreground">{job.company.name}</p>
-                                        </div>
-                                         <TooltipProvider>
-                                            <Tooltip>
-                                                <TooltipTrigger asChild>
-                                                <Button 
-                                                        variant="ghost" 
-                                                        size="icon" 
-                                                        className="h-8 w-8 text-muted-foreground hover:text-dash-primary z-10" 
-                                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleToggleFavorite(job.id); }}>
-                                                        <Bookmark className={cn("h-5 w-5", isFavorite && "fill-current text-dash-primary")} />
-                                                    </Button>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p>{isFavorite ? "Remove from saved" : "Save this job"}</p>
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        </TooltipProvider>
-                                    </div>
-                               </CardHeader>
-                               <CardContent className="space-y-4">
-                                    <div className="flex items-center flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
-                                        <div className="flex items-center gap-2"><MapPin className="h-4 w-4" /> {job.location}</div>
-                                        <div className="flex items-center gap-2"><Briefcase className="h-4 w-4" /> {job.type}</div>
-                                        <div className="flex items-center gap-2"><Briefcase className="h-4 w-4" /> {job.workExperience}</div>
-                                        {job.salary.min > 0 && job.salary.max > 0 && (
-                                            <div className="flex items-center gap-2">
-                                                <Banknote className="h-4 w-4" />
-                                                <span>{job.salary.min} - {job.salary.max} LPA</span>
+                {loading || isRecommendationLoading ? (
+                    <div className="grid gap-4">
+                        {Array.from({ length: 3 }).map((_, i) => (
+                            <Card key={i}>
+                                <CardContent className="p-4">
+                                    <Skeleton className="h-24 w-full" />
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                ) : displayedJobs.length > 0 ? (
+                    <div className="grid gap-4">
+                        {displayedJobs.map(job => {
+                        const isFavorite = favoriteJobs.includes(job.id);
+                        return (
+                            <Card asChild key={job.id} className="hover:bg-accent transition-colors relative group">
+                                <Link href={`/dashboard/candidate/jobs/${job.id}`}>
+                                <CardHeader>
+                                        <div className="flex items-start gap-4">
+                                            <Avatar className="h-12 w-12 rounded-lg">
+                                                <AvatarImage src={job.company.logoUrl || undefined} alt={`${job.company.name} logo`} />
+                                                <AvatarFallback className="rounded-lg">{getInitials(job.company.name)}</AvatarFallback>
+                                            </Avatar>
+                                            <div className="flex-1">
+                                                <p className="font-semibold text-lg line-clamp-1">{job.title}</p>
+                                                <p className="text-sm text-muted-foreground">{job.company.name}</p>
                                             </div>
-                                        )}
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                    <Button 
+                                                            variant="ghost" 
+                                                            size="icon" 
+                                                            className="h-8 w-8 text-muted-foreground hover:text-dash-primary z-10" 
+                                                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleToggleFavorite(job.id); }}>
+                                                            <Bookmark className={cn("h-5 w-5", isFavorite && "fill-current text-dash-primary")} />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>{isFavorite ? "Remove from saved" : "Save this job"}</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        </div>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                        <div className="flex items-center flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
+                                            <div className="flex items-center gap-2"><MapPin className="h-4 w-4" /> {job.location}</div>
+                                            <div className="flex items-center gap-2"><Briefcase className="h-4 w-4" /> {job.type}</div>
+                                            <div className="flex items-center gap-2"><Briefcase className="h-4 w-4" /> {job.workExperience}</div>
+                                            {job.salary.min > 0 && job.salary.max > 0 && (
+                                                <div className="flex items-center gap-2">
+                                                    <Banknote className="h-4 w-4" />
+                                                    <span>{job.salary.min} - {job.salary.max} LPA</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                </CardContent>
+                                <CardFooter className="p-4 pt-0">
+                                    <div className="absolute bottom-4 right-4 flex items-center gap-1 text-xs text-muted-foreground">
+                                            <Calendar className="h-3 w-3" />
+                                            {formatDatePosted(job.createdAt)}
                                     </div>
-                               </CardContent>
-                               <CardFooter className="p-4 pt-0">
-                                <div className="absolute bottom-4 right-4 flex items-center gap-1 text-xs text-muted-foreground">
-                                        <Calendar className="h-3 w-3" />
-                                        {formatDatePosted(job.createdAt)}
-                                </div>
-                               </CardFooter>
-                            </Link>
-                       </Card>
-                    )})}
-                </div>
-            ) : (
-                <div className="text-center py-12 border-2 border-dashed rounded-lg">
-                    <AlertTriangle className="mx-auto h-12 w-12 text-muted-foreground" />
-                    <h3 className="mt-4 text-lg font-semibold">No Jobs Found</h3>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                        {isSearchActive ? "Try adjusting your search or filters." : "We couldn't find any recommendations for you yet. Try adding more skills to your profile!"}
-                    </p>
-                </div>
-            )}
+                                </CardFooter>
+                                </Link>
+                        </Card>
+                        )})}
+                    </div>
+                ) : (
+                    <div className="text-center py-12 border-2 border-dashed rounded-lg">
+                        <AlertTriangle className="mx-auto h-12 w-12 text-muted-foreground" />
+                        <h3 className="mt-4 text-lg font-semibold">No Jobs Found</h3>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                            {isSearchActive ? "Try adjusting your search or filters." : "We couldn't find any recommendations for you yet. Try adding more skills to your profile!"}
+                        </p>
+                    </div>
+                )}
+            </div>
+             <div className="hidden lg:block">
+                <Card className="h-full sticky top-20">
+                    <CardHeader>
+                        <CardTitle>Advertisement</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex items-center justify-center h-full">
+                        <p className="text-muted-foreground">Ad content will be displayed here.</p>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
       );
     }
