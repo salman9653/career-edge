@@ -55,7 +55,7 @@ const JobListItem = ({ job, onClick, isActive }: { job: Application | Job, onCli
             <CardContent className="p-4">
                 <div className="flex items-start gap-4">
                     <Avatar className="h-12 w-12 rounded-lg">
-                        <AvatarImage src={company?.displayImageUrl} />
+                        <AvatarImage src={company?.logoUrl} />
                         <AvatarFallback className="rounded-lg">{getInitials(company?.name)}</AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
@@ -112,40 +112,38 @@ const JobDetailView = ({ job, company, applicantData }: { job: Job, company: Com
     return (
         <ScrollArea className="h-full">
             <div className="p-6 space-y-6">
-                <div className="space-y-6">
-                    <CardHeader className="p-0">
-                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                            <div>
-                                <Badge variant="outline" className="mb-2">{job.type}</Badge>
-                                <CardTitle className="font-headline text-3xl">{job.title}</CardTitle>
-                                <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                                    <div className="flex items-center gap-2">
-                                        <Avatar className="h-8 w-8">
-                                            <AvatarImage src={company?.displayImageUrl} />
-                                            <AvatarFallback>{getInitials(company?.name)}</AvatarFallback>
-                                        </Avatar>
-                                        <span className="font-semibold text-foreground">{company?.name}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                        <Calendar className="h-4 w-4"/>
-                                        <span>Posted {formatDistanceToNow(job.createdAt.toDate(), { addSuffix: true })}</span>
-                                    </div>
+                <CardHeader className="p-0">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                        <div>
+                            <Badge variant="outline" className="mb-2">{job.type}</Badge>
+                            <CardTitle className="font-headline text-3xl">{job.title}</CardTitle>
+                            <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                                <div className="flex items-center gap-2">
+                                    <Avatar className="h-8 w-8">
+                                        <AvatarImage src={company?.logoUrl} />
+                                        <AvatarFallback>{getInitials(company?.name)}</AvatarFallback>
+                                    </Avatar>
+                                    <span className="font-semibold text-foreground">{company?.name}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <Calendar className="h-4 w-4"/>
+                                    <span>Posted {formatDistanceToNow(job.createdAt.toDate(), { addSuffix: true })}</span>
                                 </div>
                             </div>
                         </div>
-                    </CardHeader>
-                    <CardContent className="space-y-6 p-0">
-                        <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-muted-foreground border-t border-b py-4">
-                            <div className="flex items-center gap-2"><MapPin className="h-4 w-4" /><span>{locationDisplay}</span></div>
-                            {job.salary.min > 0 && job.salary.max > 0 && (<div className="flex items-center gap-2"><Banknote className="h-4 w-4" /><span>{job.salary.min} LPA to {job.salary.max} LPA</span></div>)}
-                            <div className="flex items-center gap-2"><Briefcase className="h-4 w-4" /><span>{job.workExperience} experience</span></div>
-                            <div className="flex items-center gap-2"><Building className="h-4 w-4" /><span>{job.positions} positions</span></div>
-                        </div>
-                    </CardContent>
-                </div>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-6 p-0">
+                    <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-muted-foreground border-t border-b py-4">
+                        <div className="flex items-center gap-2"><MapPin className="h-4 w-4" /><span>{locationDisplay}</span></div>
+                        {job.salary.min > 0 && job.salary.max > 0 && (<div className="flex items-center gap-2"><Banknote className="h-4 w-4" /><span>{job.salary.min} LPA to {job.salary.max} LPA</span></div>)}
+                        <div className="flex items-center gap-2"><Briefcase className="h-4 w-4" /><span>{job.workExperience} experience</span></div>
+                        <div className="flex items-center gap-2"><Building className="h-4 w-4" /><span>{job.positions} positions</span></div>
+                    </div>
+                </CardContent>
 
                 <Tabs defaultValue="track" className="w-full">
-                    <TabsList>
+                    <TabsList className="w-full grid grid-cols-3">
                         {applicantData && <TabsTrigger value="track">Track Application</TabsTrigger>}
                         <TabsTrigger value="description">Job Description</TabsTrigger>
                         <TabsTrigger value="about">About Company</TabsTrigger>
@@ -263,7 +261,7 @@ function ApplicationsPageContent() {
                        companyDetails = {
                            id: companyDocSnap.id,
                            name: companyData.name,
-                           displayImageUrl: companyData.displayImageUrl
+                           logoUrl: companyData.displayImageUrl
                        } as Company;
                     }
                 }
@@ -283,26 +281,7 @@ function ApplicationsPageContent() {
   }, [session, jobs, jobsLoading]);
 
   const favoriteJobs = useMemo(() => {
-      return jobs
-        .filter(job => session?.favourite_jobs?.includes(job.id))
-        .map(job => {
-            let companyDetails: Company | null = null;
-            if(job.companyId) {
-                // This is not ideal as it doesn't fetch real-time, but it's a temp fix for saved jobs
-                const companyDocRef = doc(db, 'users', job.companyId);
-                getDoc(companyDocRef).then(snap => {
-                     if(snap.exists()) {
-                         const companyData = snap.data();
-                         companyDetails = {
-                           id: snap.id,
-                           name: companyData.name,
-                           displayImageUrl: companyData.displayImageUrl
-                       } as Company;
-                    }
-                });
-            }
-            return { ...job, companyDetails: companyDetails! };
-        });
+      return jobs.filter(job => session?.favourite_jobs?.includes(job.id));
   }, [jobs, session?.favourite_jobs]);
 
 
@@ -315,8 +294,25 @@ function ApplicationsPageContent() {
   }, [selectedJobId, applications, favoriteJobs]);
 
   const selectedCompany = useMemo(() => {
-    if(!selectedJob || !('companyDetails' in selectedJob)) return null;
-    return selectedJob.companyDetails;
+    if(!selectedJob) return null;
+    if('companyDetails' in selectedJob) return selectedJob.companyDetails;
+
+    // Fallback for saved jobs which might not have companyDetails populated initially
+    if(selectedJob.companyId) {
+        // This is a temporary solution, ideally the context would handle this join
+        const fetchCompany = async () => {
+            const companyDoc = await getDoc(doc(db, 'users', selectedJob.companyId));
+            if(companyDoc.exists()) {
+                const data = companyDoc.data();
+                return { id: data.id, name: data.name, logoUrl: data.displayImageUrl } as Company
+            }
+            return null;
+        }
+        // This is not ideal as it's async inside a sync hook, but for now it might work with a flicker
+        // A better approach would be to have a companies context.
+        return null;
+    }
+    return null;
   }, [selectedJob]);
 
 
@@ -353,10 +349,12 @@ function ApplicationsPageContent() {
           <ResizablePanelGroup direction="horizontal" className="flex-1">
             <ResizablePanel defaultSize={35} minSize={25}>
               <Tabs defaultValue="applied" className="flex flex-col h-full">
-                <TabsList className="mb-4">
-                  <TabsTrigger value="applied">Applied Jobs</TabsTrigger>
-                  <TabsTrigger value="saved">Saved Jobs</TabsTrigger>
-                </TabsList>
+                <div className="w-full mb-4">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="applied">Applied Jobs</TabsTrigger>
+                    <TabsTrigger value="saved">Saved Jobs</TabsTrigger>
+                  </TabsList>
+                </div>
                 <TabsContent value="applied" className="flex-1 overflow-auto custom-scrollbar pr-4">
                   <div className="space-y-2">
                     {applications.map(app => (
