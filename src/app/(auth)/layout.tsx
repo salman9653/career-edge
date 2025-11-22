@@ -28,7 +28,7 @@ export default function AuthLayout({
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60"
+        className="sticky top-0 z-50 w-full border-b border-white/10 bg-background/30 backdrop-blur-xl supports-[backdrop-filter]:bg-gradient-to-r supports-[backdrop-filter]:from-background/40 supports-[backdrop-filter]:to-background/20 shadow-lg shadow-black/5"
       >
         <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
           {/* Logo */}
@@ -138,7 +138,7 @@ export default function AuthLayout({
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.4, duration: 0.6 }}
-        className="relative z-10 border-t bg-background/60 backdrop-blur-sm py-6"
+        className="relative z-10 border-t border-white/10 bg-gradient-to-br from-background/40 via-background/30 to-background/20 backdrop-blur-xl shadow-lg shadow-black/5 py-6"
       >
         <div className="container mx-auto px-4 md:px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">

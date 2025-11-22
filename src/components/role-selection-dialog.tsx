@@ -28,7 +28,7 @@ export function RoleSelectionDialog({ open, onOpenChange }: RoleSelectionDialogP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] border-primary/10 bg-card/95 backdrop-blur-xl">
+      <DialogContent className="sm:max-w-[700px] border border-white/20 bg-gradient-to-br from-background/60 via-background/40 to-background/30 backdrop-blur-2xl shadow-2xl shadow-black/20">
         <DialogHeader className="space-y-3 pb-2">
           
           <DialogTitle className="font-headline text-center text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
@@ -40,7 +40,7 @@ export function RoleSelectionDialog({ open, onOpenChange }: RoleSelectionDialogP
         </DialogHeader>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
             <Card 
-              className="group cursor-pointer border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1 bg-gradient-to-br from-card to-card/50 overflow-hidden relative" 
+              className="group cursor-pointer border border-white/20 hover:border-primary/40 transition-all duration-300 hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-1 bg-gradient-to-br from-background/40 via-background/30 to-background/20 backdrop-blur-xl overflow-hidden relative" 
               onClick={() => handleSelection('/signup/candidate')}
             >
                 {/* Hover gradient overlay */}
@@ -67,7 +67,7 @@ export function RoleSelectionDialog({ open, onOpenChange }: RoleSelectionDialogP
             </Card>
             
             <Card 
-              className="group cursor-pointer border-primary/20 hover:border-primary/40 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1 bg-gradient-to-br from-card to-card/50 overflow-hidden relative" 
+              className="group cursor-pointer border border-white/20 hover:border-primary/40 transition-all duration-300 hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-1 bg-gradient-to-br from-background/40 via-background/30 to-background/20 backdrop-blur-xl overflow-hidden relative" 
               onClick={() => handleSelection('/signup/company')}
             >
                 {/* Hover gradient overlay */}

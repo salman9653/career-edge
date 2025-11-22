@@ -36,7 +36,7 @@ function CandidateSignupForm() {
     const [showPassword, setShowPassword] = useState(false);
 
     return (
-        <Card className="mx-auto w-full max-w-md rounded-2xl border-primary/10 bg-card/95 backdrop-blur-xl shadow-2xl shadow-primary/5">
+        <Card className="mx-auto w-full max-w-md rounded-2xl border border-white/20 bg-gradient-to-br from-background/60 via-background/40 to-background/30 backdrop-blur-2xl shadow-2xl shadow-primary/10">
             <CardHeader className="text-center space-y-3 pb-8">
                 <CardTitle className="font-headline text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
                     Create a Candidate Account
@@ -137,7 +137,7 @@ export default function CandidateSignupPage() {
   return (
     <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center py-12 px-4">
       <Suspense fallback={
-          <Card className="mx-auto w-full max-w-md rounded-2xl border-primary/10 bg-card/95 backdrop-blur-xl shadow-2xl shadow-primary/5 p-6">
+          <Card className="mx-auto w-full max-w-md rounded-2xl border border-white/20 bg-gradient-to-br from-background/60 via-background/40 to-background/30 backdrop-blur-2xl shadow-2xl shadow-primary/10 p-6">
               <div className="flex justify-center items-center h-full">
                   <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>

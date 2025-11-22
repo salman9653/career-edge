@@ -72,8 +72,8 @@ export default function Home() {
                     variants={itemVariants}
                     className="flex flex-col sm:flex-row gap-4 min-w-[200px]"
                   >
-                    <Button size="lg" onClick={() => setIsRoleSelectionOpen(true)} className="h-12 px-8 text-lg">
-                      Get Started Now <ArrowRight className="ml-2 h-5 w-5" />
+                    <Button size="lg" asChild className="h-12 px-8 text-lg">
+                      <Link href="/signup">Get Started Now <ArrowRight className="ml-2 h-5 w-5" /></Link>
                     </Button>
                     <Button size="lg" variant="outline" className="h-12 px-8 text-lg" asChild>
                       <Link href="#features">Learn More</Link>
@@ -87,16 +87,18 @@ export default function Home() {
                   transition={{ duration: 0.8 }}
                   className="relative hidden lg:block"
                 >
-                   <div className="relative w-full aspect-square max-w-[600px] mx-auto">
-                      <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-purple-500/20 rounded-full blur-3xl animate-pulse" />
+                  <div className="relative w-full aspect-square max-w-[500px] mx-auto">
+                    <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-purple-500/20 rounded-full blur-3xl animate-pulse" />
+                    <div className="relative z-10 rounded-3xl overflow-hidden border border-white/20 bg-gradient-to-br from-background/40 to-background/20 backdrop-blur-xl shadow-2xl">
                       <Image 
                         src="/images/landing-hero.png" 
                         alt="Future of Hiring" 
-                        width={800} 
-                        height={800} 
-                        className="relative z-10 object-contain drop-shadow-2xl"
+                        width={500} 
+                        height={500} 
+                        className="object-contain"
                       />
-                   </div>
+                    </div>
+                  </div>
                 </motion.div>
               </div>
             </div>

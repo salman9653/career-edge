@@ -13,7 +13,7 @@ export function LandingFooter() {
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
-      className="border-t bg-secondary/30"
+      className="border-t border-white/10 bg-gradient-to-br from-background/40 via-background/30 to-secondary/20 backdrop-blur-xl shadow-lg shadow-black/5"
     >
       <div className="container mx-auto px-4 md:px-6 py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">

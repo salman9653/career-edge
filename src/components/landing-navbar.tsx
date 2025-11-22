@@ -20,7 +20,7 @@ export function LandingNavbar({ onSignUpClick, signUpHref }: LandingNavbarProps)
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      className="sticky top-0 z-50 w-full border-b border-white/10 bg-background/30 backdrop-blur-xl supports-[backdrop-filter]:bg-gradient-to-r supports-[backdrop-filter]:from-background/40 supports-[backdrop-filter]:to-background/20 shadow-lg shadow-black/5"
     >
       <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
         <Logo />
