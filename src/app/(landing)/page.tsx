@@ -4,16 +4,11 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowRight, Briefcase, Users, CheckCircle2, Zap, Shield, Globe, Star, Quote } from 'lucide-react';
-import { Logo } from '@/components/logo';
 import { motion } from 'framer-motion';
-import { ModeToggle } from '@/components/mode-toggle';
-import { RoleSelectionDialog } from '@/components/role-selection-dialog';
-import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 
 export default function Home() {
-  const [isRoleSelectionOpen, setIsRoleSelectionOpen] = useState(false);
   
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -38,37 +33,8 @@ export default function Home() {
 
   return (
     <>
-      <RoleSelectionDialog open={isRoleSelectionOpen} onOpenChange={setIsRoleSelectionOpen} />
-      <div className="flex min-h-screen flex-col bg-background">
-        <motion.header
-          initial={{ y: -100 }}
-          animate={{ y: 0 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-        >
-          <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
-            <Logo />
-            <div className="flex items-center gap-4">
-              <ModeToggle />
-              <nav className="hidden md:flex gap-6 text-sm font-medium">
-                <Link href="/candidates" className="transition-colors hover:text-primary">For Candidates</Link>
-                <Link href="/companies" className="transition-colors hover:text-primary">For Companies</Link>
-              </nav>
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" asChild>
-                  <Link href="/login">Log In</Link>
-                </Button>
-                <Button size="sm" onClick={() => setIsRoleSelectionOpen(true)}>
-                  Sign Up
-                </Button>
-              </div>
-            </div>
-          </div>
-        </motion.header>
-
-        <main className="flex-grow">
-          {/* Hero Section */}
-          <section className="relative overflow-hidden py-20 md:py-32 lg:py-40">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden py-20 md:py-32 lg:py-40">
             <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]"></div>
             <div className="absolute left-0 top-0 -z-10 h-full w-full bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,#00000000_70%,transparent_100%)] dark:bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,#ffffff0a_70%,transparent_100%)]"></div>
             
@@ -328,33 +294,7 @@ export default function Home() {
                 </motion.div>
               </div>
             </div>
-          </section>
-        </main>
-
-        <motion.footer 
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="border-t bg-background py-12"
-        >
-          <div className="container mx-auto px-4 md:px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex flex-col items-center md:items-start gap-2">
-              <Logo />
-              <p className="text-sm text-muted-foreground text-center md:text-left">
-                Empowering careers, transforming businesses.
-              </p>
-            </div>
-            <div className="flex gap-8 text-sm text-muted-foreground">
-              <Link href="#" className="hover:text-foreground transition-colors">Privacy Policy</Link>
-              <Link href="#" className="hover:text-foreground transition-colors">Terms of Service</Link>
-              <Link href="#" className="hover:text-foreground transition-colors">Contact</Link>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              &copy; {new Date().getFullYear()} Career Edge. All rights reserved.
-            </p>
-          </div>
-        </motion.footer>
-      </div>
+      </section>
     </>
   );
 }
