@@ -14,6 +14,7 @@ import { FaFilePdf, FaFileWord, FaFileImage } from 'react-icons/fa';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { GlassCard } from '@/components/ui/glass-card';
 import type { CompanySize, Socials, UserProfile, Resume, Employment, Education, Project } from '@/lib/types';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -187,7 +188,7 @@ const EmploymentForm = ({ employment, onSave, onCancel }: { employment: Employme
     };
 
     return (
-        <Card className="mt-4">
+        <GlassCard className="mt-4">
             <CardContent className="p-6 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="grid gap-2">
@@ -299,7 +300,7 @@ const EmploymentForm = ({ employment, onSave, onCancel }: { employment: Employme
                     </Button>
                 </div>
             </CardContent>
-        </Card>
+        </GlassCard>
     );
 };
 
@@ -346,7 +347,7 @@ const EducationForm = ({ education, onSave, onCancel }: { education: Education |
     const yearOptions = Array.from({ length: 50 }, (_, i) => new Date().getFullYear() - i);
 
     return (
-         <Card className="mt-4">
+         <GlassCard className="mt-4">
             <CardContent className="p-6 space-y-4">
                  <div className="grid gap-2">
                     <Label htmlFor="education-level">Education Level</Label>
@@ -484,7 +485,7 @@ const EducationForm = ({ education, onSave, onCancel }: { education: Education |
                     </Button>
                 </div>
             </CardContent>
-        </Card>
+        </GlassCard>
     );
 };
 
@@ -524,7 +525,7 @@ const ProjectForm = ({ project, onSave, onCancel, employments, educationRecords 
     const monthOptions = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: format(new Date(0, i), 'MMMM') }));
 
     return (
-        <Card className="mt-4">
+        <GlassCard className="mt-4">
             <CardContent className="p-6 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="grid gap-2">
@@ -626,7 +627,7 @@ const ProjectForm = ({ project, onSave, onCancel, employments, educationRecords 
                     </Button>
                 </div>
             </CardContent>
-        </Card>
+        </GlassCard>
     );
 };
 
@@ -1279,7 +1280,7 @@ const handleDeleteEducation = (id: string) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <Card className="w-[250px] flex-shrink-0 flex flex-col">
+      <GlassCard className="w-[250px] flex-shrink-0 flex flex-col">
         <CardContent className="p-4 flex-1 flex flex-col min-h-0">
           <div className="mb-4">
               <Button variant="ghost" className="justify-start w-full" onClick={onCancel}>
@@ -1304,9 +1305,9 @@ const handleDeleteEducation = (id: string) => {
             </ScrollArea>
           </div>
         </CardContent>
-      </Card>
+      </GlassCard>
       <div className="flex-1 overflow-hidden">
-        <Card className="h-full flex flex-col">
+        <GlassCard className="h-full flex flex-col">
           <CardContent className="p-6 flex-1 overflow-y-auto custom-scrollbar">
             {/* Candidate: Profile Details */}
             {activeSection === 'profile-details' && role === 'candidate' && (
@@ -1449,12 +1450,12 @@ const handleDeleteEducation = (id: string) => {
                       name="resumeFile"
                     />
                     {isResumePending ? (
-                       <Card className="relative flex flex-col items-center justify-center p-6 text-center h-48">
+                       <GlassCard className="relative flex flex-col items-center justify-center p-6 text-center h-48">
                             <p className="mb-4 text-sm font-medium">Uploading...</p>
                             <Progress value={uploadProgress} className="w-full" />
-                        </Card>
+                        </GlassCard>
                     ) : profile.hasResume && !selectedFile ? (
-                      <Card className="relative flex flex-col items-center justify-center p-6 text-center">
+                      <GlassCard className="relative flex flex-col items-center justify-center p-6 text-center">
                         <motion.button
                           type="button"
                           onHoverStart={() => setIsDownloadHovered(true)}
@@ -1511,7 +1512,7 @@ const handleDeleteEducation = (id: string) => {
                             </AlertDialogContent>
                           </AlertDialog>
                         </div>
-                      </Card>
+                      </GlassCard>
                     ) : (
                       <div
                         className={cn("relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-muted/30 hover:bg-muted/50 transition-colors", isDragging && "border-dash-primary bg-dash-primary/10")}
@@ -1565,7 +1566,7 @@ const handleDeleteEducation = (id: string) => {
                         placeholder="Add skills and press Enter"
                       />
                       {isAutocompleteOpen && skillInput && autocompleteSkills.length > 0 && (
-                        <Card className="absolute z-10 w-full mt-1 max-h-60 overflow-y-auto">
+                        <GlassCard className="absolute z-10 w-full mt-1 max-h-60 overflow-y-auto">
                           <CardContent className="p-2">
                             {autocompleteSkills.map(skill => (
                               <Button
@@ -1579,7 +1580,7 @@ const handleDeleteEducation = (id: string) => {
                               </Button>
                             ))}
                           </CardContent>
-                        </Card>
+                        </GlassCard>
                       )}
                     </div>
                     <div className="space-y-2 pt-4">
@@ -1624,7 +1625,7 @@ const handleDeleteEducation = (id: string) => {
                         editingEmployment?.id === emp.id ? (
                           <EmploymentForm key={emp.id} employment={editingEmployment} onSave={handleSaveEmployment} onCancel={() => setEditingEmployment(null)} />
                         ) : (
-                          <Card key={emp.id} className="p-4">
+                          <GlassCard key={emp.id} className="p-4">
                             <div className="flex justify-between items-start">
                               <div>
                                 <p className="font-semibold">{emp.designation}</p>
@@ -1640,7 +1641,7 @@ const handleDeleteEducation = (id: string) => {
                                 <Button variant="ghost" size="icon" onClick={() => openDeleteDialog(emp.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                               </div>
                             </div>
-                          </Card>
+                          </GlassCard>
                         )
                       ))}
                       {isAddingEmployment && <EmploymentForm employment={null} onSave={handleSaveEmployment} onCancel={() => setIsAddingEmployment(false)} />}
@@ -1680,7 +1681,7 @@ const handleDeleteEducation = (id: string) => {
                         editingEducation?.id === edu.id ? (
                           <EducationForm key={edu.id} education={editingEducation} onSave={handleSaveEducation} onCancel={() => setEditingEducation(null)} />
                         ) : (
-                          <Card key={edu.id} className="p-4">
+                          <GlassCard key={edu.id} className="p-4">
                             <div className="flex justify-between items-start">
                               <div>
                                  {edu.level === 'Class 10th' || edu.level === 'Class 12th' ? (
@@ -1706,7 +1707,7 @@ const handleDeleteEducation = (id: string) => {
                                 <Button variant="ghost" size="icon" onClick={() => openEducationDeleteDialog(edu.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                               </div>
                             </div>
-                          </Card>
+                          </GlassCard>
                         )
                       ))}
                       {isAddingEducation && <EducationForm education={null} onSave={handleSaveEducation} onCancel={() => setIsAddingEducation(false)} />}
@@ -1746,7 +1747,7 @@ const handleDeleteEducation = (id: string) => {
                                 editingProject?.id === proj.id ? (
                                     <ProjectForm key={proj.id} project={editingProject} onSave={handleSaveProject} onCancel={() => setEditingProject(null)} employments={employments} educationRecords={educationRecords} />
                                 ) : (
-                                    <Card key={proj.id} className="p-4">
+                                    <GlassCard key={proj.id} className="p-4">
                                         <div className="flex justify-between items-start">
                                             <div>
                                                 <p className="font-semibold">{proj.projectTitle}</p>
@@ -1762,7 +1763,7 @@ const handleDeleteEducation = (id: string) => {
                                                 <Button variant="ghost" size="icon" onClick={() => openProjectDeleteDialog(proj.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                                             </div>
                                         </div>
-                                    </Card>
+                                    </GlassCard>
                                 )
                             ))}
                             {isAddingProject && <ProjectForm project={null} onSave={handleSaveProject} onCancel={() => setIsAddingProject(false)} employments={employments} educationRecords={educationRecords} />}
@@ -2056,11 +2057,11 @@ const handleDeleteEducation = (id: string) => {
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       {allBenefits.map(benefit => (
-                        <Card key={benefit.id} className={cn("p-4 flex flex-col items-center justify-center text-center gap-2 cursor-pointer transition-all", selectedBenefits.includes(benefit.id) && "ring-2 ring-dash-primary bg-accent")}>
+                        <GlassCard key={benefit.id} className={cn("p-4 flex flex-col items-center justify-center text-center gap-2 cursor-pointer transition-all", selectedBenefits.includes(benefit.id) && "ring-2 ring-dash-primary bg-accent")}>
                            <Checkbox id={benefit.id} checked={selectedBenefits.includes(benefit.id)} onCheckedChange={(checked) => handleBenefitChange(benefit.id, !!checked)} className="absolute top-2 right-2 h-5 w-5" />
                             <benefit.icon className="h-8 w-8 text-muted-foreground" />
                             <p className="text-sm font-medium">{benefit.label}</p>
-                        </Card>
+                        </GlassCard>
                       ))}
                   </div>
                   <div className="flex justify-end gap-2 pt-6 border-t mt-6">
@@ -2150,7 +2151,7 @@ const handleDeleteEducation = (id: string) => {
             )}
 
           </CardContent>
-        </Card>
+        </GlassCard>
       </div>
     </div>
   );

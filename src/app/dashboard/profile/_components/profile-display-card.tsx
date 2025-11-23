@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { allBenefits } from '@/lib/benefits';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { GlassCard } from '@/components/ui/glass-card';
 import { format, formatDistanceToNow, differenceInMonths } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { FaFilePdf, FaFileWord, FaFileImage } from 'react-icons/fa';
@@ -122,7 +123,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
   );
   
   return (
-    <Card className="h-full flex flex-col">
+    <GlassCard className="h-full flex flex-col">
         <CardHeader>
             <div className="flex justify-between items-start">
                 <div>
@@ -283,7 +284,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                         <SectionHeader title="Recent Employment" sectionId="employment" />
                         <div className="space-y-4">
                              {(showAllEmployment ? sortedEmployment : [latestEmployment]).map(employment => (
-                                <Card key={employment.id} className="p-4">
+                                <GlassCard key={employment.id} className="p-4">
                                     <div>
                                         <p className="font-semibold">{employment.designation}</p>
                                         <p className="text-sm text-muted-foreground">{employment.company} &bull; {employment.employmentType}</p>
@@ -294,7 +295,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                                         </p>
                                         <p className="text-sm mt-2">{employment.jobProfile}</p>
                                     </div>
-                                </Card>
+                                </GlassCard>
                             ))}
                             {sortedEmployment.length > 1 && (
                                 <Button variant="link" className="p-0 h-auto" onClick={() => setShowAllEmployment(!showAllEmployment)}>
@@ -311,7 +312,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                         <SectionHeader title="Highest Education" sectionId="education" />
                         <div className="space-y-4">
                             {(showAllEducation ? sortedEducation : [latestEducation]).map(education => (
-                                <Card key={education.id} className="p-4">
+                                <GlassCard key={education.id} className="p-4">
                                     <div>
                                         {education.level === 'Class 10th' || education.level === 'Class 12th' ? (
                                             <>
@@ -331,7 +332,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                                             </>
                                         )}
                                     </div>
-                                </Card>
+                                </GlassCard>
                             ))}
                             {sortedEducation.length > 1 && (
                                 <Button variant="link" className="p-0 h-auto" onClick={() => setShowAllEducation(!showAllEducation)}>
@@ -348,7 +349,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                         <SectionHeader title="Projects" sectionId="projects" />
                         <div className="space-y-4">
                             {profile.projects.map(proj => (
-                                 <Card key={proj.id} className="p-4">
+                                 <GlassCard key={proj.id} className="p-4">
                                      <div>
                                         <div className="flex justify-between items-start">
                                             <p className="font-semibold">{proj.projectTitle}</p>
@@ -362,7 +363,7 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                                         {proj.projectUrl && <a href={getWebsiteUrl(proj.projectUrl)} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline mt-1 flex items-center gap-1"><LinkIcon className="h-3 w-3" /> Link to project</a>}
                                         <p className="text-sm mt-2">{proj.projectDetails}</p>
                                     </div>
-                                </Card>
+                                </GlassCard>
                             ))}
                         </div>
                     </div>
@@ -547,10 +548,10 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
                          <SectionHeader title="Benefits" sectionId="benefits" />
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                             {selectedBenefits.map(benefit => (
-                                <Card key={benefit.id} className="p-4 flex flex-col items-center justify-center text-center gap-2">
+                                <GlassCard key={benefit.id} className="p-4 flex flex-col items-center justify-center text-center gap-2">
                                     <benefit.icon className="h-8 w-8 text-muted-foreground" />
                                     <p className="text-sm font-medium">{benefit.label}</p>
-                                </Card>
+                                </GlassCard>
                             ))}
                         </div>
                     </div>
@@ -630,11 +631,11 @@ export function ProfileDisplayCard({ profile, onEdit }: ProfileDisplayCardProps)
 
              {profile.role === 'admin' && (
                 <div className="group space-y-4 pt-6 border-t">
-                    <p className="text-sm text-muted-foreground">Admin profile view is simple and does not contain extra sections.</p>
+                    {/* <p className="text-sm text-muted-foreground">Admin profile view is simple and does not contain extra sections.</p> */}
                 </div>
              )}
 
         </CardContent>
-    </Card>
+    </GlassCard>
   );
 }

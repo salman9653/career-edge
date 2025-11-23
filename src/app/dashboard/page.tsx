@@ -4,6 +4,7 @@ import { useEffect, useContext, useCallback, useState } from 'react';
 import { useSession } from '@/hooks/use-session';
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { GlassCard } from '@/components/ui/glass-card';
 import { Users, Briefcase, FileText, LineChart, CalendarClock, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -29,7 +30,7 @@ const AdminDashboard = () => {
 
     return (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
+            <GlassCard>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Total Candidates</CardTitle>
                     <Users className="h-4 w-4 text-muted-foreground" />
@@ -38,8 +39,8 @@ const AdminDashboard = () => {
                     <div className="text-2xl font-bold">{candidates.length}</div>
                     <p className="text-xs text-muted-foreground">+120 since last month</p>
                 </CardContent>
-            </Card>
-            <Card>
+            </GlassCard>
+            <GlassCard>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Total Companies</CardTitle>
                     <Briefcase className="h-4 w-4 text-muted-foreground" />
@@ -48,8 +49,8 @@ const AdminDashboard = () => {
                     <div className="text-2xl font-bold">{companies.length}</div>
                     <p className="text-xs text-muted-foreground">+15 since last month</p>
                 </CardContent>
-            </Card>
-            <Card>
+            </GlassCard>
+            <GlassCard>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Total Job Postings</CardTitle>
                     <FileText className="h-4 w-4 text-muted-foreground" />
@@ -58,8 +59,8 @@ const AdminDashboard = () => {
                     <div className="text-2xl font-bold">350</div>
                     <p className="text-xs text-muted-foreground">+50 since last week</p>
                 </CardContent>
-            </Card>
-            <Card>
+            </GlassCard>
+            <GlassCard>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Platform Analytics</CardTitle>
                     <LineChart className="h-4 w-4 text-muted-foreground" />
@@ -69,7 +70,7 @@ const AdminDashboard = () => {
                         <Link href="/dashboard/analytics">View Analytics</Link>
                     </Button>
                 </CardContent>
-            </Card>
+            </GlassCard>
         </div>
     )
 };
@@ -79,9 +80,9 @@ const CompanyDashboard = ({ user }: { user: any }) => {
 
     return (
     <div className="grid gap-6">
-        <h1 className="font-headline text-3xl font-bold">Welcome, {user.displayName}!</h1>
+        <h1 className="font-headline text-3xl font-bold">Welcome, {user.name}!</h1>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-             <Card>
+             <GlassCard>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Active Job Postings</CardTitle>
                     <Briefcase className="h-4 w-4 text-muted-foreground" />
@@ -90,8 +91,8 @@ const CompanyDashboard = ({ user }: { user: any }) => {
                     <div className="text-2xl font-bold">{jobs.length}</div>
                     <p className="text-xs text-muted-foreground">View all in <Link href="/dashboard/company/jobs" className="underline">Jobs</Link></p>
                 </CardContent>
-            </Card>
-            <Card>
+            </GlassCard>
+            <GlassCard>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Total Applicants</CardTitle>
                     <Users className="h-4 w-4 text-muted-foreground" />
@@ -100,7 +101,7 @@ const CompanyDashboard = ({ user }: { user: any }) => {
                     <div className="text-2xl font-bold">{jobs.reduce((acc, job) => acc + (job.applicants?.length || 0), 0)}</div>
                     <p className="text-xs text-muted-foreground">+5 new applicants this week</p>
                 </CardContent>
-            </Card>
+            </GlassCard>
         </div>
     </div>
 )};
@@ -212,9 +213,9 @@ const CandidateDashboard = ({ user }: { user: any }) => {
 
     return (
     <div className="grid gap-6">
-         <h1 className="font-headline text-3xl font-bold">Welcome, {user.displayName}!</h1>
+         <h1 className="font-headline text-3xl font-bold">Welcome, {user.name}!</h1>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
+            <GlassCard>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Applications Submitted</CardTitle>
                     <FileText className="h-4 w-4 text-muted-foreground" />
@@ -223,9 +224,9 @@ const CandidateDashboard = ({ user }: { user: any }) => {
                     {loadingData ? <Skeleton className="h-8 w-1/4" /> : <div className="text-2xl font-bold">{applicationCount}</div>}
                      <p className="text-xs text-muted-foreground">Track in <Link href="/dashboard/candidate/applications" className="underline">My Applications</Link></p>
                 </CardContent>
-            </Card>
+            </GlassCard>
         </div>
-         <Card>
+         <GlassCard>
             <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -266,8 +267,8 @@ const CandidateDashboard = ({ user }: { user: any }) => {
                     <p className="text-sm text-muted-foreground">No analyses found. Analyze your resume against a job to get started.</p>
                 )}
             </CardContent>
-        </Card>
-         <Card>
+        </GlassCard>
+         <GlassCard>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <CalendarClock className="h-5 w-5" />
@@ -306,8 +307,8 @@ const CandidateDashboard = ({ user }: { user: any }) => {
                     <p className="text-sm text-muted-foreground">No upcoming schedules. Keep applying!</p>
                 )}
             </CardContent>
-        </Card>
-        <Card>
+        </GlassCard>
+        <GlassCard>
             <CardHeader>
                 <CardTitle>Attempted Assessments</CardTitle>
             </CardHeader>
@@ -332,7 +333,7 @@ const CandidateDashboard = ({ user }: { user: any }) => {
                      <p className="text-sm text-muted-foreground">You haven't attempted any assessments yet.</p>
                 )}
             </CardContent>
-        </Card>
+        </GlassCard>
     </div>
 )};
 
@@ -452,7 +453,7 @@ export default function DashboardPage() {
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
       <DashboardSidebar role={session.role} user={session} />
       <div className="flex flex-col max-h-screen">
-        <header className="flex h-16 shrink-0 items-center justify-between gap-4 bg-background px-4 md:px-6 sticky top-0 z-30 md:static">
+        <header className="flex h-16 shrink-0 items-center justify-between gap-4 bg-background/30 backdrop-blur-md px-4 md:px-6 sticky top-0 z-30 md:static border-b border-white/10">
             <h1 className="font-headline text-xl font-semibold md:ml-0 ml-12">Dashboard</h1>
             <MobileSearch />
         </header>

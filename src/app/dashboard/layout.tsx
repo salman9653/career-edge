@@ -86,9 +86,21 @@ export default function DashboardLayout({
                     <QuestionProvider>
                       <AiInterviewProvider>
                         <GeneratedResumeProvider>
-                          <DashboardLayoutContent>
-                              {children}
-                          </DashboardLayoutContent>
+                          <div className="relative min-h-screen w-full overflow-hidden">
+                            {/* Animated gradient background */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/30 dark:from-primary/10 dark:via-background dark:to-secondary/20 -z-20" />
+                            
+                            {/* Animated orbs */}
+                            <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
+                              <div className="absolute top-1/4 -left-20 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-blob" />
+                              <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-secondary/30 rounded-full blur-3xl animate-blob animation-delay-2000" />
+                              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent/10 rounded-full blur-3xl animate-blob animation-delay-4000" />
+                            </div>
+
+                            <DashboardLayoutContent>
+                                {children}
+                            </DashboardLayoutContent>
+                          </div>
                         </GeneratedResumeProvider>
                       </AiInterviewProvider>
                     </QuestionProvider>

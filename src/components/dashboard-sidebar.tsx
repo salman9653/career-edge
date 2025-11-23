@@ -294,11 +294,11 @@ const SidebarContent = ({ role, user }: DashboardSidebarProps) => {
                     <DropdownMenuTrigger asChild>
                         <Button variant="secondary" className="w-full justify-start gap-3 rounded-lg h-auto p-3">
                             <Avatar className="h-10 w-10">
-                                <AvatarImage src={user.displayImageUrl ?? undefined} alt={user.displayName} />
-                                <AvatarFallback className="bg-dash-primary text-dash-primary-foreground">{getInitials(user.displayName)}</AvatarFallback>
-                            </Avatar>
-                            <div className="flex flex-col items-start text-left">
-                                <span className="text-sm font-semibold leading-none">{user.displayName}</span>
+                                    <AvatarImage src={user.displayImageUrl ?? undefined} alt={user.name} />
+                                    <AvatarFallback className="bg-dash-primary text-dash-primary-foreground">{getInitials(user.name)}</AvatarFallback>
+                                </Avatar>
+                                <div className="flex flex-col items-start text-left">
+                                    <span className="text-sm font-semibold leading-none">{user.name}</span>
                                 <span className="text-xs leading-none text-muted-foreground mt-1">
                                     {user.email}
                                 </span>
@@ -311,11 +311,11 @@ const SidebarContent = ({ role, user }: DashboardSidebarProps) => {
                         <DropdownMenuLabel className="font-normal">
                             <div className="flex items-center gap-3">
                                 <Avatar className="h-10 w-10">
-                                    <AvatarImage src={user.displayImageUrl ?? undefined} alt={user.displayName} />
-                                    <AvatarFallback className="bg-dash-primary text-dash-primary-foreground">{getInitials(user.displayName)}</AvatarFallback>
+                                    <AvatarImage src={user.displayImageUrl ?? undefined} alt={user.name} />
+                                    <AvatarFallback className="bg-dash-primary text-dash-primary-foreground">{getInitials(user.name)}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex flex-col space-y-1">
-                                    <p className="text-sm font-medium leading-none">{user.displayName}</p>
+                                    <p className="text-sm font-medium leading-none">{user.name}</p>
 
                                     <p className="text-xs leading-none text-muted-foreground">
                                     {user.email}
@@ -375,7 +375,7 @@ const SidebarContent = ({ role, user }: DashboardSidebarProps) => {
 export function DashboardSidebar({ role, user }: DashboardSidebarProps) {
     return (
         <>
-            <div className="hidden border-r bg-sidebar md:block">
+            <div className="hidden border-r border-white/10 bg-background/30 backdrop-blur-xl md:block">
                 <SidebarContent role={role} user={user} />
             </div>
              <Sheet>
@@ -389,7 +389,7 @@ export function DashboardSidebar({ role, user }: DashboardSidebarProps) {
                         <span className="sr-only">Toggle Menu</span>
                     </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="p-0 w-full max-w-[280px]">
+                <SheetContent side="left" className="p-0 w-full max-w-[280px] bg-background/80 backdrop-blur-xl border-r border-white/10">
                     <SidebarContent role={role} user={user} />
                 </SheetContent>
             </Sheet>
