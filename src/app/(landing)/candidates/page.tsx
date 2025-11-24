@@ -87,13 +87,13 @@ export default function CandidatesPage() {
             >
                <div className="relative w-full aspect-square max-w-[500px] mx-auto">
                   <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/20 to-purple-500/20 rounded-full blur-3xl animate-pulse" />
-                  <div className="relative z-10 rounded-3xl overflow-hidden border border-white/20 bg-gradient-to-br from-background/40 to-background/20 backdrop-blur-xl shadow-2xl">
+                  <div className="relative z-10 mix-blend-screen">
                     <Image 
-                      src="/images/candidates-hero.png" 
+                      src="/images/hero-candidates-black.png" 
                       alt="Career Growth" 
-                      width={500} 
-                      height={500} 
-                      className="object-contain"
+                      width={600} 
+                      height={600} 
+                      className="object-contain drop-shadow-2xl"
                     />
                   </div>
                </div>
