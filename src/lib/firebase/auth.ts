@@ -5,6 +5,7 @@ import { createUserWithEmailAndPassword, updateProfile, sendPasswordResetEmail }
 import { doc, setDoc, serverTimestamp, collection, query, where, getDocs, writeBatch } from 'firebase/firestore';
 import { auth, db } from './config';
 import { redirect } from 'next/navigation';
+import { getFirebaseErrorMessage } from './error-messages';
 
 export async function signUpCandidate(prevState: any, formData: FormData) {
   const firstName = formData.get('first-name') as string;
@@ -53,7 +54,7 @@ export async function signUpCandidate(prevState: any, formData: FormData) {
     // For now, we rely on redirect to handle login, but this is a fallback.
 
   } catch (e: any) {
-    return { error: e.message };
+    return { error: getFirebaseErrorMessage(e) };
   }
   
   if (redirectJobId) {
@@ -128,7 +129,7 @@ export async function signUpCompany(prevState: any, formData: FormData) {
       }
 
     } catch (e: any)      {
-      return { error: e.message };
+      return { error: getFirebaseErrorMessage(e) };
     }
 
     redirect('/dashboard');
@@ -143,7 +144,6 @@ export async function sendPasswordResetEmailAction(prevState: any, formData: For
         await sendPasswordResetEmail(auth, email);
         return { success: true, email };
     } catch (e: any) {
-        // Firebase often returns user-friendly error messages
-        return { error: e.message, email };
+        return { error: getFirebaseErrorMessage(e), email };
     }
 }

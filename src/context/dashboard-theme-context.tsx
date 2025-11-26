@@ -4,7 +4,7 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useTheme as useNextTheme } from 'next-themes';
 import { useSession } from '@/hooks/use-session';
-import { updateThemePreferencesAction } from '@/app/dashboard/settings/actions';
+import { updateThemePreferencesAction } from '@/app/dashboard/(common_pages)/settings/actions';
 
 type ThemeVariant = {
   color: string;

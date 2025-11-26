@@ -17,9 +17,10 @@ export default function AuthLayout({
   const pathname = usePathname();
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
   
-  // Determine if we're on login or signup page
+  // Determine which page we're on
   const isLoginPage = pathname === '/login';
   const isSignupPage = pathname?.startsWith('/signup');
+  const isForgotPasswordPage = pathname === '/forgot-password';
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -50,8 +51,9 @@ export default function AuthLayout({
             {/* Theme Toggle */}
             <ModeToggle />
             
-            {/* Auth Button - Show Login on signup pages, Show Signup on login page */}
+            {/* Auth Buttons */}
             {isLoginPage ? (
+              // Login page: Show Sign Up button
               <Button 
                 variant="default" 
                 size="sm" 
@@ -62,6 +64,7 @@ export default function AuthLayout({
                 <span className="absolute inset-0 bg-gradient-to-r from-primary/80 to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </Button>
             ) : isSignupPage ? (
+              // Signup pages: Show Log In button
               <Button 
                 variant="outline" 
                 size="sm" 
@@ -72,6 +75,29 @@ export default function AuthLayout({
                   Log In
                 </Link>
               </Button>
+            ) : isForgotPasswordPage ? (
+              // Forgot Password page: Show both buttons
+              <>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  asChild
+                  className="border-primary/20 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300"
+                >
+                  <Link href="/login">
+                    Log In
+                  </Link>
+                </Button>
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  onClick={() => setIsRoleDialogOpen(true)}
+                  className="relative overflow-hidden group"
+                >
+                  <span className="relative z-10">Sign Up</span>
+                  <span className="absolute inset-0 bg-gradient-to-r from-primary/80 to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </Button>
+              </>
             ) : null}
           </motion.div>
         </div>

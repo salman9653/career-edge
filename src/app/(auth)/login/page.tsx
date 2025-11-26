@@ -6,6 +6,7 @@ import { useFormStatus } from 'react-dom';
 import { signInWithEmailAndPassword, type User, signOut } from "firebase/auth";
 import { auth, db } from "@/lib/firebase/config";
 import { doc, getDoc } from "firebase/firestore";
+import { getFirebaseErrorMessage } from "@/lib/firebase/error-messages";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -52,7 +53,7 @@ async function signInAction(prevState: any, formData: FormData): Promise<AuthSta
              return { error: "User data not found." };
         }
     } catch (e: any) {
-        return { error: e.message };
+        return { error: getFirebaseErrorMessage(e) };
     }
 }
 

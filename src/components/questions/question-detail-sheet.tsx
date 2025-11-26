@@ -136,7 +136,9 @@ export function QuestionDetailSheet({ open, onOpenChange, question: initialQuest
                  <Tooltip>
                     <TooltipTrigger asChild>
                          <Button variant="ghost" size="icon" asChild>
-                            <Link href={`/dashboard/admin/questions/edit/${question.id}`}>
+                            <Link href={question.libraryType === 'library' 
+                              ? `/dashboard/admin/questions/edit/${question.id}` 
+                              : `/dashboard/company/questions/edit/${question.id}`}>
                               <Edit className="h-5 w-5" />
                             </Link>
                         </Button>
