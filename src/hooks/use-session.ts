@@ -13,7 +13,8 @@ export interface UserPreferences {
 }
 
 export interface UserSession extends UserProfile {
-  // uid, email, displayName, role etc are already in UserProfile
+  preferences?: UserPreferences;
+  displayName?: string; // For compatibility with some auth logic
 }
 
 export function useSession() {

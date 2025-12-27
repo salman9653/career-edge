@@ -62,8 +62,8 @@ function ChatPageContent() {
         const stream = await careerChatAction({
             message: input,
             history: newMessages.slice(0, -1).map(m => ({ role: m.role, text: m.text })),
-            userName: session.displayName,
-            userRole: session.role
+            userName: session.displayName || session.name || 'User',
+            userRole: session.role as any
         });
         
         let aiResponse = '';
@@ -195,7 +195,7 @@ function ChatPageContent() {
                                         {message.role === 'user' && (
                                             <Avatar className="h-8 w-8">
                                                 <AvatarImage src={session.displayImageUrl ?? undefined} />
-                                                <AvatarFallback>{session.displayName.charAt(0)}</AvatarFallback>
+                                                <AvatarFallback>{(session.displayName || session.name || 'U').charAt(0)}</AvatarFallback>
                                             </Avatar>
                                         )}
                                     </div>

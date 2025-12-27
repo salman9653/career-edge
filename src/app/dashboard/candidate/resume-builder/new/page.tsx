@@ -20,7 +20,13 @@ import type { DragEvent } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { useFormStatus } from 'react-dom';
 
-const initialState = {
+interface GenerateResumeState {
+  error?: string | null;
+  success?: boolean;
+  resumeId?: string | null;
+}
+
+const initialState: GenerateResumeState = {
     error: null,
     success: false,
     resumeId: null,
@@ -40,7 +46,7 @@ export default function NewResumePage() {
     const { session } = useSession();
     const router = useRouter();
     const { toast } = useToast();
-    const [state, formAction] = useActionState(generateAtsResumeAction, initialState);
+    const [state, formAction] = useActionState<GenerateResumeState, FormData>(generateAtsResumeAction, initialState);
 
     const [existingResume, setExistingResume] = useState<File | null>(null);
     const [isDragging, setIsDragging] = useState(false);

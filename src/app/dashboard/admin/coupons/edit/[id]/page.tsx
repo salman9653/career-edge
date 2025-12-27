@@ -24,7 +24,12 @@ import { db } from '@/lib/firebase/config';
 import type { Coupon } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const initialState = {
+interface CouponState {
+  error?: string | null;
+  success?: boolean;
+}
+
+const initialState: CouponState = {
   error: null,
   success: false,
 };
@@ -41,7 +46,7 @@ function SubmitButton() {
 export default function EditCouponPage() {
   const { session, loading: sessionLoading } = useSession();
   const { plans, loading: plansLoading } = useContext(SubscriptionContext);
-  const [state, formAction] = useActionState(updateCouponAction, initialState);
+  const [state, formAction] = useActionState<CouponState, FormData>(updateCouponAction, initialState);
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
@@ -225,7 +230,7 @@ export default function EditCouponPage() {
                             mode="range"
                             defaultMonth={dateRange.from}
                             selected={dateRange}
-                            onSelect={setDateRange}
+                            onSelect={setDateRange as any}
                             numberOfMonths={1}
                           />
                         </PopoverContent>

@@ -12,11 +12,13 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Loader2, CheckCircle } from "lucide-react";
 import { sendPasswordResetEmailAction } from "@/lib/firebase/auth";
 
-const initialState: {
-  error: string | null;
-  success: boolean;
+interface ForgotPasswordState {
+  error?: string | null;
+  success?: boolean;
   email?: string;
-} = {
+}
+
+const initialState: ForgotPasswordState = {
   error: null,
   success: false,
 };
@@ -35,7 +37,7 @@ function SubmitButton() {
 }
 
 export default function ForgotPasswordPage() {
-    const [state, formAction] = useActionState(sendPasswordResetEmailAction, initialState);
+    const [state, formAction] = useActionState<ForgotPasswordState, FormData>(sendPasswordResetEmailAction, initialState);
 
     return (
         <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center py-12 px-4">

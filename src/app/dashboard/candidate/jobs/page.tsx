@@ -295,8 +295,8 @@ export default function CandidateJobsPage() {
                         {displayedJobs.map(job => {
                         const isFavorite = favoriteJobs.includes(job.id);
                         return (
-                            <Card asChild key={job.id} className="hover:bg-accent transition-colors relative group">
-                                <Link href={`/dashboard/candidate/jobs/${job.id}`}>
+                          <Link href={`/dashboard/candidate/jobs/${job.id}`} key={job.id} className="block group">
+                            <Card className="hover:bg-accent transition-colors relative h-full">
                                 <CardHeader>
                                         <div className="flex items-start gap-4">
                                             <Avatar className="h-12 w-12 rounded-lg">
@@ -313,7 +313,7 @@ export default function CandidateJobsPage() {
                                                     <Button 
                                                             variant="ghost" 
                                                             size="icon" 
-                                                            className="h-8 w-8 text-muted-foreground hover:text-dash-primary z-10" 
+                                                            className="h-8 w-8 text-muted-foreground hover:text-dash-primary z-10 relative" 
                                                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleToggleFavorite(job.id); }}>
                                                             <Bookmark className={cn("h-5 w-5", isFavorite && "fill-current text-dash-primary")} />
                                                         </Button>
@@ -344,8 +344,8 @@ export default function CandidateJobsPage() {
                                             {formatDatePosted(job.createdAt)}
                                     </div>
                                 </CardFooter>
-                                </Link>
-                        </Card>
+                            </Card>
+                          </Link>
                         )})}
                     </div>
                 ) : (

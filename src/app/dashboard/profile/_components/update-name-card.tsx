@@ -11,7 +11,12 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-const initialState = {
+type ActionState = {
+  error?: string | null;
+  success?: string | null;
+};
+
+const initialState: ActionState = {
   error: null,
   success: null,
 };
@@ -26,7 +31,7 @@ function SubmitButton() {
 }
 
 export function UpdateNameCard({ name, phone, onSave, onCancel }: { name: string, phone: string, onSave: (updatedProfile: {name: string, phone: string}) => void, onCancel: () => void }) {
-  const [state, formAction] = useActionState(updateUserProfileAction, initialState);
+  const [state, formAction] = useActionState<ActionState, FormData>(updateUserProfileAction, initialState);
   const { session } = useSession();
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);

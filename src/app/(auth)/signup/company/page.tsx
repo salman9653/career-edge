@@ -11,7 +11,11 @@ import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Loader2, Eye, EyeOff } from "lucide-react";
 
-const initialState = {
+interface CompanySignupState {
+  error?: string | null;
+}
+
+const initialState: CompanySignupState = {
   error: null,
 };
 
@@ -29,7 +33,7 @@ function SubmitButton() {
 }
 
 export default function CompanySignupPage() {
-  const [state, formAction] = useActionState(signUpCompany, initialState);
+  const [state, formAction] = useActionState<CompanySignupState, FormData>(signUpCompany, initialState);
   const [showPassword, setShowPassword] = useState(false);
 
   return (

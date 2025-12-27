@@ -41,11 +41,11 @@ export const ManagerProvider = ({ children }: { children: ReactNode }) => {
         let unsubscribe: Unsubscribe = () => {};
 
         const fetchManagers = (q: any) => {
-            unsubscribe = onSnapshot(q, (snapshot) => {
-                const managersList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ManagerProfile));
+            unsubscribe = onSnapshot(q, (snapshot: any) => {
+                const managersList = snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() } as ManagerProfile));
                 setManagers(managersList);
                 setLoading(false);
-            }, (err) => {
+            }, (err: any) => {
                 console.error("Error fetching managers:", err);
                 setError(err);
                 setLoading(false);

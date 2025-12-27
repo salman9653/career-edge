@@ -10,7 +10,7 @@ import { FaRegFilePdf } from 'react-icons/fa';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import type { GeneratedResume } from '@/ai/flows/generate-ats-resume-flow-types';
-import { RenameResumeDialog } from './rename-resume-dialog';
+import { RenameResumeDialog } from '@/app/dashboard/candidate/resumes/_components/rename-resume-dialog';
 
 interface ResumeCardProps {
     resume: GeneratedResume;

@@ -20,10 +20,12 @@ import { useSession } from '@/hooks/use-session';
 import type { GeneratedResume } from '@/ai/flows/generate-ats-resume-flow-types';
 import { renameGeneratedResumeAction } from '@/app/actions';
 
-const initialState: {
+interface RenameResumeState {
   error?: string | null;
-  success: boolean;
-} = {
+  success?: boolean;
+}
+
+const initialState: RenameResumeState = {
   error: null,
   success: false,
 };
@@ -44,7 +46,7 @@ interface RenameResumeDialogProps {
 }
 
 export function RenameResumeDialog({ open, onOpenChange, resume }: RenameResumeDialogProps) {
-  const [state, formAction] = useActionState(renameGeneratedResumeAction, initialState);
+  const [state, formAction] = useActionState<RenameResumeState, FormData>(renameGeneratedResumeAction, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const { session } = useSession();

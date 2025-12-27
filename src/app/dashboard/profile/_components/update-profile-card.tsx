@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, Trash2, Edit, Globe, Linkedin, Phone, Mail, Briefcase, Building2, User, Upload, FileText, X, Plus, CalendarIcon, UploadCloud, Download, RefreshCw, Github, FolderKanban, AlertTriangle, GraduationCap, ArrowLeft, Link as LinkIcon, Pen, Building } from 'lucide-react';
 import { FaFilePdf, FaFileWord, FaFileImage } from 'react-icons/fa';
+import Link from 'next/link';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -50,7 +51,12 @@ const Twitter = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
 );
 
-const initialState = {
+type ActionState = {
+  error?: string | null;
+  success?: string | boolean | null;
+};
+
+const initialState: ActionState = {
   error: null,
   success: false,
 };
@@ -328,7 +334,7 @@ const EducationForm = ({ education, onSave, onCancel }: { education: Education |
         if (level === 'Class 10th' || level === 'Class 12th') {
             educationData = { ...educationData, board, school, passingYear, marks: Number(marks) };
         } else {
-            educationData = { ...educationData, university, course, specialization, courseType, startYear, endYear, gradingSystem, marks: Number(marks) };
+            educationData = { ...educationData, university, course, specialization, courseType: courseType as any, startYear, endYear, gradingSystem: gradingSystem as any, marks: Number(marks) };
             if (level === 'Graduation/Diploma') {
                 educationData.isPrimary = isPrimary;
             }
@@ -646,15 +652,15 @@ export function UpdateProfileCard({
   const { session, updateSession } = useSession();
   const { toast } = useToast();
   
-  const [profileDetailsState, profileDetailsAction] = useActionState(updateUserProfileAction, initialState);
-  const [keySkillsState, keySkillsAction] = useActionState(updateUserProfileAction, initialState);
-  const [onlineProfilesState, onlineProfilesAction] = useActionState(updateUserProfileAction, initialState);
-  const [personalDetailsState, personalDetailsAction] = useActionState(updateUserProfileAction, initialState);
-  const [careerProfileState, careerProfileAction] = useActionState(updateUserProfileAction, initialState);
-  const [employmentState, employmentAction] = useActionState(updateUserProfileAction, initialState);
-  const [educationState, educationAction] = useActionState(updateUserProfileAction, initialState);
-  const [projectState, projectAction] = useActionState(updateUserProfileAction, initialState);
-  const [resumeState, resumeAction] = useActionState(updateUserProfileAction, initialState);
+  const [profileDetailsState, profileDetailsAction] = useActionState<ActionState, FormData>(updateUserProfileAction, initialState);
+  const [keySkillsState, keySkillsAction] = useActionState<ActionState, FormData>(updateUserProfileAction, initialState);
+  const [onlineProfilesState, onlineProfilesAction] = useActionState<ActionState, FormData>(updateUserProfileAction, initialState);
+  const [personalDetailsState, personalDetailsAction] = useActionState<ActionState, FormData>(updateUserProfileAction, initialState);
+  const [careerProfileState, careerProfileAction] = useActionState<ActionState, FormData>(updateUserProfileAction, initialState);
+  const [employmentState, employmentAction] = useActionState<ActionState, FormData>(updateUserProfileAction, initialState);
+  const [educationState, educationAction] = useActionState<ActionState, FormData>(updateUserProfileAction, initialState);
+  const [projectState, projectAction] = useActionState<ActionState, FormData>(updateUserProfileAction, initialState);
+  const [resumeState, resumeAction] = useActionState<ActionState, FormData>(updateUserProfileAction, initialState);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isAvatarPending, startAvatarTransition] = useTransition();

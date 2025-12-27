@@ -1,6 +1,17 @@
 
 import type { Job, Company, Applicant, Question, AiInterview } from './types';
-import type { CrmCandidate } from '@/context/talent-pool-context';
+
+export interface CrmCandidate {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    location: string;
+    avatarUrl: string;
+    tags: string[];
+    lastContact: string;
+    source: string;
+}
 
 export const mockCompanies: Company[] = [
   { id: 'comp1', name: 'Innovate Inc.', logoUrl: 'https://picsum.photos/seed/10/100/100', dataAiHint: 'company logo' },
@@ -11,30 +22,39 @@ export const mockCompanies: Company[] = [
 export const mockApplicants: Applicant[] = [
   {
     id: 'appl1',
+    candidateId: 'user_alice',
     candidateName: 'Alice Johnson',
     avatarUrl: 'https://picsum.photos/seed/20/100/100',
     candidateEmail: 'alice.j@example.com',
     resumeUrl: '/path/to/resume1.pdf',
     appliedAt: '2024-05-20T10:00:00Z',
     activeRoundIndex: 0,
+    status: 'In Progress',
+    roundResults: []
   },
   {
     id: 'appl2',
+    candidateId: 'user_bob',
     candidateName: 'Bob Williams',
     avatarUrl: 'https://picsum.photos/seed/21/100/100',
     candidateEmail: 'bob.w@example.com',
     resumeUrl: '/path/to/resume2.pdf',
     appliedAt: '2024-05-19T14:30:00Z',
     activeRoundIndex: 0,
+    status: 'In Progress',
+    roundResults: []
   },
   {
     id: 'appl3',
+    candidateId: 'user_charlie',
     candidateName: 'Charlie Brown',
     avatarUrl: 'https://picsum.photos/seed/22/100/100',
     candidateEmail: 'charlie.b@example.com',
     resumeUrl: '/path/to/resume3.pdf',
     appliedAt: '2024-05-21T09:00:00Z',
     activeRoundIndex: 0,
+    status: 'In Progress',
+    roundResults: []
   },
 ];
 
@@ -46,7 +66,32 @@ export const mockJobs: Job[] = [
     location: 'Remote',
     type: 'Full-time',
     description: 'We are looking for an experienced Frontend Developer to join our team. You will be responsible for building the client-side of our web applications.',
-    applicants: [mockApplicants[0], mockApplicants[2]],
+    applicants: [
+        {
+            id: 'appl1',
+            candidateId: 'user_alice',
+            candidateName: 'Alice Johnson',
+            avatarUrl: 'https://picsum.photos/seed/20/100/100',
+            candidateEmail: 'alice.j@example.com',
+            resumeUrl: '/path/to/resume1.pdf',
+            appliedAt: '2024-05-20T10:00:00Z',
+            activeRoundIndex: 0,
+            status: 'In Progress',
+            roundResults: []
+        },
+        {
+            id: 'appl3',
+            candidateId: 'user_charlie',
+            candidateName: 'Charlie Brown',
+            avatarUrl: 'https://picsum.photos/seed/22/100/100',
+            candidateEmail: 'charlie.b@example.com',
+            resumeUrl: '/path/to/resume3.pdf',
+            appliedAt: '2024-05-21T09:00:00Z',
+            activeRoundIndex: 0,
+            status: 'In Progress',
+            roundResults: []
+        }
+    ],
     datePosted: '2024-05-15T09:00:00Z',
     status: 'Live',
     rounds: [],
@@ -67,7 +112,20 @@ export const mockJobs: Job[] = [
     location: 'New York, NY',
     type: 'Full-time',
     description: 'Join our data science team to work on challenging problems in machine learning and predictive modeling. Experience with Python and SQL is a must.',
-    applicants: [mockApplicants[1]],
+    applicants: [
+        {
+            id: 'appl2',
+            candidateId: 'user_bob',
+            candidateName: 'Bob Williams',
+            avatarUrl: 'https://picsum.photos/seed/21/100/100',
+            candidateEmail: 'bob.w@example.com',
+            resumeUrl: '/path/to/resume2.pdf',
+            appliedAt: '2024-05-19T14:30:00Z',
+            activeRoundIndex: 0,
+            status: 'In Progress',
+            roundResults: []
+        }
+    ],
     datePosted: '2024-05-18T11:00:00Z',
     status: 'Live',
     rounds: [],
@@ -80,6 +138,7 @@ export const mockJobs: Job[] = [
     workExperience: '3-5 years',
     salary: { min: 25, max: 35 },
     positions: 1,
+
   },
   {
     id: 'job3',
@@ -109,7 +168,44 @@ export const mockJobs: Job[] = [
     location: 'Remote',
     type: 'Part-time',
     description: 'Create amazing user experiences. The ideal candidate should have an eye for clean and artful design, possess superior UI skills and be able to translate high-level requirements into interaction flows and artifacts.',
-    applicants: [mockApplicants[0], mockApplicants[1], mockApplicants[2]],
+    applicants: [
+        {
+            id: 'appl1',
+            candidateId: 'user_alice',
+            candidateName: 'Alice Johnson',
+            avatarUrl: 'https://picsum.photos/seed/20/100/100',
+            candidateEmail: 'alice.j@example.com',
+            resumeUrl: '/path/to/resume1.pdf',
+            appliedAt: '2024-05-20T10:00:00Z',
+            activeRoundIndex: 0,
+            status: 'In Progress',
+            roundResults: []
+        },
+        {
+            id: 'appl2',
+            candidateId: 'user_bob',
+            candidateName: 'Bob Williams',
+            avatarUrl: 'https://picsum.photos/seed/21/100/100',
+            candidateEmail: 'bob.w@example.com',
+            resumeUrl: '/path/to/resume2.pdf',
+            appliedAt: '2024-05-19T14:30:00Z',
+            activeRoundIndex: 0,
+            status: 'In Progress',
+            roundResults: []
+        },
+        {
+            id: 'appl3',
+            candidateId: 'user_charlie',
+            candidateName: 'Charlie Brown',
+            avatarUrl: 'https://picsum.photos/seed/22/100/100',
+            candidateEmail: 'charlie.b@example.com',
+            resumeUrl: '/path/to/resume3.pdf',
+            appliedAt: '2024-05-21T09:00:00Z',
+            activeRoundIndex: 0,
+            status: 'In Progress',
+            roundResults: []
+        }
+    ],
     datePosted: '2024-05-20T08:00:00Z',
     status: 'Live',
     rounds: [],
@@ -138,7 +234,14 @@ export const mockQuestions: Question[] = [
 export const mockAiInterviews: AiInterview[] = [
     {
         id: 'ai_int_1',
+        companyId: 'comp1',
         name: 'Frontend Developer - Initial Screening',
+        jobTitle: 'Frontend Developer',
+        jobDescription: 'Description here',
+        keySkills: ['React', 'TypeScript'],
+        intro: 'Hello',
+        outro: 'Thanks',
+        questions: [],
         createdBy: 'user1',
         createdByName: 'John Doe',
         createdAt: '2024-05-10T10:00:00Z',
@@ -149,7 +252,14 @@ export const mockAiInterviews: AiInterview[] = [
     },
     {
         id: 'ai_int_2',
+        companyId: 'comp2',
         name: 'Data Scientist - Behavioral',
+        jobTitle: 'Data Scientist',
+        jobDescription: 'Description here',
+        keySkills: ['Python', 'SQL'],
+        intro: 'Hello',
+        outro: 'Thanks',
+        questions: [],
         createdBy: 'user2',
         createdByName: 'Jane Smith',
         createdAt: '2024-05-12T11:30:00Z',
@@ -160,7 +270,14 @@ export const mockAiInterviews: AiInterview[] = [
     },
     {
         id: 'ai_int_3',
+        companyId: 'comp1',
         name: 'Senior Backend Engineer - Technical',
+        jobTitle: 'Backend Engineer',
+        jobDescription: 'Description here',
+        keySkills: ['Node.js', 'AWS'],
+        intro: 'Hello',
+        outro: 'Thanks',
+        questions: [],
         createdBy: 'user1',
         createdByName: 'John Doe',
         createdAt: '2024-05-15T09:00:00Z',

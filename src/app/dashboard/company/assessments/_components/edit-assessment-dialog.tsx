@@ -21,10 +21,12 @@ import { updateAssessmentAction } from '@/app/actions';
 import { Textarea } from '@/components/ui/textarea';
 import type { Assessment } from '@/lib/types';
 
-const initialState: {
+interface EditAssessmentState {
   error?: string | null;
   success?: boolean;
-} = {
+}
+
+const initialState: EditAssessmentState = {
   error: null,
   success: false,
 };
@@ -45,7 +47,7 @@ interface EditAssessmentDialogProps {
 }
 
 export function EditAssessmentDialog({ open, onOpenChange, assessment }: EditAssessmentDialogProps) {
-  const [state, formAction] = useActionState(updateAssessmentAction, initialState);
+  const [state, formAction] = useActionState<EditAssessmentState, FormData>(updateAssessmentAction, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
 

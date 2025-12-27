@@ -201,7 +201,7 @@ export default function NewJobPage() {
         return rest;
       });
 
-      await createJobAction(jobData, finalRounds, session.uid, session.displayName);
+      await createJobAction(jobData as any, finalRounds, session.uid, session.displayName || session.name || '');
       
       setIsSubmitting(false);
   }

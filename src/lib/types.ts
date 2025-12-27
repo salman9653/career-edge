@@ -11,8 +11,16 @@ export interface NavItem {
 export interface Company {
     id: string;
     name: string;
-    logoUrl: string;
-    dataAiHint: string;
+    logoUrl?: string;
+    displayImageUrl?: string;
+    dataAiHint?: string;
+    aboutCompany?: string;
+    helplinePhone?: string;
+    helplineEmail?: string;
+    benefits?: string[];
+    companySize?: CompanySize;
+    companyType?: string;
+    foundedYear?: string;
 }
 
 export interface ApplicantRoundResult {
@@ -308,10 +316,22 @@ export interface Project {
 }
 
 
+export interface Assessment {
+    id: string;
+    name: string;
+    assessmentType: string;
+    description: string;
+    questionIds: string[];
+    createdBy: string;
+    createdByName: string;
+    createdAt: any;
+}
+
 export interface UserProfile {
     uid: string;
     email: string;
     name: string;
+    displayName?: string;
     role: 'candidate' | 'company' | 'admin' | 'manager' | 'adminAccountManager';
     phone: string;
     displayImageUrl: string | null;

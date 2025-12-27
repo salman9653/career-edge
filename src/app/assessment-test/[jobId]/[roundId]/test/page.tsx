@@ -281,12 +281,12 @@ export default function AssessmentTestPage() {
                 </div>
                 <div className="flex items-center gap-4">
                     <div className="text-right">
-                        <p className="font-semibold text-sm">Hello, {session?.displayName}</p>
+                        <p className="font-semibold text-sm">Hello, {session?.name}</p>
                         <p className="text-xs text-muted-foreground">{session?.email}</p>
                     </div>
                     <Avatar className="h-10 w-10">
                         <AvatarImage src={session?.displayImageUrl ?? undefined} />
-                        <AvatarFallback>{getInitials(session?.displayName)}</AvatarFallback>
+                        <AvatarFallback>{getInitials(session?.name)}</AvatarFallback>
                     </Avatar>
                 </div>
             </header>

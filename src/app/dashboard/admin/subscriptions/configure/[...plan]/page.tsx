@@ -20,7 +20,12 @@ import { db } from '@/lib/firebase/config';
 import type { SubscriptionPlan } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const initialState = {
+interface SubscriptionPlanState {
+  error?: string | null;
+  success?: boolean;
+}
+
+const initialState: SubscriptionPlanState = {
   error: null,
   success: false,
 };
@@ -36,7 +41,7 @@ function SubmitButton({ isEditMode }: { isEditMode: boolean }) {
 
 export default function ConfigureSubscriptionPlanPage() {
   const { session, loading: sessionLoading } = useSession();
-  const [state, formAction] = useActionState(addSubscriptionPlanAction, initialState);
+  const [state, formAction] = useActionState<SubscriptionPlanState, FormData>(addSubscriptionPlanAction, initialState);
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
@@ -44,7 +49,7 @@ export default function ConfigureSubscriptionPlanPage() {
   const [plan, setPlan] = useState<SubscriptionPlan | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const planId = decodeURIComponent(params.plan[0] as string);
+  const planId = decodeURIComponent(params.plan?.[0] as string);
   const isEditMode = planId.startsWith('company-') || planId.startsWith('candidate-');
   const planTypeFromUrl = isEditMode ? planId.split('-')[0] : 'company';
   const planNameFromUrl = planId.split('-').slice(1).join('-') || 'Enterprise';

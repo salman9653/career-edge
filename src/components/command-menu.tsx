@@ -103,7 +103,7 @@ const useCommandHistory = () => {
         }
     }, [getHistory]);
 
-    const getSuggestions = React.useCallback((allCommands: CommandItem[], role: UserSession['role']) => {
+    const getSuggestions = React.useCallback((allCommands: CommandItem[], role: UserSession['role'] | undefined) => {
         const history = getHistory();
         const historyItems = Object.values(history);
         

@@ -60,7 +60,7 @@ export default function ApplyWithLinkPage() {
 
     const selectedBenefits = useMemo(() => {
         if (!company?.benefits) return [];
-        return allBenefits.filter(b => company.benefits.includes(b.id));
+        return allBenefits.filter(b => company.benefits?.includes(b.id));
     }, [company?.benefits]);
 
     const getWebsiteUrl = (url?: string) => {

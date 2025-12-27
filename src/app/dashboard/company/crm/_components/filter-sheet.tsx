@@ -35,7 +35,7 @@ export function FilterSheet({ filters, onFilterChange, availableTags, availableL
   }, [filters, isOpen]);
 
   const handleCheckedChange = (
-    category: keyof CrmFilterState,
+    category: 'tags' | 'location' | 'source',
     value: string,
     checked: boolean
   ) => {
