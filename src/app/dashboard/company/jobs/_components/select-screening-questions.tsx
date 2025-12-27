@@ -26,12 +26,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Textarea } from '@/components/ui/textarea';
 
-const initialState: {
+interface ScreeningQuestionState {
   error?: string | null;
-  success: boolean;
+  success?: boolean;
   newQuestionId?: string | null;
   from?: string | null;
-} = {
+}
+
+const initialState: ScreeningQuestionState = {
   error: null,
   success: false,
   newQuestionId: null,
@@ -59,7 +61,7 @@ export function SelectScreeningQuestions({ open, onOpenChange, selectedQuestions
   const { questions: allQuestions, loading: questionsLoading } = useContext(QuestionContext);
   
   const [view, setView] = useState<'list' | 'form'>('list');
-  const [state, formAction] = useActionState(addQuestionAction, initialState);
+  const [state, formAction] = useActionState<ScreeningQuestionState, FormData>(addQuestionAction, initialState);
   
   const [questionText, setQuestionText] = useState('');
   const [options, setOptions] = useState<string[]>(['', '']);
@@ -209,7 +211,7 @@ export function SelectScreeningQuestions({ open, onOpenChange, selectedQuestions
               <input type="hidden" name="type" value="screening" />
               <input type="hidden" name="libraryType" value="custom" />
               <input type="hidden" name="addedBy" value={session?.uid} />
-              <input type="hidden" name="addedByName" value={session?.displayName} />
+              <input type="hidden" name="addedByName" value={session?.name} />
               <input type="hidden" name="from" value="screening" />
 
               <div className="space-y-2">

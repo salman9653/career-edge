@@ -66,7 +66,7 @@ export function UpdateAvatarCard() {
         <CardContent className="flex items-center gap-4">
           <Avatar className="h-20 w-20">
              <AvatarImage src={session?.role === 'company' ? `https://logo.clearbit.com/${session.email}` : `https://i.pravatar.cc/150?u=${session?.uid}`} />
-             <AvatarFallback>{getInitials(session?.displayName || null)}</AvatarFallback>
+             <AvatarFallback>{getInitials(session?.name || null)}</AvatarFallback>
           </Avatar>
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Input id="avatar-upload" name="avatar" type="file" accept="image/*" />

@@ -49,7 +49,7 @@ const AppearanceSettings = () => {
     const handleThemeModeChange = async (mode: 'light' | 'dark' | 'system') => {
         setNextTheme(mode);
         if (session) {
-            const newPreferences = { ...session.preferences, themeMode: mode };
+            const newPreferences = { themeColor: "violet", ...(session?.preferences || {}), themeMode: mode };
             updateSession({ preferences: newPreferences });
             await updateThemePreferencesAction({ themeMode: mode });
         }
@@ -343,7 +343,7 @@ const SecuritySettings = () => {
     }
 }
 
-const feedbackInitialState = { error: null, success: false };
+const feedbackInitialState: ActionState = { error: null, success: false };
 
 function FeedbackSubmitButton() {
   const { pending } = useFormStatus();
@@ -364,7 +364,7 @@ const HelpSettings = () => {
     const [contactInfo, setContactInfo] = useState<{email: string, phone: string, phoneAvailable: string, address: string} | null>(null);
     const [termsContent, setTermsContent] = useState<string | null>(null);
     const [policyContent, setPolicyContent] = useState<string | null>(null);
-    const [feedbackState, feedbackFormAction] = useActionState(submitFeedbackAction, feedbackInitialState);
+    const [feedbackState, feedbackFormAction] = useActionState<ActionState, FormData>(submitFeedbackAction, feedbackInitialState);
     const feedbackFormRef = useRef<HTMLFormElement>(null);
     const { session } = useSession();
     const { toast } = useToast();
@@ -509,7 +509,7 @@ const HelpSettings = () => {
                     </div>
                     <input type="hidden" name="rating" value={rating} />
                     <input type="hidden" name="feedbackBy" value={session?.uid} />
-                    <input type="hidden" name="feedbackByName" value={session?.displayName} />
+                    <input type="hidden" name="feedbackByName" value={session?.name} />
                     <Textarea 
                         name="feedbackContent"
                         placeholder="Tell us what you think..." 
@@ -645,6 +645,13 @@ function SubmitButton() {
   );
 }
 
+type ActionState = {
+  error?: string | null;
+  success?: string | boolean | null;
+};
+
+const initialState: ActionState = { error: null, success: false };
+
 const PlatformSettings = () => {
     const [view, setView] = useState('main');
     const [whatsNewContent, setWhatsNewContent] = useState('');
@@ -657,11 +664,11 @@ const PlatformSettings = () => {
     const [termsContent, setTermsContent] = useState('');
     const [policyContent, setPolicyContent] = useState('');
 
-    const [whatsNewState, whatsNewFormAction] = useActionState(updateWhatsNewAction, initialState);
-    const [aboutState, aboutFormAction] = useActionState(updateAboutPlatformAction, initialState);
-    const [contactState, contactFormAction] = useActionState(updateContactInfoAction, initialState);
-    const [termsState, termsFormAction] = useActionState(updateTermsAction, initialState);
-    const [policyState, policyFormAction] = useActionState(updatePolicyAction, initialState);
+    const [whatsNewState, whatsNewFormAction] = useActionState<ActionState, FormData>(updateWhatsNewAction, initialState);
+    const [aboutState, aboutFormAction] = useActionState<ActionState, FormData>(updateAboutPlatformAction, initialState);
+    const [contactState, contactFormAction] = useActionState<ActionState, FormData>(updateContactInfoAction, initialState);
+    const [termsState, termsFormAction] = useActionState<ActionState, FormData>(updateTermsAction, initialState);
+    const [policyState, policyFormAction] = useActionState<ActionState, FormData>(updatePolicyAction, initialState);
 
     const { toast } = useToast();
 

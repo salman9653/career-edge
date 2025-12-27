@@ -22,10 +22,12 @@ import { GradientButton } from '@/components/ui/gradient-button';
 import { generateAiInterviewAction } from '@/app/actions';
 import { useSession } from '@/hooks/use-session';
 
-const initialState: {
+interface AiInterviewState {
   error?: string | null;
   success?: boolean;
-} = {
+}
+
+const initialState: AiInterviewState = {
   error: null,
   success: false,
 };
@@ -45,7 +47,7 @@ interface GenerateAiInterviewDialogProps {
 }
 
 export function GenerateAiInterviewDialog({ open, onOpenChange }: GenerateAiInterviewDialogProps) {
-  const [state, formAction] = useActionState(generateAiInterviewAction, initialState);
+  const [state, formAction] = useActionState<AiInterviewState, FormData>(generateAiInterviewAction, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const { session } = useSession();
@@ -70,9 +72,9 @@ export function GenerateAiInterviewDialog({ open, onOpenChange }: GenerateAiInte
           </DialogDescription>
         </DialogHeader>
         <form action={formAction} ref={formRef}>
-          <input type="hidden" name="createdBy" value={session?.uid} />
-          <input type="hidden" name="createdByName" value={session?.displayName} />
-          <input type="hidden" name="companyId" value={companyId} />
+          <input type="hidden" name="createdBy" value={session?.uid || ''} />
+          <input type="hidden" name="createdByName" value={session?.name || session?.displayName || ''} />
+          <input type="hidden" name="companyId" value={companyId || ''} />
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
                 <Label htmlFor="jobTitle">Job Title</Label>

@@ -44,7 +44,7 @@ const GradientButton = React.forwardRef<HTMLButtonElement, GradientButtonProps>(
     
     const button = (
         <Button
-            className={cn(gradientButtonVariants({ variant, size }), className)}
+            className={cn(gradientButtonVariants({ variant: variant as any, size }), className)}
             ref={ref}
             {...props}
         />

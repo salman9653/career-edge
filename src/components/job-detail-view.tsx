@@ -85,7 +85,8 @@ export const JobDetailView = ({ job, company, applicantData, allJobs }: JobDetai
 
         const firstRound = job?.rounds?.[0];
         if (firstRound?.type === 'screening' && firstRound.questionIds && !questionsLoading) {
-            const screeningQs = allQuestions.filter(q => firstRound.questionIds.includes(q.id));
+            const qIds = firstRound.questionIds;
+            const screeningQs = allQuestions.filter(q => qIds.includes(q.id));
             setScreeningQuestions(screeningQs);
             setIsScreeningOpen(true);
         } else {
@@ -99,7 +100,7 @@ export const JobDetailView = ({ job, company, applicantData, allJobs }: JobDetai
       const result = await applyForJobAction({
         jobId: job.id,
         candidateId: session.uid,
-        candidateName: session.displayName,
+        candidateName: session.displayName || session.name || 'Candidate',
         candidateEmail: session.email,
         answers,
       });

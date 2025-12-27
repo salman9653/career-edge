@@ -22,11 +22,13 @@ import { useSession } from '@/hooks/use-session';
 import { useRouter } from 'next/navigation';
 import { Textarea } from '@/components/ui/textarea';
 
-const initialState: {
+interface CreateAssessmentState {
   error?: string | null;
   success?: boolean;
   assessmentId?: string;
-} = {
+}
+
+const initialState: CreateAssessmentState = {
   error: null,
   success: false,
 };
@@ -47,7 +49,7 @@ interface CreateAssessmentDialogProps {
 }
 
 export function CreateAssessmentDialog({ open, onOpenChange, assessmentType }: CreateAssessmentDialogProps) {
-  const [state, formAction] = useActionState(createAssessmentAction, initialState);
+  const [state, formAction] = useActionState<CreateAssessmentState, FormData>(createAssessmentAction, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const { session } = useSession();
@@ -84,8 +86,8 @@ export function CreateAssessmentDialog({ open, onOpenChange, assessmentType }: C
           </DialogDescription>
         </DialogHeader>
         <form action={formAction} ref={formRef}>
-          <input type="hidden" name="createdBy" value={session?.uid} />
-          <input type="hidden" name="createdByName" value={session?.displayName} />
+          <input type="hidden" name="createdBy" value={session?.uid || ''} />
+          <input type="hidden" name="createdByName" value={session?.name || session?.displayName || ''} />
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
                 <Label htmlFor="name">Assessment Name*</Label>

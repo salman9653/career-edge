@@ -150,7 +150,7 @@ export default function JobDetailsPage() {
   const locationDisplay = job.preference === 'Remote' ? 'Remote' : `${job.location} (${job.preference})`;
   const getRoundQuestions = (round: Round): Question[] => {
     if (round.type !== 'screening' || !round.questionIds) return [];
-    return allQuestions.filter(q => round.questionIds.includes(q.id));
+    return allQuestions.filter(q => round.questionIds?.includes(q.id) || false);
   };
 
 
@@ -193,7 +193,7 @@ export default function JobDetailsPage() {
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
-                            <ShareButtonGroup jobTitle={job.title} companyName={session?.displayName || ''} jobLink={getJobLink()} />
+                            <ShareButtonGroup jobTitle={job.title} companyName={session?.name || ''} jobLink={getJobLink()} />
                             <Button variant="secondary" size="sm" asChild>
                                 <Link href={`/dashboard/company/jobs/edit/${job.id}`}>
                                     <Edit className="h-4 w-4 mr-2" />
@@ -325,7 +325,7 @@ export default function JobDetailsPage() {
                             jobId={job.id} 
                             jobTitle={job.title}
                             jobDescription={job.description}
-                            companyName={session?.displayName || ''}
+                            companyName={session?.name || ''}
                         />
                     </TabsContent>
                 </Tabs>

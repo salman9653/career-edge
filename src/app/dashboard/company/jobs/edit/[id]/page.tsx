@@ -237,7 +237,7 @@ export default function EditJobPage() {
         return rest;
       });
 
-      await updateJobAction(jobId, jobData, finalRounds);
+      await updateJobAction(jobId, jobData as any, finalRounds);
       
       setIsSubmitting(false);
   }

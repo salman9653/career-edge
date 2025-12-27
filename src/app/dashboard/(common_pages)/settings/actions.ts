@@ -11,7 +11,7 @@ interface UserPreferences {
 }
 
 export async function updateThemePreferencesAction(preferences: UserPreferences) {
-    const sessionCookie = cookies().get('firebase-session');
+    const sessionCookie = (await cookies()).get('firebase-session');
     if (!sessionCookie) {
         return { error: 'User not authenticated.' };
     }

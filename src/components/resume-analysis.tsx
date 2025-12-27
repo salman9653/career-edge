@@ -12,10 +12,12 @@ import { cn } from "@/lib/utils";
 import { useSession } from "@/hooks/use-session";
 import { GradientButton } from "./ui/gradient-button";
 
-const initialState: {
+interface State {
   analysisId?: string;
   error?: string;
-} = {};
+}
+
+const initialState: State = {};
 
 interface ResumeAnalysisProps {
   jobId: string;
@@ -28,7 +30,7 @@ interface ResumeAnalysisProps {
 export function ResumeAnalysis({ jobId, jobTitle, jobDescription, companyName, view = 'drag-and-drop' }: ResumeAnalysisProps) {
   const router = useRouter();
   const { session } = useSession();
-  const [state, formAction] = useActionState(analyzeAndSaveResumeAction, initialState);
+  const [state, formAction] = useActionState<State, FormData>(analyzeAndSaveResumeAction, initialState);
   const [isPending, startTransition] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);

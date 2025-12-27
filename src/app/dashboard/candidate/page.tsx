@@ -109,7 +109,7 @@ interface UpcomingSchedule {
   roundName: string;
   roundType: string;
   dueDate: string;
-  status: 'Pending' | 'Attempted';
+  status: 'Pending' | 'Attempted' | 'Completed';
 }
 
 const CandidateDashboard = ({ user }: { user: any }) => {

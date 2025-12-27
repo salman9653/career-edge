@@ -10,7 +10,12 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
-const initialState = {
+type ActionState = {
+  error?: string | null;
+  success?: string | null;
+};
+
+const initialState: ActionState = {
   error: null,
   success: null,
 };
@@ -25,7 +30,7 @@ function SubmitButton() {
 }
 
 export function ChangePasswordCard() {
-  const [state, formAction] = useActionState(changePasswordAction, initialState);
+  const [state, formAction] = useActionState<ActionState, FormData>(changePasswordAction, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   

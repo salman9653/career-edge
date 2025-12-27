@@ -40,18 +40,27 @@ type QuestionFormLayoutProps = {
   config: QuestionFormConfig;
 };
 
-const addInitialState = {
+interface AddQuestionState {
+  error?: string | null;
+  success?: boolean;
+  newQuestionId?: string;
+  from?: string;
+}
+
+const addInitialState: AddQuestionState = {
   error: null,
   success: false,
 };
 
-const aiInitialState: {
+interface AiGenerateState {
   error?: string | null;
-  success: boolean;
+  success?: boolean;
   numQuestions?: number;
   questionType?: string;
   difficulty?: string;
-} = {
+}
+
+const aiInitialState: AiGenerateState = {
   error: null,
   success: false,
 };
@@ -82,8 +91,8 @@ function AiGenerateButton() {
 
 export function QuestionFormLayout({ config }: QuestionFormLayoutProps) {
   const { session, loading } = useSession();
-  const [addState, addFormAction] = useActionState(addQuestionAction, addInitialState);
-  const [aiState, aiFormAction] = useActionState(generateQuestionsAction, aiInitialState);
+  const [addState, addFormAction] = useActionState<AddQuestionState, FormData>(addQuestionAction, addInitialState);
+  const [aiState, aiFormAction] = useActionState<AiGenerateState, FormData>(generateQuestionsAction, aiInitialState);
   
   const router = useRouter();
   const searchParams = useSearchParams();

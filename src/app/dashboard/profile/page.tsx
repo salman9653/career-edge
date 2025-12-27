@@ -1,7 +1,7 @@
 
 'use client';
 import { useState, useEffect } from 'react';
-import { useSession } from '@/hooks/use-session';
+import { useSession, type UserSession } from '@/hooks/use-session';
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { Skeleton } from '@/components/ui/skeleton';
 import { doc, onSnapshot, getDoc } from 'firebase/firestore';
@@ -139,7 +139,7 @@ export default function ProfilePage() {
     }
   }
 
-  const getProfileTitle = (role: 'candidate' | 'company' | 'admin' | 'manager' | undefined) => {
+  const getProfileTitle = (role: 'candidate' | 'company' | 'admin' | 'manager' | 'adminAccountManager' | undefined) => {
     if (!role) return 'Profile';
     switch (role) {
       case 'candidate':

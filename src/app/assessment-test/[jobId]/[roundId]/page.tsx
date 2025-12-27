@@ -90,7 +90,8 @@ export default function AssessmentStartPage() {
                         }
                     }
                     
-                    const dueDate = schedule.dueDate.toDate ? schedule.dueDate.toDate() : new Date(schedule.dueDate);
+                    const scheduleDueDate: any = schedule.dueDate;
+                    const dueDate = scheduleDueDate.toDate ? scheduleDueDate.toDate() : new Date(scheduleDueDate);
                     const hasExpired = new Date() > dueDate;
                     
                     const details: AssessmentDetails = {
@@ -173,10 +174,10 @@ export default function AssessmentStartPage() {
                             <div className="flex items-center gap-3 rounded-lg p-3 bg-muted/50 justify-center">
                                 <Avatar className="h-10 w-10">
                                     <AvatarImage src={session?.displayImageUrl ?? undefined} />
-                                    <AvatarFallback className="text-sm bg-background text-muted-foreground">{getInitials(session?.displayName)}</AvatarFallback>
+                                    <AvatarFallback className="text-sm bg-background text-muted-foreground">{getInitials(session?.name)}</AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <p className="font-semibold text-sm">{session?.displayName}</p>
+                                    <p className="font-semibold text-sm">{session?.name}</p>
                                     <p className="text-xs text-muted-foreground">{session?.email}</p>
                                 </div>
                             </div>

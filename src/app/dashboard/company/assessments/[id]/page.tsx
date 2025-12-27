@@ -42,7 +42,12 @@ import { EditAssessmentDialog } from '../_components/edit-assessment-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 
-const initialState = {
+interface UpdateAssessmentQuestionsState {
+  error?: string | null;
+  success?: boolean;
+}
+
+const initialState: UpdateAssessmentQuestionsState = {
   error: null,
   success: false,
 };
@@ -95,7 +100,7 @@ export default function AssessmentDetailPage() {
     const { toast } = useToast();
     const { questions: allQuestions, loading: questionsLoading } = useContext(QuestionContext);
     
-    const [state, formAction] = useActionState(updateAssessmentQuestionsAction, initialState);
+    const [state, formAction] = useActionState<UpdateAssessmentQuestionsState, FormData>(updateAssessmentQuestionsAction, initialState);
     const [assessment, setAssessment] = useState<Assessment | null>(null);
     const [loading, setLoading] = useState(true);
     const [isSheetOpen, setIsSheetOpen] = useState(false);

@@ -21,7 +21,12 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useMemo } from 'react';
 
-const initialState = {
+interface CouponState {
+  error?: string | null;
+  success?: boolean;
+}
+
+const initialState: CouponState = {
   error: null,
   success: false,
 };
@@ -38,7 +43,7 @@ function SubmitButton() {
 export default function NewCouponPage() {
   const { session, loading: sessionLoading } = useSession();
   const { plans, loading: plansLoading } = useContext(SubscriptionContext);
-  const [state, formAction] = useActionState(addCouponAction, initialState);
+  const [state, formAction] = useActionState<CouponState, FormData>(addCouponAction, initialState);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -166,7 +171,7 @@ export default function NewCouponPage() {
                             mode="range"
                             defaultMonth={dateRange.from}
                             selected={dateRange}
-                            onSelect={setDateRange}
+                            onSelect={setDateRange as any}
                             numberOfMonths={1}
                           />
                         </PopoverContent>

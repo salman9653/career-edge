@@ -12,7 +12,11 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, Loader2, Eye, EyeOff } from "lucide-react"
 import { useSearchParams } from "next/navigation";
 
-const initialState = {
+interface CandidateSignupState {
+  error?: string | null;
+}
+
+const initialState: CandidateSignupState = {
   error: null,
 };
 
@@ -30,7 +34,7 @@ function SubmitButton() {
 }
 
 function CandidateSignupForm() {
-    const [state, formAction] = useActionState(signUpCandidate, initialState);
+    const [state, formAction] = useActionState<CandidateSignupState, FormData>(signUpCandidate, initialState);
     const searchParams = useSearchParams();
     const redirectJobId = searchParams.get('redirectJobId');
     const [showPassword, setShowPassword] = useState(false);

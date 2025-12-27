@@ -39,7 +39,7 @@ interface QuestionDetailSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   question: Question | null;
-  context: 'assessment' | 'question-bank';
+  context: 'assessment' | 'question-bank' | 'admin';
 }
 
 export function QuestionDetailSheet({ open, onOpenChange, question: initialQuestion, context }: QuestionDetailSheetProps) {

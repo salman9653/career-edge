@@ -229,7 +229,7 @@ export function JobsTable() {
       if (!job) return;
       const shareData = {
         title: `Job Opening: ${job.title}`,
-        text: `We're hiring for a ${job.title} at ${session?.displayName}. Check it out:`,
+        text: `We're hiring for a ${job.title} at ${session?.name}. Check it out:`,
         url: getJobLink(job.id),
       };
       try {
@@ -245,7 +245,7 @@ export function JobsTable() {
   
     const handleShareViaWhatsApp = (job: Job) => {
       if (!job) return;
-      const message = `Hello! We're hiring for a *${job.title}* at *${session?.displayName}*. We think you could be a great fit for this role.
+      const message = `Hello! We're hiring for a *${job.title}* at *${session?.name}*. We think you could be a great fit for this role.
 
 Find more details and apply here:
 ${getJobLink(job.id)}
@@ -253,17 +253,17 @@ ${getJobLink(job.id)}
 We look forward to your application!
 
 Best regards,
-The ${session?.displayName} Team`;
+The ${session?.name} Team`;
       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
       window.open(whatsappUrl, '_blank');
     };
   
     const handleShareViaEmail = (job: Job) => {
       if (!job) return;
-      const subject = `Job Opportunity: ${job.title} at ${session?.displayName}`;
+      const subject = `Job Opportunity: ${job.title} at ${session?.name}`;
       const body = `Hello,
 
-We are currently hiring for the position of **${job.title}** at **${session?.displayName}**. We came across your profile and believe you could be a great fit for our team.
+We are currently hiring for the position of **${job.title}** at **${session?.name}**. We came across your profile and believe you could be a great fit for our team.
 
 You can view the full job description and apply directly through the link below:
 ${getJobLink(job.id)}
@@ -272,7 +272,7 @@ We look forward to reviewing your application.
 
 Best regards,
 The Hiring Team
-${session?.displayName}`;
+${session?.name}`;
       const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       window.location.href = mailtoUrl;
     };

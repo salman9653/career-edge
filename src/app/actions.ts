@@ -12,7 +12,7 @@ import type { Price, Round, Job, AiInterview, Employment } from "@/lib/types";
 import { updateProfile, reauthenticateWithCredential, EmailAuthProvider, updatePassword } from "firebase/auth";
 import { randomUUID } from 'crypto';
 import { careerChat } from "@/ai/flows/career-chat-flow";
-import { streamText } from 'genkit';
+import { ai } from '@/ai/genkit';
 import type { CareerChatInput } from "@/ai/flows/career-chat-flow-types";
 import { generateAiInterview } from '@/ai/flows/generate-ai-interview-flow';
 import type { GenerateAiInterviewInput } from '@/ai/flows/generate-ai-interview-flow-types';
@@ -33,7 +33,7 @@ async function fileToDataURI(file: File) {
 }
 
 export async function careerChatAction(input: CareerChatInput) {
-  const stream = await streamText({
+  const { stream } = await ai.generateStream({
     prompt: `You are Career AI, a helpful and friendly AI assistant for job seekers and hiring managers. Your goal is to provide concise, relevant, and encouraging advice.
 
 You are chatting with ${input.userName}, who is a ${input.userRole}.
@@ -48,7 +48,7 @@ ${input.message}`,
     model: 'googleai/gemini-2.5-flash',
   });
 
-  return stream.textStream;
+  return stream;
 }
 
 export async function analyzeAndSaveResumeAction(
@@ -1092,12 +1092,12 @@ export async function deleteAssessmentAction(assessmentId: string) {
     redirect('/dashboard/company/assessments');
 }
 
-export async function createJobAction(jobData: Omit<Job, 'id' | 'datePosted' | 'recruiter' | 'applicants' >, rounds: Round[], createdBy: string, createdByName: string) {
+export async function createJobAction(jobData: Omit<Job, 'id' | 'datePosted' | 'applicants' >, rounds: Round[], createdBy: string, createdByName: string) {
   if (!createdBy || !createdByName) {
     throw new Error('You must be logged in to create a job.');
   }
 
-  const { applicants, ...restOfJobData } = jobData;
+  const restOfJobData = jobData;
   
   // Create a combined string of important fields for searching
   const searchableString = [
@@ -1132,7 +1132,7 @@ export async function createJobAction(jobData: Omit<Job, 'id' | 'datePosted' | '
   redirect('/dashboard/company/jobs');
 }
     
-export async function updateJobAction(jobId: string, jobData: Omit<Job, 'id' | 'datePosted' | 'recruiter' | 'createdBy' | 'createdByName' | 'createdAt' | 'updatedAt' | 'status' | 'applicants'>, rounds: Round[]) {
+export async function updateJobAction(jobId: string, jobData: Omit<Job, 'id' | 'datePosted' | 'createdBy' | 'createdByName' | 'createdAt' | 'updatedAt' | 'status' | 'applicants'>, rounds: Round[]) {
   // Create a combined string of important fields for searching
   const searchableString = [
       jobData.title,
