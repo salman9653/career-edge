@@ -1,5 +1,5 @@
 
-'use client';
+
 
 import { MobileSearch } from "@/components/mobile-search"
 import { JobsTable } from "./_components/jobs-table";

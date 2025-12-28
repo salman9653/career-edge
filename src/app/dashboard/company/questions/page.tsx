@@ -1,5 +1,3 @@
-'use client';
-
 import { QuestionsListLayout } from '@/components/questions/questions-list-layout';
 
 const COMPANY_CONFIG = {
