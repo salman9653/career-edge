@@ -7,6 +7,37 @@ import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 
+interface HeroSectionProps {
+  badge: {
+    text: string;
+    bgColor: string;
+    textColor: string;
+  };
+  title: {
+    before: string;
+    highlight: string;
+    gradientFrom: string;
+    gradientTo: string;
+  };
+  description: string;
+  primaryCta: {
+    text: string;
+    href: string;
+    bgColor: string;
+    hoverColor: string;
+  };
+  secondaryCta: {
+    text: string;
+    href: string;
+  };
+  image: {
+    src: string;
+    alt: string;
+    gradientFrom: string;
+    gradientTo: string;
+  };
+}
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -28,7 +59,14 @@ const itemVariants = {
   },
 };
 
-export function HeroSection() {
+export function HeroSection({
+  badge,
+  title,
+  description,
+  primaryCta,
+  secondaryCta,
+  image,
+}: HeroSectionProps) {
   return (
     <section className="relative overflow-hidden py-20 md:py-32 lg:py-40">
       <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]"></div>
@@ -45,36 +83,40 @@ export function HeroSection() {
             <motion.div variants={itemVariants}>
               <Badge
                 variant="secondary"
-                className="px-4 py-2 text-sm rounded-full mb-4"
+                className={`px-4 py-2 text-sm rounded-full mb-4 ${badge.bgColor} ${badge.textColor}`}
               >
-                🚀 The Future of Hiring is Here
+                {badge.text}
               </Badge>
             </motion.div>
 
             <motion.h1
               variants={itemVariants}
-              className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl max-w-4xl bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60"
+              className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl max-w-4xl"
             >
-              Where Top Talent Meets <br className="hidden sm:inline" />
-              World-Class Opportunity
+              {title.before} <br className="hidden sm:inline" />
+              <span className={`bg-clip-text text-transparent bg-gradient-to-r ${title.gradientFrom} ${title.gradientTo}`}>
+                {title.highlight}
+              </span>
             </motion.h1>
 
             <motion.p
               variants={itemVariants}
               className="max-w-[700px] text-lg text-muted-foreground md:text-xl"
             >
-              Streamline your hiring process or find your dream job with our
-              AI-powered platform. Smart matching, seamless applications, and
-              powerful tools for everyone.
+              {description}
             </motion.p>
 
             <motion.div
               variants={itemVariants}
               className="flex flex-col sm:flex-row gap-4 min-w-[200px]"
             >
-              <Button size="lg" asChild className="h-12 px-8 text-lg">
-                <Link href="/signup">
-                  Get Started Now <ArrowRight className="ml-2 h-5 w-5" />
+              <Button
+                size="lg"
+                className={`h-12 px-8 text-lg ${primaryCta.bgColor} ${primaryCta.hoverColor}`}
+                asChild
+              >
+                <Link href={primaryCta.href}>
+                  {primaryCta.text} <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
               <Button
@@ -83,7 +125,7 @@ export function HeroSection() {
                 className="h-12 px-8 text-lg"
                 asChild
               >
-                <Link href="#features">Learn More</Link>
+                <Link href={secondaryCta.href}>{secondaryCta.text}</Link>
               </Button>
             </motion.div>
           </motion.div>
@@ -95,11 +137,11 @@ export function HeroSection() {
             className="relative hidden lg:block"
           >
             <div className="relative w-full aspect-square max-w-[500px] mx-auto">
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-purple-500/20 rounded-full blur-3xl animate-pulse" />
+              <div className={`absolute inset-0 bg-gradient-to-tr ${image.gradientFrom} ${image.gradientTo} rounded-full blur-3xl animate-pulse`} />
               <div className="relative z-10 mix-blend-screen">
                 <Image
-                  src="/images/hero-home-black.png"
-                  alt="Future of Hiring"
+                  src={image.src}
+                  alt={image.alt}
                   width={600}
                   height={600}
                   className="object-contain drop-shadow-2xl"

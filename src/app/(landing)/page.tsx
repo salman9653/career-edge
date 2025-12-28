@@ -17,7 +17,36 @@ export default function Home() {
   return (
     <>
       {/* Hero Section */}
-      <HeroSection />
+      <HeroSection
+        badge={{
+          text: "🚀 The Future of Hiring is Here",
+          bgColor: "bg-secondary",
+          textColor: "text-secondary-foreground",
+        }}
+        title={{
+          before: "Where Top Talent Meets",
+          highlight: "World-Class Opportunity",
+          gradientFrom: "from-primary",
+          gradientTo: "to-primary/60",
+        }}
+        description="Streamline your hiring process or find your dream job with our AI-powered platform. Smart matching, seamless applications, and powerful tools for everyone."
+        primaryCta={{
+          text: "Get Started Now",
+          href: "/signup",
+          bgColor: "bg-primary",
+          hoverColor: "hover:bg-primary/90",
+        }}
+        secondaryCta={{
+          text: "Learn More",
+          href: "#features",
+        }}
+        image={{
+          src: "/images/hero-home-black.png",
+          alt: "Future of Hiring",
+          gradientFrom: "from-primary/20",
+          gradientTo: "to-purple-500/20",
+        }}
+      />
 
       {/* Features Section - Zig Zag */}
       <section id="features" className="py-20 bg-secondary/30">
