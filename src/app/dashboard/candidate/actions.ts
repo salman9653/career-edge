@@ -6,6 +6,8 @@ import { db } from '@/lib/firebase/config';
 import { revalidatePath } from 'next/cache';
 import { UserSession } from '@/hooks/use-session';
 import type { Question, Job, Round, ApplicantRoundResult, Schedule, Applicant } from '@/lib/types';
+import { getCandidateApplications } from '@/lib/data/applications';
+import { getJobs } from '@/lib/data/jobs';
 
 interface ApplyForJobInput {
   jobId: string;
@@ -350,5 +352,77 @@ export async function submitAssessmentFeedbackAction(input: SubmitFeedbackInput)
     } catch (error: any) {
         console.error("Error submitting feedback:", error);
         return { error: "Failed to submit feedback." };
+    }
+}
+
+export async function fetchCandidateDashboardData(userId: string) {
+    try {
+        if (!userId) {
+            console.warn("fetchCandidateDashboardData called without userId");
+            return {
+                applications: [],
+                stats: {
+                    totalApplications: 0,
+                    activeJobs: 0,
+                    pendingSchedules: 0,
+                    attemptedAssessments: 0
+                }
+            };
+        }
+
+        // Parallel fetch
+        const [applications, allJobs] = await Promise.all([
+            getCandidateApplications(userId),
+            getJobs()
+        ]);
+
+        const dashboardApps = applications.map(app => {
+            const applicant = app.application as Applicant;
+            const job = app.jobData as Job;
+            
+            // Enrich schedules with round info
+            const enrichedSchedules = (applicant.schedules || []).map(schedule => {
+                const round = job.rounds?.find(r => r.id === schedule.roundId);
+                return {
+                    ...schedule,
+                    roundName: round?.name || `Round ${schedule.roundId + 1}`,
+                    roundType: round?.type || 'unknown'
+                };
+            });
+
+            return {
+                jobId: app.jobId,
+                jobTitle: job.title,
+                status: applicant.status,
+                appliedAt: applicant.appliedAt,
+                schedules: enrichedSchedules
+            };
+        });
+
+        let pendingSchedulesCount = 0;
+        let attemptedAssessmentsCount = 0;
+
+        dashboardApps.forEach(app => {
+            if (app.schedules) {
+                app.schedules.forEach((sch: any) => {
+                    if (sch.status === 'Pending') pendingSchedulesCount++;
+                    if (sch.status === 'Attempted' || sch.status === 'Completed') attemptedAssessmentsCount++;
+                });
+            }
+        });
+
+        return {
+            applications: dashboardApps,
+            stats: {
+                totalApplications: applications.length,
+                activeJobs: allJobs.length,
+                pendingSchedules: pendingSchedulesCount,
+                attemptedAssessments: attemptedAssessmentsCount
+            }
+        };
+
+    } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+        throw new Error("Failed to fetch dashboard data");
     }
 }

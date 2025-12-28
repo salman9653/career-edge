@@ -1,7 +1,7 @@
 
 'use client';
 import { useSession } from '@/hooks/use-session';
-import { DashboardSidebar } from "@/components/dashboard-sidebar";
+
 import { MobileSearch } from '@/components/mobile-search';
 import { useContext, useEffect, useState, Suspense, useMemo } from 'react';
 import type { Job, Applicant, Company } from '@/lib/types';
