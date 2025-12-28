@@ -169,18 +169,15 @@ export default function AssessmentDetailPage() {
 
     if (sessionLoading || loading) {
          return (
-            <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-                {session && <DashboardSidebar role={session.role} user={session} />}
-                <div className="flex flex-col max-h-screen">
-                    <header className="flex h-16 shrink-0 items-center gap-4 border-b bg-background px-4 md:px-6 sticky top-0 z-30">
-                        <Skeleton className="h-6 w-48" />
-                    </header>
-                    <main className="flex flex-1 flex-col gap-4 overflow-auto p-4 md:gap-6 md:p-6 custom-scrollbar">
-                       <Skeleton className="w-full h-12 rounded-lg" />
-                       <Skeleton className="w-full h-[300px] rounded-lg" />
-                    </main>
-                </div>
-            </div>
+            <>
+                <header className="flex h-16 shrink-0 items-center gap-4 border-b bg-background px-4 md:px-6 sticky top-0 z-30">
+                    <Skeleton className="h-6 w-48" />
+                </header>
+                <main className="flex flex-1 flex-col gap-4 overflow-auto p-4 md:gap-6 md:p-6 custom-scrollbar">
+                   <Skeleton className="w-full h-12 rounded-lg" />
+                   <Skeleton className="w-full h-[300px] rounded-lg" />
+                </main>
+            </>
         )
     }
 
@@ -252,141 +249,136 @@ export default function AssessmentDetailPage() {
             assessment={assessment}
         />
         
-        <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-            <DashboardSidebar role={session.role} user={session} />
-            <div className="flex flex-col max-h-screen">
-                <header className="flex h-16 shrink-0 items-center gap-4 border-b bg-background px-4 md:px-6 sticky top-0 z-30">
-                    <div className="flex items-center gap-2 flex-1">
-                        <Button variant="ghost" size="icon" onClick={() => router.push('/dashboard/company/templates')}>
-                            <ArrowLeft className="h-5 w-5" />
-                            <span className="sr-only">Back</span>
-                        </Button>
-                        <h1 className="font-headline text-xl font-semibold truncate">{assessment.name}</h1>
-                    </div>
-                </header>
-                <main className="flex flex-1 flex-col gap-4 p-4 md:p-6 custom-scrollbar">
-                    <div className="flex flex-col md:hidden gap-4">
-                        <Card className="relative bg-muted">
-                             <Button variant="ghost" size="icon" onClick={() => setIsEditDialogOpen(true)} className="absolute top-2 right-2 text-dash-primary">
-                                <Edit className="h-4 w-4" />
-                            </Button>
-                            <CardContent className="p-4 space-y-1">
-                                <p className="text-sm"><span className="text-muted-foreground">Assessment Name:</span> <span className="font-semibold">{assessment.name}</span></p>
-                                <p className="text-sm"><span className="text-muted-foreground">Assessment Type:</span> <span className="font-semibold capitalize">{assessment.assessmentType}</span></p>
-                            </CardContent>
-                        </Card>
-                         <div className="flex items-center gap-2 w-full">
-                             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                                <AlertDialogTrigger asChild>
-                                    <Button variant="destructive" size="sm" className="w-full">
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        Delete
-                                    </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            This action cannot be undone. This will permanently delete this assessment and all of its associated data.
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={handleDelete} disabled={isDeletePending} className="bg-destructive hover:bg-destructive/90">
-                                            {isDeletePending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                            Delete
-                                        </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
-                            <Button size="sm" onClick={() => setIsSheetOpen(true)} className="w-full">
-                                <PlusCircle className="mr-2 h-4 w-4" />
-                                Add Questions
-                            </Button>
-                        </div>
-                    </div>
-                    <div className="hidden md:flex flex-col md:flex-row items-start md:items-center md:justify-between gap-4">
-                        <div className="flex items-center bg-muted text-sm rounded-full w-full md:w-auto">
-                            <div className="flex items-center gap-2 p-2 px-4">
-                                <span className="text-muted-foreground">Assessment Name:</span>
-                                <span className="font-semibold">{assessment.name}</span>
-                            </div>
-                            <Separator orientation="vertical" className="h-4" />
-                            <div className="flex items-center gap-2 p-2 px-4">
-                                <span className="text-muted-foreground">Assessment Type:</span>
-                                <span className="font-semibold capitalize">{assessment.assessmentType}</span>
-                            </div>
-                            <Separator orientation="vertical" className="h-full hidden md:block" />
-                            <div className="pr-2 hidden md:block">
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Button variant="ghost" size="icon" onClick={() => setIsEditDialogOpen(true)} className="h-10 w-10 rounded-full text-dash-primary">
-                                                <Edit className="h-4 w-4" />
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>Edit assessment details</p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2 w-full md:w-auto">
-                             <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                                <AlertDialogTrigger asChild>
-                                    <Button variant="destructive" size="sm" className="w-full md:w-auto">
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        Delete
-                                    </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            This action cannot be undone. This will permanently delete this assessment and all of its associated data.
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={handleDelete} disabled={isDeletePending} className="bg-destructive hover:bg-destructive/90">
-                                            {isDeletePending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                            Delete
-                                        </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
-                            <Button size="sm" onClick={() => setIsSheetOpen(true)} className="w-full md:w-auto">
-                                <PlusCircle className="mr-2 h-4 w-4" />
-                                Add Questions
-                            </Button>
-                        </div>
-                    </div>
-                    
-                    <div className="mt-4">
-                        <div className="flex flex-col md:flex-row md:items-center md:justify-between py-4 gap-2">
-                            <h2 className="text-lg font-semibold">Questions in this Assessment</h2>
-                            {assessmentQuestions.length > 0 && <AssessmentStats questions={assessmentQuestions} />}
-                        </div>
-                        <div>
-                            {assessmentQuestions.length > 0 ? (
-                                <QuestionsTable questions={assessmentQuestions} loading={questionsLoading} context="assessment" />
-                            ) : (
-                                <div className="text-center py-12 border-2 border-dashed rounded-lg">
-                                    <Info className="mx-auto h-12 w-12 text-muted-foreground" />
-                                    <h3 className="mt-4 text-lg font-semibold">No Questions Yet</h3>
-                                    <p className="mt-1 text-sm text-muted-foreground">Click "Add Questions" to start building your assessment.</p>
-                                    <Button className="mt-6" onClick={() => setIsSheetOpen(true)}>
-                                        <PlusCircle className="mr-2 h-4 w-4" />
-                                        Add Questions
-                                    </Button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </main>
+        <header className="flex h-16 shrink-0 items-center gap-4 border-b bg-background px-4 md:px-6 sticky top-0 z-30">
+            <div className="flex items-center gap-2 flex-1">
+                <Button variant="ghost" size="icon" onClick={() => router.push('/dashboard/company/templates')}>
+                    <ArrowLeft className="h-5 w-5" />
+                    <span className="sr-only">Back</span>
+                </Button>
+                <h1 className="font-headline text-xl font-semibold truncate">{assessment.name}</h1>
             </div>
-        </div>
+        </header>
+        <main className="flex flex-1 flex-col gap-4 overflow-auto p-4 md:p-6 custom-scrollbar">
+            <div className="flex flex-col md:hidden gap-4">
+                <Card className="relative bg-muted">
+                     <Button variant="ghost" size="icon" onClick={() => setIsEditDialogOpen(true)} className="absolute top-2 right-2 text-dash-primary">
+                        <Edit className="h-4 w-4" />
+                    </Button>
+                    <CardContent className="p-4 space-y-1">
+                        <p className="text-sm"><span className="text-muted-foreground">Assessment Name:</span> <span className="font-semibold">{assessment.name}</span></p>
+                        <p className="text-sm"><span className="text-muted-foreground">Assessment Type:</span> <span className="font-semibold capitalize">{assessment.assessmentType}</span></p>
+                    </CardContent>
+                </Card>
+                 <div className="flex items-center gap-2 w-full">
+                     <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size="sm" className="w-full">
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete this assessment and all of its associated data.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleDelete} disabled={isDeletePending} className="bg-destructive hover:bg-destructive/90">
+                                    {isDeletePending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    Delete
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                    <Button size="sm" onClick={() => setIsSheetOpen(true)} className="w-full">
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Add Questions
+                    </Button>
+                </div>
+            </div>
+            <div className="hidden md:flex flex-col md:flex-row items-start md:items-center md:justify-between gap-4">
+                <div className="flex items-center bg-muted text-sm rounded-full w-full md:w-auto">
+                    <div className="flex items-center gap-2 p-2 px-4">
+                        <span className="text-muted-foreground">Assessment Name:</span>
+                        <span className="font-semibold">{assessment.name}</span>
+                    </div>
+                    <Separator orientation="vertical" className="h-4" />
+                    <div className="flex items-center gap-2 p-2 px-4">
+                        <span className="text-muted-foreground">Assessment Type:</span>
+                        <span className="font-semibold capitalize">{assessment.assessmentType}</span>
+                    </div>
+                    <Separator orientation="vertical" className="h-full hidden md:block" />
+                    <div className="pr-2 hidden md:block">
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" onClick={() => setIsEditDialogOpen(true)} className="h-10 w-10 rounded-full text-dash-primary">
+                                        <Edit className="h-4 w-4" />
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Edit assessment details</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    </div>
+                </div>
+                <div className="flex items-center gap-2 w-full md:w-auto">
+                     <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size="sm" className="w-full md:w-auto">
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete this assessment and all of its associated data.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleDelete} disabled={isDeletePending} className="bg-destructive hover:bg-destructive/90">
+                                    {isDeletePending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    Delete
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                    <Button size="sm" onClick={() => setIsSheetOpen(true)} className="w-full md:w-auto">
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Add Questions
+                    </Button>
+                </div>
+            </div>
+            
+            <div className="mt-4">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between py-4 gap-2">
+                    <h2 className="text-lg font-semibold">Questions in this Assessment</h2>
+                    {assessmentQuestions.length > 0 && <AssessmentStats questions={assessmentQuestions} />}
+                </div>
+                <div>
+                    {assessmentQuestions.length > 0 ? (
+                        <QuestionsTable questions={assessmentQuestions} loading={questionsLoading} context="assessment" />
+                    ) : (
+                        <div className="text-center py-12 border-2 border-dashed rounded-lg">
+                            <Info className="mx-auto h-12 w-12 text-muted-foreground" />
+                            <h3 className="mt-4 text-lg font-semibold">No Questions Yet</h3>
+                            <p className="mt-1 text-sm text-muted-foreground">Click "Add Questions" to start building your assessment.</p>
+                            <Button className="mt-6" onClick={() => setIsSheetOpen(true)}>
+                                <PlusCircle className="mr-2 h-4 w-4" />
+                                Add Questions
+                            </Button>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </main>
         </>
     );
 }

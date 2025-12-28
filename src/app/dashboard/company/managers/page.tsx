@@ -143,113 +143,108 @@ export default function CompanyManagersPage() {
         onOpenChange={setInviteLinkDialogOpen}
         inviteLink={inviteLink}
       />
-    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-      <DashboardSidebar role={session.role} user={session} />
-      <div className="flex flex-col max-h-screen">
-        <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b bg-background px-4 md:px-6 sticky top-0 z-30 md:static">
-            <h1 className="font-headline text-xl font-semibold md:ml-0 ml-12">Company Account Managers</h1>
-            <MobileSearch />
-        </header>
-        <main className="flex flex-1 flex-col gap-4 overflow-auto p-4 md:gap-6 md:p-6 custom-scrollbar">
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <CardTitle>Manage Team</CardTitle>
-                            <CardDescription>Manage who has access to your company's account.</CardDescription>
-                        </div>
-                        <Button onClick={() => setIsAddManagerOpen(true)}>
-                            <PlusCircle className="mr-2 h-4 w-4" />
-                            Add Manager
-                        </Button>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Avatar</TableHead>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Email</TableHead>
-                                <TableHead>Designation</TableHead>
-                                <TableHead>Role</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead><span className="sr-only">Actions</span></TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {managers.length > 0 ? (
-                                managers.map(manager => (
-                                <TableRow key={manager.id}>
-                                    <TableCell>
-                                        <Avatar>
-                                            <AvatarImage src={manager.avatar} />
-                                            <AvatarFallback>{getInitials(manager.name)}</AvatarFallback>
-                                        </Avatar>
-                                    </TableCell>
-                                    <TableCell className="font-medium">{manager.name}</TableCell>
-                                    <TableCell>{manager.email}</TableCell>
-                                    <TableCell>{manager.designation}</TableCell>
-                                    <TableCell><Badge variant="outline">{manager.permissions_role}</Badge></TableCell>
-                                    <TableCell><Badge variant={getStatusVariant(manager.status)} className="capitalize">{getStatusDisplay(manager.status)}</Badge></TableCell>
-                                    <TableCell>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon">
-                                                    <MoreVertical className="h-5 w-5" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent>
-                                                {manager.status === 'inactive' && <DropdownMenuItem onSelect={() => handleInvite(manager.id)} disabled={isInvitePending}>Invite</DropdownMenuItem>}
-                                                {manager.status === 'invited' && <DropdownMenuItem onSelect={() => handleInvite(manager.id)} disabled={isInvitePending}>Re-invite</DropdownMenuItem>}
-                                                 {manager.status === 'active' && (
-                                                    <DropdownMenuItem onClick={() => handleStatusUpdate(manager.id, 'banned')}>
-                                                        <ShieldX className="mr-2 h-4 w-4" />
-                                                        Block
-                                                    </DropdownMenuItem>
-                                                )}
-                                                {manager.status === 'banned' && (
-                                                    <DropdownMenuItem onClick={() => handleStatusUpdate(manager.id, 'active')}>
-                                                        <Shield className="mr-2 h-4 w-4" />
-                                                        Unblock
-                                                    </DropdownMenuItem>
-                                                )}
-                                                <DropdownMenuSub>
-                                                    <DropdownMenuSubTrigger>
-                                                        <UserCog className="mr-2 h-4 w-4" />
-                                                        Change Role
-                                                    </DropdownMenuSubTrigger>
-                                                    <DropdownMenuPortal>
-                                                        <DropdownMenuSubContent>
-                                                            <DropdownMenuItem onClick={() => handleRoleUpdate(manager.id, 'Admin')}>Admin</DropdownMenuItem>
-                                                            <DropdownMenuItem onClick={() => handleRoleUpdate(manager.id, 'Editor')}>Editor</DropdownMenuItem>
-                                                            <DropdownMenuItem onClick={() => handleRoleUpdate(manager.id, 'Viewer')}>Viewer</DropdownMenuItem>
-                                                        </DropdownMenuSubContent>
-                                                    </DropdownMenuPortal>
-                                                </DropdownMenuSub>
-                                                <DropdownMenuItem className="text-destructive" disabled>
-                                                     <Trash2 className="mr-2 h-4 w-4" />
-                                                    Delete
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </TableCell>
-                                </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={7} className="text-center h-24">
-                                        No account managers have been added yet.
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
-        </main>
-      </div>
-    </div>
+      <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b bg-background px-4 md:px-6 sticky top-0 z-30 md:static">
+        <h1 className="font-headline text-xl font-semibold md:ml-0 ml-12">Company Account Managers</h1>
+        <MobileSearch />
+      </header>
+      <main className="flex flex-1 flex-col gap-4 overflow-auto p-4 md:gap-6 md:p-6 custom-scrollbar">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Manage Team</CardTitle>
+                <CardDescription>Manage who has access to your company's account.</CardDescription>
+              </div>
+              <Button onClick={() => setIsAddManagerOpen(true)}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add Manager
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Avatar</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Designation</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead><span className="sr-only">Actions</span></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {managers.length > 0 ? (
+                  managers.map(manager => (
+                  <TableRow key={manager.id}>
+                    <TableCell>
+                      <Avatar>
+                        <AvatarImage src={manager.avatar} />
+                        <AvatarFallback>{getInitials(manager.name)}</AvatarFallback>
+                      </Avatar>
+                    </TableCell>
+                    <TableCell className="font-medium">{manager.name}</TableCell>
+                    <TableCell>{manager.email}</TableCell>
+                    <TableCell>{manager.designation}</TableCell>
+                    <TableCell><Badge variant="outline">{manager.permissions_role}</Badge></TableCell>
+                    <TableCell><Badge variant={getStatusVariant(manager.status)} className="capitalize">{getStatusDisplay(manager.status)}</Badge></TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreVertical className="h-5 w-5" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          {manager.status === 'inactive' && <DropdownMenuItem onSelect={() => handleInvite(manager.id)} disabled={isInvitePending}>Invite</DropdownMenuItem>}
+                          {manager.status === 'invited' && <DropdownMenuItem onSelect={() => handleInvite(manager.id)} disabled={isInvitePending}>Re-invite</DropdownMenuItem>}
+                          {manager.status === 'active' && (
+                            <DropdownMenuItem onClick={() => handleStatusUpdate(manager.id, 'banned')}>
+                              <ShieldX className="mr-2 h-4 w-4" />
+                              Block
+                            </DropdownMenuItem>
+                          )}
+                          {manager.status === 'banned' && (
+                            <DropdownMenuItem onClick={() => handleStatusUpdate(manager.id, 'active')}>
+                              <Shield className="mr-2 h-4 w-4" />
+                              Unblock
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuSub>
+                            <DropdownMenuSubTrigger>
+                              <UserCog className="mr-2 h-4 w-4" />
+                              Change Role
+                            </DropdownMenuSubTrigger>
+                            <DropdownMenuPortal>
+                              <DropdownMenuSubContent>
+                                <DropdownMenuItem onClick={() => handleRoleUpdate(manager.id, 'Admin')}>Admin</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleRoleUpdate(manager.id, 'Editor')}>Editor</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleRoleUpdate(manager.id, 'Viewer')}>Viewer</DropdownMenuItem>
+                              </DropdownMenuSubContent>
+                            </DropdownMenuPortal>
+                          </DropdownMenuSub>
+                          <DropdownMenuItem className="text-destructive" disabled>
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center h-24">
+                      No account managers have been added yet.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </main>
     </>
   );
 }

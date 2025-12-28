@@ -56,10 +56,8 @@ export default function CandidateJobDetailsPage() {
     const isLoading = loading || sessionLoading || jobsLoading || companiesLoading;
 
     return (
-        <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-            <DashboardSidebar role="candidate" user={session} />
-            <div className="flex flex-col max-h-screen">
-                <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b bg-background px-4 md:px-6 sticky top-0 z-30 md:static">
+        <>
+            <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b bg-background px-4 md:px-6 sticky top-0 z-30 md:static">
                     <div className="flex items-center gap-2">
                          <Button variant="ghost" size="icon" onClick={() => router.back()}>
                             <ArrowLeft className="h-5 w-5" />
@@ -82,8 +80,7 @@ export default function CandidateJobDetailsPage() {
                         <div>Job not found.</div>
                     )}
                 </main>
-            </div>
-        </div>
+        </>
     );
 }
 

@@ -7,7 +7,7 @@ import { addDoc, collection, deleteDoc, doc, serverTimestamp, updateDoc, setDoc,
 import { db, auth, storage } from "@/lib/firebase/config";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import type { Price, Round, Job, AiInterview, Employment } from "@/lib/types";
 import { updateProfile, reauthenticateWithCredential, EmailAuthProvider, updatePassword } from "firebase/auth";
 import { randomUUID } from 'crypto';
@@ -1125,6 +1125,7 @@ export async function createJobAction(jobData: Omit<Job, 'id' | 'datePosted' | '
   try {
     await addDoc(collection(db, 'jobs'), finalJobData);
     revalidatePath('/dashboard/company/jobs');
+    revalidateTag('jobs', 'default');
   } catch (e: any) {
     console.error("Error creating job:", e);
     return { error: e.message };
@@ -1157,6 +1158,7 @@ export async function updateJobAction(jobId: string, jobData: Omit<Job, 'id' | '
     await updateDoc(jobRef, finalJobData);
     revalidatePath('/dashboard/company/jobs');
     revalidatePath(`/dashboard/company/jobs/${jobId}`);
+    revalidateTag('jobs', 'default');
   } catch (e: any) {
     console.error("Error updating job:", e);
     return { error: e.message };
@@ -1171,6 +1173,7 @@ export async function deleteJobAction(jobId: string) {
     try {
         await deleteDoc(doc(db, 'jobs', jobId));
         revalidatePath('/dashboard/company/jobs');
+        revalidateTag('jobs', 'default');
     } catch (e: any) {
         return { error: e.message };
     }
@@ -1185,6 +1188,7 @@ export async function updateJobStatusAction(jobId: string, status: string) {
         const jobRef = doc(db, 'jobs', jobId);
         await updateDoc(jobRef, { status });
         revalidatePath('/dashboard/company/jobs');
+        revalidateTag('jobs', 'default');
         return { success: true };
     } catch (e: any) {
         return { error: e.message };

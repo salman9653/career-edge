@@ -105,19 +105,16 @@ export default function JobPipelinePage() {
 
     if (loading) {
         return (
-            <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-                <DashboardSidebar role="company" user={session} />
-                <div className="flex flex-col max-h-screen">
-                    <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b bg-background px-4 md:px-6 sticky top-0 z-30">
-                        <Skeleton className="h-8 w-64" />
-                    </header>
-                    <main className="flex flex-1 flex-col gap-4 overflow-hidden p-4 md:p-6">
-                        <div className="flex items-center justify-center h-full">
-                           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                        </div>
-                    </main>
-                </div>
-            </div>
+            <>
+                <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b bg-background px-4 md:px-6 sticky top-0 z-30">
+                    <Skeleton className="h-8 w-64" />
+                </header>
+                <main className="flex flex-1 flex-col gap-4 overflow-hidden p-4 md:p-6">
+                    <div className="flex items-center justify-center h-full">
+                       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    </div>
+                </main>
+            </>
         )
     }
     
@@ -188,10 +185,7 @@ export default function JobPipelinePage() {
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
-        <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-            <DashboardSidebar role={session?.role || 'company'} user={session} />
-            <div className="flex flex-col max-h-screen">
-                <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b bg-background px-4 md:px-6 sticky top-0 z-30">
+        <header className="flex h-16 shrink-0 items-center justify-between gap-4 border-b bg-background px-4 md:px-6 sticky top-0 z-30">
                     <div className="flex items-center gap-2">
                         <Button variant="ghost" size="icon" onClick={() => router.push('/dashboard/company/ats')}>
                             <ArrowLeft className="h-5 w-5" />
@@ -284,8 +278,6 @@ export default function JobPipelinePage() {
                         </div>
                     )}
                 </main>
-            </div>
-        </div>
         </>
     );
 }

@@ -1,11 +1,21 @@
 
 'use client';
 
-import { Editor } from '@monaco-editor/react';
+import dynamic from 'next/dynamic';
 import { useTheme } from 'next-themes';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+
+// Dynamically import Monaco Editor with SSR disabled
+const Editor = dynamic(() => import('@monaco-editor/react').then(mod => ({ default: mod.Editor })), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-[150px] w-full rounded-md border border-input bg-transparent">
+      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+    </div>
+  ),
+});
 
 interface CodeEditorProps {
   language: string;

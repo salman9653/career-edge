@@ -278,19 +278,16 @@ export function QuestionFormLayout({ config }: QuestionFormLayoutProps) {
         </AlertDialogContent>
     </AlertDialog>
 
-    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-      <DashboardSidebar role={session.role} user={session} />
-      <div className="flex flex-col max-h-screen">
-        <header className="flex h-16 shrink-0 items-center gap-4 border-b bg-background px-4 md:px-6 sticky top-0 z-30">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={() => router.back()}>
-                <ArrowLeft className="h-5 w-5" />
-                <span className="sr-only">Back</span>
-            </Button>
-            <h1 className="font-headline text-xl font-semibold">{config.pageTitle}</h1>
-          </div>
-        </header>
-        <main className="flex flex-1 flex-col gap-2 overflow-auto p-4 md:p-6 custom-scrollbar">
+      <header className="flex h-16 shrink-0 items-center gap-4 border-b bg-background px-4 md:px-6 sticky top-0 z-30">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={() => router.back()}>
+              <ArrowLeft className="h-5 w-5" />
+              <span className="sr-only">Back</span>
+          </Button>
+          <h1 className="font-headline text-xl font-semibold">{config.pageTitle}</h1>
+        </div>
+      </header>
+      <main className="flex flex-1 flex-col gap-2 overflow-auto p-4 md:p-6 custom-scrollbar">
           <div className="flex gap-2 w-full h-full">
             <div className="w-[60%] h-full">
               <form action={addFormAction} className="w-full h-full">
@@ -615,8 +612,6 @@ export function QuestionFormLayout({ config }: QuestionFormLayoutProps) {
             </div>
           </div>
         </main>
-      </div>
-    </div>
     </>
   );
 }
