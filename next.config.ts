@@ -2,6 +2,11 @@ import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
   /* config options here */
+  
+  // Enable Partial Prerendering (PPR) via Cache Components - Next.js 16
+  // This prerenders a static shell and streams dynamic content
+  cacheComponents: true,
+
   typescript: {
     ignoreBuildErrors: true,
   },

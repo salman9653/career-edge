@@ -6,7 +6,8 @@ import { motion } from 'framer-motion';
 import { Github, Twitter, Linkedin, Mail, MapPin, Phone } from 'lucide-react';
 
 export function LandingFooter() {
-  const currentYear = new Date().getFullYear();
+  // Use static year to avoid PPR prerender issues with dynamic Date
+  const currentYear = 2025;
 
   return (
     <motion.footer 
