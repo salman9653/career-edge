@@ -3,7 +3,7 @@
 import { useSession } from '@/hooks/use-session';
 import { MobileSearch } from '@/components/mobile-search';
 import { useContext, useEffect, useState, Suspense, useMemo } from 'react';
-import type { Job, Applicant, Company } from '@/lib/types';
+import type { Job, Applicant, Company, ApplicationWithDetails } from '@/lib/types';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { JobContext } from '@/context/job-context';
@@ -94,62 +94,28 @@ const JobListItem = ({ job, onClick, isActive, isSavedJob }: { job: Application 
 };
 
 
-export function ApplicationsPageContent() {
-  const { session, loading: sessionLoading } = useSession();
-  const { jobs: allJobs, loading: jobsLoading } = useContext(JobContext);
-  const { companies, loading: companiesLoading } = useContext(CompanyContext);
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [loading, setLoading] = useState(true);
+interface ApplicationsPageContentProps {
+  initialApplications: ApplicationWithDetails[];
+  initialSavedJobs: ApplicationWithDetails[];
+  initialTab: 'applied' | 'saved';
+  allJobs: Job[]; // Needed for JobDetailView similar jobs
+}
+
+export function ApplicationsPageContent({ initialApplications, initialSavedJobs, initialTab, allJobs }: ApplicationsPageContentProps) {
+  const { session } = useSession();
+  
+  const applications = initialApplications;
+  const favoriteJobs = initialSavedJobs;
+  
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const selectedJobId = searchParams.get('jobId');
-  const activeTab = searchParams.get('tab') || 'applied';
-
-  useEffect(() => {
-    if (!session?.uid || jobsLoading) return;
-
-    setLoading(true);
-    const fetchApplications = async () => {
-        const userApplications: Application[] = [];
-        
-        for (const job of allJobs) {
-            const applicationRef = doc(db, 'jobs', job.id, 'applicants', session.uid);
-            const applicationSnap = await getDoc(applicationRef);
-            if (applicationSnap.exists()) {
-                const companyDetails = companies.find(c => c.id === job.companyId) || null;
-                userApplications.push({
-                    ...job,
-                    companyDetails: {
-                        ...companyDetails,
-                        displayImageUrl: companyDetails?.displayImageUrl
-                    } as Company,
-                    applicantData: applicationSnap.data() as Applicant,
-                });
-            }
-        }
-        setApplications(userApplications);
-        setLoading(false);
-    };
-
-    fetchApplications();
-    
-  }, [session, allJobs, jobsLoading, companies]);
-
-  const favoriteJobs = useMemo(() => {
-      return allJobs.filter(job => session?.favourite_jobs?.includes(job.id)).map(job => {
-          const company = companies.find(c => c.id === job.companyId);
-          return {
-              ...job,
-              companyDetails: {
-                ...company,
-                displayImageUrl: company?.displayImageUrl
-              } as Company
-          }
-      });
-  }, [allJobs, session?.favourite_jobs, companies]);
+  const activeTab = searchParams.get('tab') || initialTab;
 
   const currentList = activeTab === 'saved' ? favoriteJobs : applications;
+  
+  // Remove complex UseEffects that fetch data.
 
   useEffect(() => {
     const params = new URLSearchParams(searchParams.toString());
@@ -179,19 +145,8 @@ export function ApplicationsPageContent() {
   }, [selectedJob]);
 
 
-  if (sessionLoading || loading) {
-    return (
-      <>
-        <header className="flex h-16 shrink-0 items-center justify-between gap-4 bg-background px-4 md:px-6 sticky top-0 z-30 md:static">
-          <h1 className="font-headline text-xl font-semibold md:ml-0 ml-12">My Activity</h1>
-          <MobileSearch />
-        </header>
-        <main className="flex-1 flex items-center justify-center p-4">
-          <Loader2 className="h-8 w-8 animate-spin" />
-        </main>
-      </>
-    );
-  }
+  // Removed loading check
+
 
   const handleJobSelect = (jobId: string) => {
     const params = new URLSearchParams(searchParams.toString());

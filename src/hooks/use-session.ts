@@ -61,6 +61,18 @@ export function useSession() {
 
         const unsubscribeFromAuth = onIdTokenChanged(auth, async (user: User | null) => {
             if (user) {
+                 // Sync with Server (Set HttpOnly Cookie)
+                 try {
+                     const idToken = await user.getIdToken();
+                     await fetch('/api/auth/login', {
+                         method: 'POST',
+                         headers: { 'Content-Type': 'application/json' },
+                         body: JSON.stringify({ idToken }),
+                     });
+                 } catch (error) {
+                     console.error("Failed to sync server session:", error);
+                 }
+
                  const currentSessionCookie = Cookies.get('firebase-session');
                  if (currentSessionCookie) {
                     try {
@@ -74,6 +86,13 @@ export function useSession() {
                  }
             } else {
                 // User logged out
+                // Clear Server Session
+                try {
+                    await fetch('/api/auth/logout', { method: 'POST' });
+                } catch (error) {
+                    console.error("Failed to clear server session:", error);
+                }
+
                 Cookies.remove('firebase-session', { path: '/' });
                 setSession(null);
             }

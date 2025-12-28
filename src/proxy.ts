@@ -1,66 +1,54 @@
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-import {NextRequest, NextResponse} from 'next/server';
+export async function proxy(request: NextRequest) {
+  const session = request.cookies.get("session");
 
-interface UserSession {
-  uid: string;
-  email: string;
-  displayName: string;
-  role: 'candidate' | 'company' | 'admin';
-  displayImageUrl?: string | null;
-}
-
-const PROTECTED_ROUTES = ['/dashboard'];
-const PUBLIC_ROUTES = ['/login', '/signup', '/', '/candidates', '/companies'];
-
-// This is a simplified auth check. In a real app, you would
-// use a server-side library to verify a session cookie or token.
-async function getSession(req: NextRequest): Promise<UserSession | null> {
-  const session = req.cookies.get('firebase-session');
-  if (!session) {
-    return null;
-  }
-  // In a real app, you would verify the session token with Firebase Admin SDK.
-  // For this prototype, we'll assume the presence of the cookie means authenticated.
-  // And we'll decode the user from the cookie value.
-  try {
-    const user = JSON.parse(atob(session.value));
-    return user as UserSession;
-  } catch (e) {
-    return null;
-  }
-}
-
-export async function proxy(req: NextRequest) {
-  const {pathname} = req.nextUrl;
-  const session = await getSession(req);
-
-  const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
-    pathname.startsWith(route)
+  // Add paths that require authentication
+  // For now, we protect /dashboard
+  const protectedPaths = ["/dashboard"];
+  const isProtected = protectedPaths.some((path) =>
+    request.nextUrl.pathname.startsWith(path)
   );
 
-  // DEPRECATED: /company is no longer a valid path prefix, it has been moved to /dashboard/company
-  if (pathname.startsWith('/company')) {
-    const newPath = pathname.replace('/company', '/dashboard/company');
-    req.nextUrl.pathname = newPath;
-    return NextResponse.redirect(req.nextUrl);
+  // Ported from proxy.ts: Redirect to dashboard if logged in
+  const publicPaths = ["/login", '/signup'];
+  const isPublicAuthRoute = publicPaths.some((path) => 
+     request.nextUrl.pathname.startsWith(path)
+  );
+
+  if (isProtected && !session) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+  
+  if (isPublicAuthRoute && session) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  if (isProtectedRoute && !session) {
-    req.nextUrl.pathname = '/login';
-    return NextResponse.redirect(req.nextUrl);
-  }
-
-  if (session) {
-    // If user is logged in, redirect from auth or landing pages to dashboard
-    if (PUBLIC_ROUTES.includes(pathname) || pathname.startsWith('/signup')) {
-      req.nextUrl.pathname = '/dashboard';
-      return NextResponse.redirect(req.nextUrl);
-    }
-  }
+  // Check for role-based access if needed?
+  // Ideally, we verify the session cookie content here, 
+  // but verification requires Admin SDK (heavy) or a separate lightweight verifier.
+  // Next.js Middleware runs on Edge, so standard firebase-admin might fail or be slow.
+  // For now, we trust the presence of the httpOnly cookie for basic protection,
+  // and perform actual data fetching verification in the Server Components/Server Actions.
+  // OR we can call an API route to verify? No, that defeats the purpose of middleware speed.
+  
+  // We will assume if the cookie exists, it's valid enough to let them through to the Server Component,
+  // which will do the hard verification and redirect if invalid.
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - login, signup, etc (public pages)
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico|login|signup|forgot-password).*)",
+  ],
 };

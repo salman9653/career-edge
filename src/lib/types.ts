@@ -58,6 +58,11 @@ export interface Applicant {
     roundResults: ApplicantRoundResult[];
     schedules?: Schedule[];
 }
+
+export interface ApplicationWithDetails extends Job {
+    companyDetails: Company | null;
+    applicantData: Applicant;
+}
   
 export interface Job {
     id: string;

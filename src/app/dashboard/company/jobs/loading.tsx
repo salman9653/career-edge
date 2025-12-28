@@ -1,27 +1,44 @@
-import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Skeleton } from "@/components/ui/skeleton"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
-export default function CompanyJobsLoading() {
+export default function JobsLoading() {
   return (
-    <>
-      <header className="flex h-16 shrink-0 items-center justify-between gap-4 bg-background px-4 md:px-6 sticky top-0 z-30 md:static">
-        <Skeleton className="h-6 w-24" />
-        <Skeleton className="h-9 w-9 rounded-full" />
-      </header>
-      <main className="flex flex-1 flex-col gap-4 overflow-auto p-4 md:gap-6 md:p-6">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-8 w-32" />
-          <Skeleton className="h-10 w-32" />
-        </div>
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-10 w-64" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-96 w-full" />
-          </CardContent>
-        </Card>
-      </main>
-    </>
-  );
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-4 w-[250px]" />
+        <Skeleton className="h-10 w-[120px]" />
+      </div>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead><Skeleton className="h-4 w-[100px]" /></TableHead>
+              <TableHead><Skeleton className="h-4 w-[100px]" /></TableHead>
+              <TableHead><Skeleton className="h-4 w-[100px]" /></TableHead>
+              <TableHead><Skeleton className="h-4 w-[100px]" /></TableHead>
+              <TableHead><Skeleton className="h-4 w-[50px]" /></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <TableRow key={i}>
+                <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+                <TableCell><Skeleton className="h-8 w-8 rounded-full" /></TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  )
 }

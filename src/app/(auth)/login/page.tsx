@@ -125,25 +125,47 @@ function LoginContent() {
         sessionStorage.removeItem('hasDismissedVerificationToast');
         document.cookie = `firebase-session=${btoa(JSON.stringify(sessionData))}; path=/`;
         
-        const redirectJobId = searchParams.get('redirectJobId');
-        if (redirectJobId) {
-          switch(state.role) {
-            case 'candidate':
-              router.push(`/dashboard/candidate/jobs/${redirectJobId}`);
-              break;
-            case 'company':
-            case 'manager':
-              router.push(`/dashboard/company/jobs/${redirectJobId}`);
-              break;
-            case 'admin':
-              router.push(`/dashboard/admin/companies/jobs/${redirectJobId}`);
-              break;
-            default:
+        const performRedirect = async () => {
+             // Sync with Server (Set HttpOnly Cookie) - CRITICAL for Server Components
+             try {
+                // Check if the user object has getIdToken (it should if it's the UserImpl from Firebase)
+                // If state.user is serialized, we might need to rely on auth.currentUser
+                const currentUser = auth.currentUser;
+                if (currentUser) {
+                    const idToken = await currentUser.getIdToken();
+                    await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ idToken }),
+                    });
+                }
+             } catch (error) {
+                 console.error("Failed to sync server session during login:", error);
+                 // We continue anyway, hoping the background sync works or simple client nav works
+             }
+
+            const redirectJobId = searchParams.get('redirectJobId');
+            if (redirectJobId) {
+              switch(state.role) {
+                case 'candidate':
+                  router.push(`/dashboard/candidate/jobs/${redirectJobId}`);
+                  break;
+                case 'company':
+                case 'manager':
+                  router.push(`/dashboard/company/jobs/${redirectJobId}`);
+                  break;
+                case 'admin':
+                  router.push(`/dashboard/admin/companies/jobs/${redirectJobId}`);
+                  break;
+                default:
+                  router.push('/dashboard');
+              }
+            } else {
               router.push('/dashboard');
-          }
-        } else {
-          router.push('/dashboard');
-        }
+            }
+        };
+
+        performRedirect();
       }
     }
   }, [state, router, searchParams]);

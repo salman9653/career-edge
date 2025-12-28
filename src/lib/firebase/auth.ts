@@ -1,6 +1,4 @@
 
-'use server';
-
 import { createUserWithEmailAndPassword, updateProfile, sendPasswordResetEmail } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp, collection, query, where, getDocs, writeBatch } from 'firebase/firestore';
 import { auth, db } from './config';
@@ -50,8 +48,20 @@ export async function signUpCandidate(prevState: any, formData: FormData) {
         emailVerified: user.emailVerified,
         preferences: sessionData.preferences,
     };
-    // The redirect logic will handle cookies, but we might need to set it here if redirect doesn't work as expected
-    // For now, we rely on redirect to handle login, but this is a fallback.
+    // Legacy client cookie (optional but kept for compat)
+    document.cookie = `firebase-session=${btoa(JSON.stringify(cookieData))}; path=/`;
+
+    // SYNC SERVER SESSION (Critical for Server Components)
+    try {
+        const idToken = await user.getIdToken();
+        await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ idToken }),
+        });
+    } catch (error) {
+        console.error("Failed to sync server session during signup:", error);
+    }
 
   } catch (e: any) {
     return { error: getFirebaseErrorMessage(e) };
@@ -105,6 +115,18 @@ export async function signUpCompany(prevState: any, formData: FormData) {
       };
 
       await setDoc(doc(db, 'users', user.uid), companyData);
+      
+      // SYNC SERVER SESSION (Critical for Server Components)
+      try {
+          const idToken = await user.getIdToken();
+          await fetch('/api/auth/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ idToken }),
+          });
+      } catch (error) {
+          console.error("Failed to sync server session during signup:", error);
+      }
       
       // Notify admins
       const adminsQuery = query(collection(db, 'users'), where('role', 'in', ['admin', 'adminAccountManager']));

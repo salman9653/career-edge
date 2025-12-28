@@ -56,8 +56,13 @@ const getFiltersFromParams = (searchParams: URLSearchParams): FilterState => {
     };
 };
 
-export function JobsTable() {
-    const { jobs, loading } = useContext(JobContext);
+interface JobsTableProps {
+  jobs: Job[];
+}
+
+export function JobsTable({ jobs }: JobsTableProps) {
+    // const { jobs, loading } = useContext(JobContext); // Removed context usage
+    const loading = false; // Data is pre-fetched on server
     const { session } = useSession();
     const { toast } = useToast();
     const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>(null);
