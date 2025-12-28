@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo, useContext } from 'react';
+import { useEffect, useState, useMemo, useContext, useOptimistic } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Job, Socials, CompanySize, Round, Question, ApplicantRoundResult, Applicant, Company } from '@/lib/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -46,31 +46,29 @@ export const JobDetailView = ({ job, company, applicantData, allJobs }: JobDetai
     
     const [hasApplied, setHasApplied] = useState(!!applicantData);
 
-    const [isFavorite, setIsFavorite] = useState(session?.favourite_jobs?.includes(job.id) || false);
-
-    useEffect(() => {
-        setIsFavorite(session?.favourite_jobs?.includes(job.id) || false);
-    }, [session?.favourite_jobs, job.id]);
-
-    useEffect(() => {
-        setHasApplied(!!applicantData);
-    }, [applicantData]);
+    // React 19 useOptimistic for instant UI feedback on favorite toggle
+    const [optimisticFavorite, setOptimisticFavorite] = useOptimistic(
+        session?.favourite_jobs?.includes(job.id) || false,
+        (currentState: boolean, newValue: boolean) => newValue
+    );
 
     const handleToggleFavorite = async () => {
         if (!session) return;
         
-        const originalIsFavorite = isFavorite;
-        setIsFavorite(!originalIsFavorite);
+        const newIsFavorite = !optimisticFavorite;
+        
+        // Optimistically update UI immediately
+        setOptimisticFavorite(newIsFavorite);
 
-        const newFavorites = originalIsFavorite 
-            ? (session.favourite_jobs || []).filter(id => id !== job.id) 
-            : [...(session.favourite_jobs || []), job.id];
+        const newFavorites = newIsFavorite 
+            ? [...(session.favourite_jobs || []), job.id]
+            : (session.favourite_jobs || []).filter(id => id !== job.id);
         
         updateSession({ favourite_jobs: newFavorites });
 
         const result = await toggleFavoriteJobAction(job.id, session);
         if (result.error) {
-            setIsFavorite(originalIsFavorite);
+            // Revert on error - session update will trigger useOptimistic reset
             updateSession({ favourite_jobs: session.favourite_jobs });
             toast({ variant: "destructive", title: "Error", description: result.error });
         }
