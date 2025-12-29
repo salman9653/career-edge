@@ -32,13 +32,17 @@ const initialState: AuthState = {
   error: null,
 };
 
-async function signInAction(prevState: any, formData: FormData): Promise<AuthState> {
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
+import { LoginSchema } from '@/lib/schemas/auth';
 
-    if (!email || !password) {
-        return { error: 'Please fill out all fields.' };
+async function signInAction(prevState: any, formData: FormData): Promise<AuthState> {
+    const data = Object.fromEntries(formData);
+    const validatedFields = LoginSchema.safeParse(data);
+
+    if (!validatedFields.success) {
+        return { error: validatedFields.error.issues[0].message };
     }
+
+    const { email, password } = validatedFields.data;
 
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);

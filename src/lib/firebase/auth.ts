@@ -5,16 +5,25 @@ import { auth, db } from './config';
 import { redirect } from 'next/navigation';
 import { getFirebaseErrorMessage } from './error-messages';
 
+import { CandidateSignupSchema, CompanySignupSchema } from '@/lib/schemas/auth';
+
 export async function signUpCandidate(prevState: any, formData: FormData) {
-  const firstName = formData.get('first-name') as string;
-  const lastName = formData.get('last-name') as string;
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
   const redirectJobId = formData.get('redirectJobId') as string | null;
 
-  if (!firstName || !lastName || !email || !password) {
-    return { error: 'Please fill out all fields.' };
+  const rawData = {
+      firstName: formData.get('first-name'),
+      lastName: formData.get('last-name'),
+      email: formData.get('email'),
+      password: formData.get('password'),
+  };
+
+  const validatedFields = CandidateSignupSchema.safeParse(rawData);
+
+  if (!validatedFields.success) {
+      return { error: validatedFields.error.issues[0].message };
   }
+
+  const { firstName, lastName, email, password } = validatedFields.data;
 
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -76,13 +85,19 @@ export async function signUpCandidate(prevState: any, formData: FormData) {
 
 
 export async function signUpCompany(prevState: any, formData: FormData) {
-    const companyName = formData.get('company-name') as string;
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-  
-    if (!companyName || !email || !password) {
-      return { error: 'Please fill out all fields.' };
+    const rawData = {
+        companyName: formData.get('company-name'),
+        email: formData.get('email'),
+        password: formData.get('password'),
+    };
+
+    const validatedFields = CompanySignupSchema.safeParse(rawData);
+
+    if (!validatedFields.success) {
+        return { error: validatedFields.error.issues[0].message };
     }
+
+    const { companyName, email, password } = validatedFields.data;
   
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
