@@ -1,11 +1,9 @@
-
 'use client';
 
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { collection, onSnapshot, query, where, Unsubscribe, Query, DocumentData } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import React, { createContext, ReactNode } from 'react';
+import { DocumentData } from 'firebase/firestore';
 import type { Question } from '@/lib/types';
-import { useSession } from '@/hooks/use-session';
+import { useFirestoreCollection, useFirestoreTransformer } from '@/hooks/use-firestore';
 
 interface QuestionContextType {
     questions: Question[];
@@ -23,10 +21,9 @@ interface QuestionProviderProps {
     children: ReactNode;
 }
 
-const mapDocToQuestion = (doc: DocumentData): Question => {
-    const data = doc.data();
-    return {
-        id: doc.id,
+export const QuestionProvider = ({ children }: QuestionProviderProps) => {
+    const transformer = useFirestoreTransformer((id: string, data: DocumentData): Question => ({
+        id,
         question: data.question || '',
         type: data.type || 'subjective',
         category: data.category || [],
@@ -49,34 +46,12 @@ const mapDocToQuestion = (doc: DocumentData): Question => {
         constraints: data.constraints,
         testCases: data.testCases,
         hints: data.hints,
-    };
-};
+    }), []);
 
-export const QuestionProvider = ({ children }: QuestionProviderProps) => {
-    const { session } = useSession();
-    const [questions, setQuestions] = useState<Question[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<Error | null>(null);
-
-    useEffect(() => {
-        let unsubscribe: Unsubscribe | (() => void) = () => {};
-
-        setLoading(true);
-        const questionsCol = collection(db, 'questions');
-        const q = query(questionsCol);
-
-        unsubscribe = onSnapshot(q, (snapshot) => {
-            const questionList = snapshot.docs.map(mapDocToQuestion);
-            setQuestions(questionList);
-            setLoading(false);
-        }, (err) => {
-            console.error("Error fetching questions:", err);
-            setError(err);
-            setLoading(false);
-        });
-        
-        return () => unsubscribe();
-    }, []);
+    const { data: questions, loading, error } = useFirestoreCollection<Question>({
+        collectionPath: 'questions',
+        transformer,
+    });
 
     return (
         <QuestionContext.Provider value={{ questions, loading, error }}>

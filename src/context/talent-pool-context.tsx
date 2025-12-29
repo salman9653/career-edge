@@ -1,10 +1,9 @@
-
 'use client';
 
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { collection, query, onSnapshot, Unsubscribe } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import React, { createContext, useMemo, ReactNode } from 'react';
+import { DocumentData } from 'firebase/firestore';
 import { useSession } from '@/hooks/use-session';
+import { useFirestoreCollection, useFirestoreTransformer } from '@/hooks/use-firestore';
 
 export interface CrmCandidate {
     id: string;
@@ -30,49 +29,33 @@ export const TalentPoolContext = createContext<TalentPoolContextType>({
 
 export const TalentPoolProvider = ({ children }: { children: ReactNode }) => {
     const { session } = useSession();
-    const [candidates, setCandidates] = useState<CrmCandidate[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<Error | null>(null);
 
-    useEffect(() => {
-        let unsubscribe: Unsubscribe = () => {};
-
-        if (session?.uid && (session.role === 'company' || session.role === 'manager')) {
-            const companyId = session.role === 'company' ? session.uid : session.company_uid;
-            if (!companyId) {
-                setLoading(false);
-                return;
-            }
-            
-            const talentPoolCol = collection(db, 'users', companyId, 'talent_pool');
-            const q = query(talentPoolCol);
-            
-            unsubscribe = onSnapshot(q, (snapshot) => {
-                const candidateList = snapshot.docs.map(doc => {
-                    const data = doc.data();
-                    return {
-                        id: doc.id,
-                        name: data.name || 'N/A',
-                        email: data.email || 'N/A',
-                        avatarUrl: data.avatarUrl,
-                        tags: data.tags || [],
-                        lastContact: data.lastContact?.toDate()?.toISOString() || null,
-                        source: data.source || 'Manual',
-                    } as CrmCandidate;
-                });
-                setCandidates(candidateList);
-                setLoading(false);
-            }, (err) => {
-                console.error("Error fetching talent pool:", err);
-                setError(err);
-                setLoading(false);
-            });
-        } else {
-             setLoading(false);
-        }
-
-        return () => unsubscribe();
+    const companyId = useMemo(() => {
+        if (!session?.uid) return null;
+        if (session.role === 'company') return session.uid;
+        if (session.role === 'manager') return session.company_uid;
+        return null;
     }, [session]);
+
+    const collectionPath = useMemo(() => 
+        companyId ? `users/${companyId}/talent_pool` : '', 
+    [companyId]);
+
+    const transformer = useFirestoreTransformer((id: string, data: DocumentData) => ({
+        id: id,
+        name: data.name || 'N/A',
+        email: data.email || 'N/A',
+        avatarUrl: data.avatarUrl,
+        tags: data.tags || [],
+        lastContact: data.lastContact?.toDate()?.toISOString() || null,
+        source: data.source || 'Manual',
+    } as CrmCandidate), []);
+
+    const { data: candidates, loading, error } = useFirestoreCollection<CrmCandidate>({
+        collectionPath,
+        transformer,
+        disabled: !collectionPath,
+    });
 
     return (
         <TalentPoolContext.Provider value={{ candidates, loading, error }}>

@@ -1,11 +1,10 @@
-
 'use client';
 
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { collection, query, where, onSnapshot, Unsubscribe } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import React, { createContext, useMemo, ReactNode } from 'react';
+import { where, DocumentData } from 'firebase/firestore';
 import type { AiInterview } from '@/lib/types';
 import { useSession } from '@/hooks/use-session';
+import { useFirestoreCollection, useFirestoreTransformer } from '@/hooks/use-firestore';
 
 interface AiInterviewContextType {
     interviews: AiInterview[];
@@ -21,70 +20,54 @@ export const AiInterviewContext = createContext<AiInterviewContextType>({
 
 export const AiInterviewProvider = ({ children }: { children: ReactNode }) => {
     const { session } = useSession();
-    const [interviews, setInterviews] = useState<AiInterview[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<Error | null>(null);
 
-    useEffect(() => {
-        let unsubscribe: Unsubscribe = () => {};
+    const companyId = useMemo(() => {
+        if (!session?.uid) return null;
+        if (session.role === 'company') return session.uid;
+        if (session.role === 'manager') return session.company_uid;
+        return null;
+    }, [session]);
 
-        if (session?.uid && (session.role === 'company' || session.role === 'manager')) {
-            const companyId = session.role === 'company' ? session.uid : session.company_uid;
-            if (!companyId) {
-                setLoading(false);
-                return;
-            }
-            
-            const q = query(collection(db, 'ai-interviews'), where('companyId', '==', companyId));
-            
-            unsubscribe = onSnapshot(q, (snapshot) => {
-                const interviewList = snapshot.docs.map(doc => {
-                    const data = doc.data();
-                    
-                    let createdAt = null;
-                    if (data.createdAt && typeof data.createdAt.toDate === 'function') {
-                        // This is a Firestore Timestamp object
-                        createdAt = data.createdAt.toDate().toISOString();
-                    } else if (typeof data.createdAt === 'string') {
-                        // This is already a string
-                        createdAt = data.createdAt;
-                    } else if (data.createdAt && data.createdAt.seconds) {
-                        // This is a plain object from SSR or serialization
-                        createdAt = new Date(data.createdAt.seconds * 1000).toISOString();
-                    }
-
-                    return {
-                        id: doc.id,
-                        name: data.name,
-                        companyId: data.companyId,
-                        jobTitle: data.jobTitle,
-                        jobDescription: data.jobDescription,
-                        keySkills: data.keySkills,
-                        intro: data.intro,
-                        outro: data.outro,
-                        questions: data.questions,
-                        createdBy: data.createdBy,
-                        createdByName: data.createdByName,
-                        createdAt: createdAt,
-                        duration: data.duration,
-                        questionCount: data.questionCount,
-                        difficulty: data.difficulty,
-                        tone: data.tone,
-                    } as AiInterview;
-                });
-                setInterviews(interviewList);
-                setLoading(false);
-            }, (err) => {
-                console.error("Error fetching AI interviews:", err);
-                setError(err);
-                setLoading(false);
-            });
-        } else {
-             setLoading(false);
+    const transformer = useFirestoreTransformer((id: string, data: DocumentData) => {
+        let createdAt = null;
+        if (data.createdAt && typeof data.createdAt.toDate === 'function') {
+            createdAt = data.createdAt.toDate().toISOString();
+        } else if (typeof data.createdAt === 'string') {
+            createdAt = data.createdAt;
+        } else if (data.createdAt && data.createdAt.seconds) {
+            createdAt = new Date(data.createdAt.seconds * 1000).toISOString();
         }
 
-        return () => unsubscribe();
-    }, [session]);
+        return {
+            id: id,
+            name: data.name,
+            companyId: data.companyId,
+            jobTitle: data.jobTitle,
+            jobDescription: data.jobDescription,
+            keySkills: data.keySkills,
+            intro: data.intro,
+            outro: data.outro,
+            questions: data.questions,
+            createdBy: data.createdBy,
+            createdByName: data.createdByName,
+            createdAt: createdAt,
+            duration: data.duration,
+            questionCount: data.questionCount,
+            difficulty: data.difficulty,
+            tone: data.tone,
+        } as AiInterview;
+    }, []);
+
+    const constraints = useMemo(() => 
+        companyId ? [where('companyId', '==', companyId)] : [], 
+    [companyId]);
+
+    const { data: interviews, loading, error } = useFirestoreCollection<AiInterview>({
+        collectionPath: 'ai-interviews',
+        constraints,
+        transformer,
+        disabled: !companyId,
+    });
 
     return (
         <AiInterviewContext.Provider value={{ interviews, loading, error }}>

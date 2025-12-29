@@ -1,19 +1,19 @@
-
 'use client';
 
-import React, { createContext, useState, useEffect, ReactNode, useContext } from 'react';
-import { collection, query, where, onSnapshot, Unsubscribe, orderBy, writeBatch, doc, updateDoc } from 'firebase/firestore';
+import React, { createContext, useMemo, useContext, ReactNode } from 'react';
+import { where, orderBy, writeBatch, doc, DocumentData } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import type { Notification } from '@/lib/types';
 import { useSession } from '@/hooks/use-session';
+import { useFirestoreCollection } from '@/hooks/use-firestore';
 
 interface NotificationContextType {
     notifications: Notification[];
     unreadCount: number;
     loading: boolean;
     error: Error | null;
-    markAllAsRead: () => void;
-    markAsRead: (notificationId: string) => void;
+    markAllAsRead: () => Promise<void>;
+    markAsRead: (notificationId: string) => Promise<void>;
 }
 
 export const NotificationContext = createContext<NotificationContextType>({
@@ -21,107 +21,90 @@ export const NotificationContext = createContext<NotificationContextType>({
     unreadCount: 0,
     loading: true,
     error: null,
-    markAllAsRead: () => {},
-    markAsRead: () => {},
+    markAllAsRead: async () => {},
+    markAsRead: async () => {},
 });
 
 export const useNotifications = () => useContext(NotificationContext);
 
 export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     const { session } = useSession();
-    const [notifications, setNotifications] = useState<Notification[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<Error | null>(null);
 
-    useEffect(() => {
-        let unsubscribe: Unsubscribe = () => {};
+    const constraints = useMemo(() => 
+        session?.uid ? [
+            where('recipientId', '==', session.uid),
+            orderBy('createdAt', 'desc')
+        ] : [], 
+    [session?.uid]);
 
-        if (session?.uid) {
-            const q = query(
-                collection(db, 'notifications'), 
-                where('recipientId', '==', session.uid),
-                orderBy('createdAt', 'desc')
-            );
-            
-            unsubscribe = onSnapshot(q, (snapshot) => {
-                const rawNotifications = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                } as Notification));
-                
-                // Group notifications client-side
-                const groupedNotifications: Notification[] = [];
-                const jobApplicationGroups: Record<string, Notification[]> = {};
+    const { data: rawNotifications, loading, error } = useFirestoreCollection<Notification>({
+        collectionPath: 'notifications',
+        constraints,
+        disabled: !session?.uid,
+    });
 
-                // Separate and group new application notifications
-                rawNotifications.forEach(n => {
-                    if (n.type === 'NEW_APPLICATION' && n.jobId && !n.isRead) {
-                        if (!jobApplicationGroups[n.jobId]) {
-                            jobApplicationGroups[n.jobId] = [];
-                        }
-                        jobApplicationGroups[n.jobId].push(n);
-                    } else {
-                        groupedNotifications.push(n);
-                    }
-                });
+    const notifications = useMemo(() => {
+        if (!rawNotifications.length) return [];
+        
+        // Group notifications client-side
+        const groupedNotifications: Notification[] = [];
+        const jobApplicationGroups: Record<string, Notification[]> = {};
 
-                // Create summary notifications for groups
-                for (const jobId in jobApplicationGroups) {
-                    const group = jobApplicationGroups[jobId];
-                    const latestNotification = group[0]; // They are sorted by date
-                    const applicantNames = group.map(n => n.senderName).filter(Boolean);
-                    
-                    if (group.length > 1) {
-                        groupedNotifications.unshift({
-                            ...latestNotification,
-                            id: `group-${jobId}-${Date.now()}`, // Create a stable but unique ID for the session
-                            message: `**${group.length}** new candidates have applied for **${latestNotification.jobTitle}**.`,
-                            senderName: `${applicantNames.slice(0, 2).join(', ')}${applicantNames.length > 2 ? ` and ${applicantNames.length - 2} others` : ''}`,
-                            applicantCount: group.length,
-                            newApplicantNames: applicantNames,
-                            originalIds: group.map(n => n.id), // Store original IDs to mark as read
-                        });
-                    } else {
-                        // If only one, add it back as a normal notification
-                        groupedNotifications.unshift(...group);
-                    }
+        // Separate and group new application notifications
+        rawNotifications.forEach(n => {
+            if (n.type === 'NEW_APPLICATION' && n.jobId && !n.isRead) {
+                if (!jobApplicationGroups[n.jobId]) {
+                    jobApplicationGroups[n.jobId] = [];
                 }
-                
-                // Sort final list again to ensure grouped items are on top
-                groupedNotifications.sort((a, b) => {
-                    const aDate = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
-                    const bDate = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
-                    return bDate.getTime() - aDate.getTime();
-                });
-                
-                setNotifications(groupedNotifications);
-                setLoading(false);
-            }, (err) => {
-                console.error("Error fetching notifications:", err);
-                setError(err);
-                setLoading(false);
-            });
-        } else {
-             setLoading(false);
-        }
+                jobApplicationGroups[n.jobId].push(n);
+            } else {
+                groupedNotifications.push(n);
+            }
+        });
 
-        return () => unsubscribe();
-    }, [session]);
-    
-    const unreadCount = notifications.filter(n => !n.isRead).length;
+        // Create summary notifications for groups
+        for (const jobId in jobApplicationGroups) {
+            const group = jobApplicationGroups[jobId];
+            const latestNotification = group[0];
+            const applicantNames = group.map(n => n.senderName).filter(Boolean);
+            
+            if (group.length > 1) {
+                groupedNotifications.unshift({
+                    ...latestNotification,
+                    id: `group-${jobId}-${latestNotification.id}`, // More stable ID
+                    message: `**${group.length}** new candidates have applied for **${latestNotification.jobTitle}**.`,
+                    senderName: `${applicantNames.slice(0, 2).join(', ')}${applicantNames.length > 2 ? ` and ${applicantNames.length - 2} others` : ''}`,
+                    applicantCount: group.length,
+                    newApplicantNames: applicantNames,
+                    originalIds: group.map(n => n.id),
+                });
+            } else {
+                groupedNotifications.unshift(...group);
+            }
+        }
+        
+        // Final sort
+        return [...groupedNotifications].sort((a, b) => {
+            const aDate = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+            const bDate = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+            return bDate.getTime() - aDate.getTime();
+        });
+    }, [rawNotifications]);
+
+    const unreadCount = useMemo(() => 
+        notifications.filter(n => !n.isRead).length, 
+    [notifications]);
 
     const markAllAsRead = async () => {
-        if (unreadCount === 0) return;
+        if (!session?.uid || unreadCount === 0) return;
         const batch = writeBatch(db);
         notifications.forEach(notification => {
             if (notification.originalIds) {
                 notification.originalIds.forEach(id => {
-                    const docRef = doc(db, 'notifications', id);
-                    batch.update(docRef, { isRead: true });
+                    batch.update(doc(db, 'notifications', id), { isRead: true });
                 });
             } else if (!notification.isRead) {
-                const docRef = doc(db, 'notifications', notification.id);
-                batch.update(docRef, { isRead: true });
+                batch.update(doc(db, 'notifications', notification.id), { isRead: true });
             }
         });
         await batch.commit();
@@ -129,16 +112,14 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 
     const markAsRead = async (notificationId: string) => {
         const notification = notifications.find(n => n.id === notificationId);
-        if(notification) {
-             const batch = writeBatch(db);
-             if (notification.originalIds) {
+        if (notification) {
+            const batch = writeBatch(db);
+            if (notification.originalIds) {
                 notification.originalIds.forEach(id => {
-                    const docRef = doc(db, 'notifications', id);
-                    batch.update(docRef, { isRead: true });
+                    batch.update(doc(db, 'notifications', id), { isRead: true });
                 });
             } else if (!notification.isRead) {
-                const docRef = doc(db, 'notifications', notification.id);
-                batch.update(docRef, { isRead: true });
+                batch.update(doc(db, 'notifications', notification.id), { isRead: true });
             }
             await batch.commit();
         }

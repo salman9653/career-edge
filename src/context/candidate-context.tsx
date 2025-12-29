@@ -1,9 +1,9 @@
-
 'use client';
 
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { collection, query, where, onSnapshot, getDoc, doc } from 'firebase/firestore';
+import React, { createContext, ReactNode } from 'react';
+import { where, doc, getDoc, DocumentData } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
+import { useFirestoreCollection, useFirestoreTransformer } from '@/hooks/use-firestore';
 
 export interface CandidateData {
     id: string;
@@ -29,50 +29,32 @@ export const CandidateContext = createContext<CandidateContextType>({
 });
 
 export const CandidateProvider = ({ children }: { children: ReactNode }) => {
-    const [candidates, setCandidates] = useState<CandidateData[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<Error | null>(null);
+    const transformer = useFirestoreTransformer(async (id: string, data: DocumentData): Promise<CandidateData> => {
+        let avatarUrl = data.avatarUrl;
+        if (data.hasDisplayImage) {
+            const imageDocSnap = await getDoc(doc(db, `users/${id}/uploads/displayImage`));
+            if (imageDocSnap.exists()) {
+                avatarUrl = imageDocSnap.data().data;
+            }
+        }
 
-    useEffect(() => {
-        const candidatesCol = collection(db, 'users');
-        const q = query(candidatesCol, where('role', '==', 'candidate'));
-
-        const unsubscribe = onSnapshot(q, async (snapshot) => {
-            const candidateListPromises = snapshot.docs.map(async (userDoc) => {
-                const data = userDoc.data();
-                
-                let avatarUrl = data.avatarUrl;
-                if (data.hasDisplayImage) {
-                    const imageDocSnap = await getDoc(doc(db, `users/${userDoc.id}/uploads/displayImage`));
-                    if (imageDocSnap.exists()) {
-                        avatarUrl = imageDocSnap.data().data;
-                    }
-                }
-
-                return {
-                    id: userDoc.id,
-                    name: data.name || 'N/A',
-                    email: data.email || 'N/A',
-                    status: data.status || 'Active',
-                    subscription: data.subscription || 'Free',
-                    applications: data.applications || 0,
-                    avatar: avatarUrl,
-                    createdAt: data.createdAt?.toDate()?.toISOString() || null
-                };
-            });
-
-            const candidateList = await Promise.all(candidateListPromises);
-            setCandidates(candidateList);
-            setLoading(false);
-        }, (err) => {
-            console.error("Error fetching candidates:", err);
-            setError(err);
-            setLoading(false);
-        });
-
-        // Cleanup subscription on unmount
-        return () => unsubscribe();
+        return {
+            id: id,
+            name: data.name || 'N/A',
+            email: data.email || 'N/A',
+            status: data.status || 'Active',
+            subscription: data.subscription || 'Free',
+            applications: data.applications || 0,
+            avatar: avatarUrl,
+            createdAt: data.createdAt?.toDate()?.toISOString() || null
+        };
     }, []);
+
+    const { data: candidates, loading, error } = useFirestoreCollection<CandidateData>({
+        collectionPath: 'users',
+        constraints: [where('role', '==', 'candidate')],
+        transformer,
+    });
 
     return (
         <CandidateContext.Provider value={{ candidates, loading, error }}>

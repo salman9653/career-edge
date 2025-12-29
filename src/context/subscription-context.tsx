@@ -1,10 +1,9 @@
-
 'use client';
 
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { collection, onSnapshot, query } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
-import type { SubscriptionPlan, Price } from '@/lib/types';
+import React, { createContext, ReactNode } from 'react';
+import type { SubscriptionPlan } from '@/lib/types';
+import { useFirestoreCollection, useFirestoreTransformer } from '@/hooks/use-firestore';
+import { DocumentData } from 'firebase/firestore';
 
 interface SubscriptionContextType {
     plans: SubscriptionPlan[];
@@ -19,36 +18,18 @@ export const SubscriptionContext = createContext<SubscriptionContextType>({
 });
 
 export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
-    const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<Error | null>(null);
+    const transformer = useFirestoreTransformer((id: string, data: DocumentData) => ({
+        id: id,
+        name: data.name || '',
+        type: data.type || 'candidate',
+        prices: data.prices || [{ currency: 'USD', amount: 0, cycle: 'monthly' }],
+        features: data.features || [],
+    } as SubscriptionPlan), []);
 
-    useEffect(() => {
-        const subsCollection = collection(db, 'subscriptions');
-        const q = query(subsCollection);
-
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const planList = snapshot.docs.map(doc => {
-                const data = doc.data();
-                return {
-                    id: doc.id,
-                    name: data.name || '',
-                    type: data.type || 'candidate',
-                    prices: data.prices || [{ currency: 'USD', amount: 0, cycle: 'monthly' }],
-                    features: data.features || [],
-                } as SubscriptionPlan;
-            });
-            setPlans(planList);
-            setLoading(false);
-        }, (err) => {
-            console.error("Error fetching subscription plans:", err);
-            setError(err);
-            setLoading(false);
-        });
-
-        // Cleanup subscription on unmount
-        return () => unsubscribe();
-    }, []);
+    const { data: plans, loading, error } = useFirestoreCollection<SubscriptionPlan>({
+        collectionPath: 'subscriptions',
+        transformer,
+    });
 
     return (
         <SubscriptionContext.Provider value={{ plans, loading, error }}>

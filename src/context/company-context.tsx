@@ -1,10 +1,10 @@
-
 'use client';
 
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { collection, query, where, onSnapshot, getDoc, doc } from 'firebase/firestore';
+import React, { createContext, ReactNode } from 'react';
+import { where, doc, getDoc, DocumentData } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import type { UserProfile, CompanySize } from '@/lib/types';
+import { useFirestoreCollection, useFirestoreTransformer } from '@/hooks/use-firestore';
 
 export type CompanyData = Omit<UserProfile, 'uid' | 'email' | 'name' | 'role' | 'displayImageUrl'> & {
     id: string;
@@ -16,7 +16,6 @@ export type CompanyData = Omit<UserProfile, 'uid' | 'email' | 'name' | 'role' | 
     size: CompanySize;
     createdAt: string | null;
 };
-
 
 interface CompanyContextType {
     companies: CompanyData[];
@@ -31,59 +30,41 @@ export const CompanyContext = createContext<CompanyContextType>({
 });
 
 export const CompanyProvider = ({ children }: { children: ReactNode }) => {
-    const [companies, setCompanies] = useState<CompanyData[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<Error | null>(null);
+    const transformer = useFirestoreTransformer(async (id: string, data: DocumentData): Promise<CompanyData> => {
+        let displayImageUrl = data.displayImageUrl;
+        if (data.hasDisplayImage) {
+            const imageDocSnap = await getDoc(doc(db, `users/${id}/uploads/displayImage`));
+            if (imageDocSnap.exists()) {
+                displayImageUrl = imageDocSnap.data().data;
+            }
+        }
 
-    useEffect(() => {
-        const companiesCol = collection(db, 'users');
-        const q = query(companiesCol, where('role', '==', 'company'));
-
-        const unsubscribe = onSnapshot(q, async (snapshot) => {
-            const companyListPromises = snapshot.docs.map(async (companyDoc) => {
-                const data = companyDoc.data();
-                
-                let displayImageUrl = data.displayImageUrl;
-                if (data.hasDisplayImage) {
-                    const imageDocSnap = await getDoc(doc(db, `users/${companyDoc.id}/uploads/displayImage`));
-                    if (imageDocSnap.exists()) {
-                        displayImageUrl = imageDocSnap.data().data;
-                    }
-                }
-
-                return {
-                    id: companyDoc.id,
-                    name: data.name || 'N/A',
-                    email: data.email || 'N/A',
-                    displayImageUrl,
-                    status: data.status || 'Active',
-                    plan: data.subscription || 'Free',
-                    size: data.companySize || { size: 'Startup', employees: '1-100' },
-                    createdAt: data.createdAt?.toDate()?.toISOString() || null,
-                    website: data.website,
-                    socials: data.socials,
-                    helplinePhone: data.helplinePhone,
-                    helplineEmail: data.helplineEmail,
-                    aboutCompany: data.aboutCompany,
-                    companyType: data.companyType,
-                    foundedYear: data.foundedYear,
-                    tags: data.tags,
-                    benefits: data.benefits,
-                } as CompanyData;
-            });
-
-            const companyList = await Promise.all(companyListPromises);
-            setCompanies(companyList);
-            setLoading(false);
-        }, (err) => {
-            console.error("Error fetching companies:", err);
-            setError(err);
-            setLoading(false);
-        });
-
-        // Cleanup subscription on unmount
-        return () => unsubscribe();
+        return {
+            id: id,
+            name: data.name || 'N/A',
+            email: data.email || 'N/A',
+            displayImageUrl,
+            status: data.status || 'Active',
+            plan: data.subscription || 'Free',
+            size: data.companySize || { size: 'Startup', employees: '1-100' },
+            createdAt: data.createdAt?.toDate()?.toISOString() || null,
+            website: data.website,
+            socials: data.socials,
+            helplinePhone: data.helplinePhone,
+            helplineEmail: data.helplineEmail,
+            aboutCompany: data.aboutCompany,
+            companyType: data.companyType,
+            foundedYear: data.foundedYear,
+            tags: data.tags,
+            benefits: data.benefits,
+        } as CompanyData;
     }, []);
+
+    const { data: companies, loading, error } = useFirestoreCollection<CompanyData>({
+        collectionPath: 'users',
+        constraints: [where('role', '==', 'company')],
+        transformer,
+    });
 
     return (
         <CompanyContext.Provider value={{ companies, loading, error }}>

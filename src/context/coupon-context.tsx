@@ -1,9 +1,9 @@
 'use client';
 
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { collection, onSnapshot, query } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import React, { createContext, ReactNode } from 'react';
 import type { Coupon } from '@/lib/types';
+import { useFirestoreCollection, useFirestoreTransformer } from '@/hooks/use-firestore';
+import { DocumentData } from 'firebase/firestore';
 
 interface CouponContextType {
     coupons: Coupon[];
@@ -18,41 +18,24 @@ export const CouponContext = createContext<CouponContextType>({
 });
 
 export const CouponProvider = ({ children }: { children: ReactNode }) => {
-    const [coupons, setCoupons] = useState<Coupon[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<Error | null>(null);
+    const transformer = useFirestoreTransformer((id: string, data: DocumentData) => ({
+        id: id,
+        code: data.code || '',
+        description: data.description || '',
+        type: data.type || 'coupon',
+        discountType: data.discountType || 'percentage',
+        discountValue: data.discountValue || 0,
+        status: data.status || 'inactive',
+        validFrom: data.validFrom?.toDate()?.toISOString() || null,
+        validUntil: data.validUntil?.toDate()?.toISOString() || null,
+        applicablePlans: data.applicablePlans || [],
+        createdAt: data.createdAt?.toDate()?.toISOString() || '',
+    } as Coupon), []);
 
-    useEffect(() => {
-        const couponsCol = collection(db, 'coupons');
-        const q = query(couponsCol);
-
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const couponList = snapshot.docs.map(doc => {
-                const data = doc.data();
-                return {
-                    id: doc.id,
-                    code: data.code || '',
-                    description: data.description || '',
-                    type: data.type || 'coupon',
-                    discountType: data.discountType || 'percentage',
-                    discountValue: data.discountValue || 0,
-                    status: data.status || 'inactive',
-                    validFrom: data.validFrom?.toDate()?.toISOString() || null,
-                    validUntil: data.validUntil?.toDate()?.toISOString() || null,
-                    applicablePlans: data.applicablePlans || [],
-                    createdAt: data.createdAt?.toDate()?.toISOString() || '',
-                } as Coupon;
-            });
-            setCoupons(couponList);
-            setLoading(false);
-        }, (err) => {
-            console.error("Error fetching coupons:", err);
-            setError(err);
-            setLoading(false);
-        });
-
-        return () => unsubscribe();
-    }, []);
+    const { data: coupons, loading, error } = useFirestoreCollection<Coupon>({
+        collectionPath: 'coupons',
+        transformer,
+    });
 
     return (
         <CouponContext.Provider value={{ coupons, loading, error }}>
