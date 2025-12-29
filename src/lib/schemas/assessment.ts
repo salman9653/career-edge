@@ -41,8 +41,8 @@ export const BankQuestionSchema = z.object({
   // Code specific
   constraints: z.array(z.string()).optional(),
   hints: z.array(z.string()).optional(),
-  functionName: z.record(z.string()).optional(),
-  boilerplate: z.record(z.string()).optional(),
+  functionName: z.record(z.string(), z.string()).optional(),
+  boilerplate: z.record(z.string(), z.string()).optional(),
   examples: z.array(z.object({ input: z.string(), output: z.string() })).optional(),
   testCases: z.array(z.object({ input: z.string(), output: z.string(), sample: z.boolean() })).optional(),
 }).superRefine((data, ctx) => {

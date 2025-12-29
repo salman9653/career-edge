@@ -1,6 +1,7 @@
 
 'use client';
-import { useContext, useState, useMemo, useEffect, useTransition } from 'react';
+import React, { useContext, useState, useMemo, useEffect, useTransition } from 'react';
+import { TableVirtuoso } from 'react-virtuoso';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -384,50 +385,50 @@ export function CandidatesTable() {
             )}
         </div>
         <Card className="flex-1 overflow-hidden">
-            <div className="relative h-full overflow-auto custom-scrollbar">
-                <Table>
-                    <TableHeader className="bg-muted/50 sticky top-0">
-                        <TableRow>
-                            <TableHead className="w-[80px] font-bold py-4 pl-6">
-                                {isSelectModeActive ? (
-                                    <Checkbox 
-                                        checked={selectedCandidates.length > 0 && selectedCandidates.length === filteredAndSortedCandidates.length}
-                                        onCheckedChange={(checked) => handleSelectAll(!!checked)}
-                                        aria-label="Select all rows"
-                                    />
-                                ) : 'S.No.'}
-                            </TableHead>
-                            <TableHead className="font-bold py-4">
-                                <button onClick={() => requestSort('name')} className="group flex items-center gap-2">
-                                    Candidate Name
-                                    <div className="p-1 group-hover:bg-accent rounded-full transition-colors">
-                                        {getSortIndicator('name')}
-                                    </div>
-                                </button>
-                            </TableHead>
-                            <TableHead className="font-bold py-4">Status</TableHead>
-                            <TableHead className="font-bold py-4">Subscription</TableHead>
-                            <TableHead className="font-bold py-4">
-                                <button onClick={() => requestSort('applications')} className="group flex items-center gap-2">
-                                    Applications
-                                    <div className="p-1 group-hover:bg-accent rounded-full transition-colors">
-                                        {getSortIndicator('applications')}
-                                    </div>
-                                </button>
-                            </TableHead>
-                            <TableHead className="font-bold py-4">
-                                <button onClick={() => requestSort('createdAt')} className="group flex items-center gap-2">
-                                    Member Since
-                                    <div className="p-1 group-hover:bg-accent rounded-full transition-colors">
-                                        {getSortIndicator('createdAt')}
-                                    </div>
-                                </button>
-                            </TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {loading ? (
-                            Array.from({length: 5}).map((_, index) => (
+            <div className="h-full w-full">
+                {loading ? (
+                    <Table>
+                        <TableHeader className="bg-muted/50 sticky top-0">
+                            <TableRow>
+                                <TableHead className="w-[80px] font-bold py-4 pl-6">
+                                    {isSelectModeActive ? (
+                                        <Checkbox 
+                                            checked={selectedCandidates.length > 0 && selectedCandidates.length === filteredAndSortedCandidates.length}
+                                            onCheckedChange={(checked) => handleSelectAll(!!checked)}
+                                            aria-label="Select all rows"
+                                        />
+                                    ) : 'S.No.'}
+                                </TableHead>
+                                <TableHead className="font-bold py-4">
+                                    <button onClick={() => requestSort('name')} className="group flex items-center gap-2">
+                                        Candidate Name
+                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">
+                                            {getSortIndicator('name')}
+                                        </div>
+                                    </button>
+                                </TableHead>
+                                <TableHead className="font-bold py-4">Status</TableHead>
+                                <TableHead className="font-bold py-4">Subscription</TableHead>
+                                <TableHead className="font-bold py-4">
+                                    <button onClick={() => requestSort('applications')} className="group flex items-center gap-2">
+                                        Applications
+                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">
+                                            {getSortIndicator('applications')}
+                                        </div>
+                                    </button>
+                                </TableHead>
+                                <TableHead className="font-bold py-4">
+                                    <button onClick={() => requestSort('createdAt')} className="group flex items-center gap-2">
+                                        Member Since
+                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">
+                                            {getSortIndicator('createdAt')}
+                                        </div>
+                                    </button>
+                                </TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {Array.from({length: 5}).map((_, index) => (
                                 <TableRow key={index}>
                                     <TableCell className="pl-6"><Skeleton className="h-5 w-5" /></TableCell>
                                     <TableCell><Skeleton className="h-5 w-48" /></TableCell>
@@ -436,52 +437,111 @@ export function CandidatesTable() {
                                     <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                                 </TableRow>
-                            ))
-                        ) : filteredAndSortedCandidates.length > 0 ? (
-                            filteredAndSortedCandidates.map((candidate, index) => (
-                                <TableRow key={candidate.id} onClick={() => handleRowClick(candidate.id)} className="cursor-pointer" data-state={selectedCandidates.includes(candidate.id) && "selected"}>
-                                    <TableCell className="w-[80px] pl-6" onClick={(e) => {if(isSelectModeActive) e.stopPropagation()}}>
-                                        {isSelectModeActive ? (
-                                            <Checkbox
-                                                checked={selectedCandidates.includes(candidate.id)}
-                                                onCheckedChange={(checked) => handleRowSelect(candidate.id, !!checked)}
-                                                aria-label={`Select row ${index + 1}`}
-                                            />
-                                        ) : (
-                                            index + 1
-                                        )}
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center gap-3">
-                                            <Avatar className="h-10 w-10">
-                                                {candidate.avatar && <AvatarImage src={candidate.avatar} alt={`${candidate.name} avatar`} data-ai-hint="person avatar" />}
-                                                <AvatarFallback>{getInitials(candidate.name)}</AvatarFallback>
-                                            </Avatar>
-                                            <span className="font-medium">{candidate.name}</span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant={getStatusVariant(candidate.status)}>{candidate.status}</Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                      <div className={`flex items-center`}>
-                                        {getSubscriptionIcon(candidate.subscription)}
-                                        {candidate.subscription}
-                                      </div>
-                                    </TableCell>
-                                    <TableCell>{candidate.applications}</TableCell>
-                                    <TableCell>{formatDate(candidate.createdAt)}</TableCell>
-                                </TableRow>
-                            ))
-                        ) : (
+                            ))}
+                        </TableBody>
+                    </Table>
+                ) : filteredAndSortedCandidates.length > 0 ? (
+                    <TableVirtuoso
+                        data={filteredAndSortedCandidates}
+                        components={{
+                            Table: (props) => <Table {...props} style={{ ...props.style, borderCollapse: 'collapse', width: '100%' }} />,
+                            TableHead: React.forwardRef((props, ref) => <TableHeader {...props} ref={ref} className="bg-muted/50 z-10" />),
+                            TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
+                            TableRow: (props) => {
+                                const index = props['data-index'];
+                                const candidate = filteredAndSortedCandidates[index];
+                                if (!candidate) return <TableRow {...props} />;
+                                
+                                return (
+                                    <TableRow 
+                                        {...props} 
+                                        onClick={() => handleRowClick(candidate.id)} 
+                                        className="cursor-pointer"
+                                        data-state={selectedCandidates.includes(candidate.id) && "selected"}
+                                    />
+                                );
+                            },
+                        }}
+                        fixedHeaderContent={() => (
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center h-24">
-                                    {searchQuery ? `No candidates found for "${searchQuery}"` : 'No candidates found.'}
-                                </TableCell>
+                                <TableHead className="w-[80px] font-bold py-4 pl-6 h-12 bg-muted/50">
+                                    {isSelectModeActive ? (
+                                        <Checkbox 
+                                            checked={selectedCandidates.length > 0 && selectedCandidates.length === filteredAndSortedCandidates.length}
+                                            onCheckedChange={(checked) => handleSelectAll(!!checked)}
+                                            aria-label="Select all rows"
+                                        />
+                                    ) : 'S.No.'}
+                                </TableHead>
+                                <TableHead className="font-bold py-4 bg-muted/50">
+                                    <button onClick={() => requestSort('name')} className="group flex items-center gap-2">
+                                        Candidate Name
+                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">
+                                            {getSortIndicator('name')}
+                                        </div>
+                                    </button>
+                                </TableHead>
+                                <TableHead className="font-bold py-4 bg-muted/50">Status</TableHead>
+                                <TableHead className="font-bold py-4 bg-muted/50">Subscription</TableHead>
+                                <TableHead className="font-bold py-4 bg-muted/50">
+                                    <button onClick={() => requestSort('applications')} className="group flex items-center gap-2">
+                                        Applications
+                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">
+                                            {getSortIndicator('applications')}
+                                        </div>
+                                    </button>
+                                </TableHead>
+                                <TableHead className="font-bold py-4 bg-muted/50">
+                                    <button onClick={() => requestSort('createdAt')} className="group flex items-center gap-2">
+                                        Member Since
+                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">
+                                            {getSortIndicator('createdAt')}
+                                        </div>
+                                    </button>
+                                </TableHead>
                             </TableRow>
                         )}
-                    </TableBody>
-                </Table>
+                        itemContent={(index, candidate) => (
+                            <>
+                                <TableCell className="w-[80px] pl-6" onClick={(e) => {if(isSelectModeActive) e.stopPropagation()}}>
+                                    {isSelectModeActive ? (
+                                        <Checkbox
+                                            checked={selectedCandidates.includes(candidate.id)}
+                                            onCheckedChange={(checked) => handleRowSelect(candidate.id, !!checked)}
+                                            aria-label={`Select row ${index + 1}`}
+                                        />
+                                    ) : (
+                                        index + 1
+                                    )}
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex items-center gap-3">
+                                        <Avatar className="h-10 w-10">
+                                            {candidate.avatar && <AvatarImage src={candidate.avatar} alt={`${candidate.name} avatar`} data-ai-hint="person avatar" />}
+                                            <AvatarFallback>{getInitials(candidate.name)}</AvatarFallback>
+                                        </Avatar>
+                                        <span className="font-medium">{candidate.name}</span>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <Badge variant={getStatusVariant(candidate.status)}>{candidate.status}</Badge>
+                                </TableCell>
+                                <TableCell>
+                                    <div className={`flex items-center`}>
+                                    {getSubscriptionIcon(candidate.subscription)}
+                                    {candidate.subscription}
+                                    </div>
+                                </TableCell>
+                                <TableCell>{candidate.applications}</TableCell>
+                                <TableCell>{formatDate(candidate.createdAt)}</TableCell>
+                            </>
+                        )}
+                    />
+                ) : (
+                    <div className="flex items-center justify-center h-24 text-muted-foreground">
+                        {searchQuery ? `No candidates found for "${searchQuery}"` : 'No candidates found.'}
+                    </div>
+                )}
             </div>
         </Card>
     </>

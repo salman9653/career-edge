@@ -16,7 +16,7 @@ export async function getCandidateApplicationsServer(candidateId: string): Promi
          const applicantSnap = await applicantRef.get();
          
          if (applicantSnap.exists) {
-             const jobData = jobDoc.data() as Job;
+             const jobData = jobDoc.data() as Omit<Job, 'id'>;
              const companyId = jobData.companyId;
              let companyDetails: Company | null = null;
              
@@ -67,7 +67,7 @@ export async function getSavedJobsServer(userId: string): Promise<ApplicationWit
         for (const jobId of favouriteJobs) {
             const jobDoc = await adminDb.collection('jobs').doc(jobId).get();
             if (jobDoc.exists) {
-                const jobData = jobDoc.data() as Job;
+                const jobData = jobDoc.data() as Omit<Job, 'id'>;
                  const companyId = jobData.companyId;
                  let companyDetails: Company | null = null;
                  

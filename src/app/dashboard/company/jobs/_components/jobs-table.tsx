@@ -1,6 +1,7 @@
 
 'use client';
-import { useState, useMemo, useTransition, useEffect, useContext } from 'react';
+import React, { useState, useMemo, useTransition, useEffect, useContext } from 'react';
+import { TableVirtuoso } from 'react-virtuoso';
 import Link from 'next/link';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -212,7 +213,7 @@ export function JobsTable({ jobs }: JobsTableProps) {
 
     const handleChangeStatus = async (jobId: string, newStatus: string) => {
         const result = await updateJobStatusAction(jobId, newStatus);
-        if (result?.error) {
+        if (result && 'error' in result) {
             toast({ variant: "destructive", title: "Error", description: result.error });
         } else {
             toast({ title: "Success", description: `Job status updated to ${newStatus}.` });
@@ -350,136 +351,189 @@ ${session?.name}`;
             </div>
             
             <Card className="flex-1 overflow-hidden">
-                <div className="relative h-full overflow-auto custom-scrollbar">
-                <Table>
-                    <TableHeader className="bg-muted/50 sticky top-0">
-                    <TableRow>
-                        <TableHead className="w-[60px] pl-6">
-                            {isSelectModeActive ? <Checkbox onCheckedChange={(checked) => handleSelectAll(!!checked)} /> : 'S.No.'}
-                        </TableHead>
-                        <TableHead>
-                            <button onClick={() => requestSort('title')} className="group flex items-center gap-2">
-                                Job Title {getSortIndicator('title')}
-                            </button>
-                        </TableHead>
-                        <TableHead>Assigned Recruiter</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>
-                            <button onClick={() => requestSort('type')} className="group flex items-center gap-2">
-                                Job Type {getSortIndicator('type')}
-                            </button>
-                        </TableHead>
-                        <TableHead>Location</TableHead>
-                        <TableHead>
-                             <button onClick={() => requestSort('applicants')} className="group flex items-center gap-2">
-                                Applications {getSortIndicator('applicants')}
-                            </button>
-                        </TableHead>
-                        <TableHead>
-                            <button onClick={() => requestSort('datePosted')} className="group flex items-center gap-2">
-                                Posted On {getSortIndicator('datePosted')}
-                            </button>
-                        </TableHead>
-                        <TableHead className="text-right pr-6">Actions</TableHead>
-                    </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {loading ? (
-                            Array.from({ length: 5 }).map((_, i) => (
+                <div className="h-full w-full">
+                {loading ? (
+                    <Table>
+                        <TableHeader className="bg-muted/50 sticky top-0">
+                        <TableRow>
+                            <TableHead className="w-[60px] pl-6">
+                                {isSelectModeActive ? <Checkbox onCheckedChange={(checked) => handleSelectAll(!!checked)} /> : 'S.No.'}
+                            </TableHead>
+                            <TableHead>
+                                <button onClick={() => requestSort('title')} className="group flex items-center gap-2">
+                                    Job Title {getSortIndicator('title')}
+                                </button>
+                            </TableHead>
+                            <TableHead>Assigned Recruiter</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>
+                                <button onClick={() => requestSort('type')} className="group flex items-center gap-2">
+                                    Job Type {getSortIndicator('type')}
+                                </button>
+                            </TableHead>
+                            <TableHead>Location</TableHead>
+                            <TableHead>
+                                <button onClick={() => requestSort('applicants')} className="group flex items-center gap-2">
+                                    Applications {getSortIndicator('applicants')}
+                                </button>
+                            </TableHead>
+                            <TableHead>
+                                <button onClick={() => requestSort('datePosted')} className="group flex items-center gap-2">
+                                    Posted On {getSortIndicator('datePosted')}
+                                </button>
+                            </TableHead>
+                            <TableHead className="text-right pr-6">Actions</TableHead>
+                        </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {Array.from({ length: 5 }).map((_, i) => (
                                 <TableRow key={i}><TableCell colSpan={9}><Skeleton className="h-5 w-full" /></TableCell></TableRow>
-                            ))
-                        ) : filteredAndSortedJobs.length > 0 ? (
-                            filteredAndSortedJobs.map((job, index) => (
-                                <TableRow key={job.id} onClick={() => handleRowClick(job.id)} className="cursor-pointer" data-state={selectedJobs.includes(job.id) && "selected"}>
-                                    <TableCell className="w-[60px] pl-6" onClick={(e) => {if(isSelectModeActive) e.stopPropagation()}}>
-                                        {isSelectModeActive ? (
-                                            <Checkbox checked={selectedJobs.includes(job.id)} onCheckedChange={(checked) => handleRowSelect(job.id, !!checked)} />
-                                        ) : ( index + 1 )}
-                                    </TableCell>
-                                    <TableCell className="font-medium">{job.title}</TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center gap-2">
-                                             <Avatar className="h-6 w-6 text-xs">
-                                                <AvatarFallback>{getInitials(job.recruiter.name)}</AvatarFallback>
-                                             </Avatar>
-                                            <span>{job.recruiter.name}</span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant={job.status === 'Live' ? 'default' : 'outline'}>{job.status}</Badge>
-                                    </TableCell>
-                                    <TableCell>{job.type}</TableCell>
-                                    <TableCell>{job.location}</TableCell>
-                                    <TableCell>{job.applicants?.length || 0}</TableCell>
-                                    <TableCell>{formatDate(job.createdAt)}</TableCell>
-                                    <TableCell className="text-right pr-4" onClick={(e) => e.stopPropagation()}>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                    <MoreVertical className="h-4 w-4" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuSub>
-                                                    <DropdownMenuSubTrigger><Share2 className="mr-2 h-4 w-4"/>Share</DropdownMenuSubTrigger>
-                                                    <DropdownMenuPortal>
-                                                        <DropdownMenuSubContent>
-                                                            <DropdownMenuItem onSelect={() => handleCopyLink(job.id)}><Clipboard className="mr-2 h-4 w-4"/>Copy Job Link</DropdownMenuItem>
-                                                            <DropdownMenuItem onSelect={() => handleShare(job)}><Share2 className="mr-2 h-4 w-4"/>Share Job Link</DropdownMenuItem>
-                                                            <DropdownMenuItem onSelect={() => handleShareViaWhatsApp(job)}><WhatsAppIcon />Share via WhatsApp</DropdownMenuItem>
-                                                            <DropdownMenuItem onSelect={() => handleShareViaEmail(job)}><Mail className="mr-2 h-4 w-4"/>Share via Email</DropdownMenuItem>
-                                                        </DropdownMenuSubContent>
-                                                    </DropdownMenuPortal>
-                                                </DropdownMenuSub>
-                                                <DropdownMenuSub>
-                                                    <DropdownMenuSubTrigger><ChevronsUpDown className="mr-2 h-4 w-4"/>Change Status</DropdownMenuSubTrigger>
-                                                    <DropdownMenuPortal>
-                                                        <DropdownMenuSubContent>
-                                                            {statusOptions.filter(status => status !== job.status).map(status => (
-                                                                <DropdownMenuItem key={status} onSelect={() => handleChangeStatus(job.id, status)}>
-                                                                    {status}
-                                                                </DropdownMenuItem>
-                                                            ))}
-                                                        </DropdownMenuSubContent>
-                                                    </DropdownMenuPortal>
-                                                </DropdownMenuSub>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuItem asChild>
-                                                    <Link href={`/dashboard/company/jobs/edit/${job.id}`}>
-                                                        <Edit className="mr-2 h-4 w-4"/>Edit
-                                                    </Link>
-                                                </DropdownMenuItem>
-                                                <AlertDialog>
-                                                    <AlertDialogTrigger asChild>
-                                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
-                                                            <Trash2 className="mr-2 h-4 w-4"/>Delete
-                                                        </DropdownMenuItem>
-                                                    </AlertDialogTrigger>
-                                                    <AlertDialogContent>
-                                                        <AlertDialogHeader>
-                                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                            <AlertDialogDescription>
-                                                                This action cannot be undone. This will permanently delete the &quot;{job.title}&quot; job posting.
-                                                            </AlertDialogDescription>
-                                                        </AlertDialogHeader>
-                                                        <AlertDialogFooter>
-                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                            <AlertDialogAction onClick={() => deleteJobAction(job.id)} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
-                                                        </AlertDialogFooter>
-                                                    </AlertDialogContent>
-                                                </AlertDialog>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        ) : (
+                            ))}
+                        </TableBody>
+                    </Table>
+                ) : filteredAndSortedJobs.length > 0 ? (
+                    <TableVirtuoso
+                        data={filteredAndSortedJobs}
+                        components={{
+                            Table: (props) => <Table {...props} style={{ ...props.style, borderCollapse: 'collapse', width: '100%' }} />,
+                            TableHead: React.forwardRef((props, ref) => <TableHeader {...props} ref={ref} className="bg-muted/50 z-10" />),
+                            TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
+                            TableRow: (props) => {
+                                const index = props['data-index'];
+                                const job = filteredAndSortedJobs[index];
+                                if (!job) return <TableRow {...props} />;
+                                
+                                return (
+                                    <TableRow 
+                                        {...props} 
+                                        onClick={() => handleRowClick(job.id)} 
+                                        className="cursor-pointer"
+                                        data-state={selectedJobs.includes(job.id) && "selected"}
+                                    />
+                                );
+                            },
+                        }}
+                        fixedHeaderContent={() => (
                             <TableRow>
-                                <TableCell colSpan={9} className="text-center h-24">No jobs found.</TableCell>
+                                <TableHead className="w-[60px] pl-6 h-12 bg-muted/50">
+                                    {isSelectModeActive ? (
+                                        <Checkbox checked={selectedJobs.length > 0 && selectedJobs.length === filteredAndSortedJobs.length} onCheckedChange={(checked) => handleSelectAll(!!checked)} />
+                                    ) : 'S.No.'}
+                                </TableHead>
+                                <TableHead className="bg-muted/50">
+                                    <button onClick={() => requestSort('title')} className="group flex items-center gap-2">
+                                        Job Title {getSortIndicator('title')}
+                                    </button>
+                                </TableHead>
+                                <TableHead className="bg-muted/50">Assigned Recruiter</TableHead>
+                                <TableHead className="bg-muted/50">Status</TableHead>
+                                <TableHead className="bg-muted/50">
+                                    <button onClick={() => requestSort('type')} className="group flex items-center gap-2">
+                                        Job Type {getSortIndicator('type')}
+                                    </button>
+                                </TableHead>
+                                <TableHead className="bg-muted/50">Location</TableHead>
+                                <TableHead className="bg-muted/50">
+                                    <button onClick={() => requestSort('applicants')} className="group flex items-center gap-2">
+                                        Applications {getSortIndicator('applicants')}
+                                    </button>
+                                </TableHead>
+                                <TableHead className="bg-muted/50">
+                                    <button onClick={() => requestSort('datePosted')} className="group flex items-center gap-2">
+                                        Posted On {getSortIndicator('datePosted')}
+                                    </button>
+                                </TableHead>
+                                <TableHead className="text-right pr-6 bg-muted/50">Actions</TableHead>
                             </TableRow>
                         )}
-                    </TableBody>
-                </Table>
+                        itemContent={(index, job) => (
+                            <>
+                                <TableCell className="w-[60px] pl-6" onClick={(e) => {if(isSelectModeActive) e.stopPropagation()}}>
+                                    {isSelectModeActive ? (
+                                        <Checkbox checked={selectedJobs.includes(job.id)} onCheckedChange={(checked) => handleRowSelect(job.id, !!checked)} />
+                                    ) : ( index + 1 )}
+                                </TableCell>
+                                <TableCell className="font-medium">{job.title}</TableCell>
+                                <TableCell>
+                                    <div className="flex items-center gap-2">
+                                            <Avatar className="h-6 w-6 text-xs">
+                                            <AvatarFallback>{getInitials(job.recruiter.name)}</AvatarFallback>
+                                            </Avatar>
+                                        <span>{job.recruiter.name}</span>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <Badge variant={job.status === 'Live' ? 'default' : 'outline'}>{job.status}</Badge>
+                                </TableCell>
+                                <TableCell>{job.type}</TableCell>
+                                <TableCell>{job.location}</TableCell>
+                                <TableCell>{job.applicants?.length || 0}</TableCell>
+                                <TableCell>{formatDate(job.createdAt)}</TableCell>
+                                <TableCell className="text-right pr-4" onClick={(e) => e.stopPropagation()}>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                <MoreVertical className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuSub>
+                                                <DropdownMenuSubTrigger><Share2 className="mr-2 h-4 w-4"/>Share</DropdownMenuSubTrigger>
+                                                <DropdownMenuPortal>
+                                                    <DropdownMenuSubContent>
+                                                        <DropdownMenuItem onSelect={() => handleCopyLink(job.id)}><Clipboard className="mr-2 h-4 w-4"/>Copy Job Link</DropdownMenuItem>
+                                                        <DropdownMenuItem onSelect={() => handleShare(job)}><Share2 className="mr-2 h-4 w-4"/>Share Job Link</DropdownMenuItem>
+                                                        <DropdownMenuItem onSelect={() => handleShareViaWhatsApp(job)}><WhatsAppIcon />Share via WhatsApp</DropdownMenuItem>
+                                                        <DropdownMenuItem onSelect={() => handleShareViaEmail(job)}><Mail className="mr-2 h-4 w-4"/>Share via Email</DropdownMenuItem>
+                                                    </DropdownMenuSubContent>
+                                                </DropdownMenuPortal>
+                                            </DropdownMenuSub>
+                                            <DropdownMenuSub>
+                                                <DropdownMenuSubTrigger><ChevronsUpDown className="mr-2 h-4 w-4"/>Change Status</DropdownMenuSubTrigger>
+                                                <DropdownMenuPortal>
+                                                    <DropdownMenuSubContent>
+                                                        {statusOptions.filter(status => status !== job.status).map(status => (
+                                                            <DropdownMenuItem key={status} onSelect={() => handleChangeStatus(job.id, status)}>
+                                                                {status}
+                                                            </DropdownMenuItem>
+                                                        ))}
+                                                    </DropdownMenuSubContent>
+                                                </DropdownMenuPortal>
+                                            </DropdownMenuSub>
+                                            <DropdownMenuSeparator />
+                                            <DropdownMenuItem asChild>
+                                                <Link href={`/dashboard/company/jobs/edit/${job.id}`}>
+                                                    <Edit className="mr-2 h-4 w-4"/>Edit
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive">
+                                                        <Trash2 className="mr-2 h-4 w-4"/>Delete
+                                                    </DropdownMenuItem>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            This action cannot be undone. This will permanently delete the &quot;{job.title}&quot; job posting.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => deleteJobAction(job.id)} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </TableCell>
+                            </>
+                        )}
+                    />
+                ) : (
+                    <div className="flex items-center justify-center h-24 text-muted-foreground">No jobs found.</div>
+                )}
                 </div>
             </Card>
         </>

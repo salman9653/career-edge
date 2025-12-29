@@ -1,6 +1,7 @@
 
 'use client';
-import { useState, useMemo, useTransition, useEffect } from 'react';
+import React, { useState, useMemo, useTransition, useEffect } from 'react';
+import { TableVirtuoso } from 'react-virtuoso';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -309,7 +310,7 @@ export function QuestionsTable({ questions, loading, context, showAddButton = fa
     if (!assessmentId) return;
     startTransition(async () => {
         const result = await removeQuestionFromAssessmentAction(assessmentId, questionId);
-        if (result.error) {
+        if ('error' in result) {
             toast({ variant: 'destructive', title: 'Error', description: result.error });
         } else {
             toast({ title: 'Success', description: 'Question removed from assessment.'});
@@ -481,64 +482,126 @@ export function QuestionsTable({ questions, loading, context, showAddButton = fa
 
         {/* Desktop View - Table */}
         <Card className="hidden md:flex flex-1 flex-col overflow-hidden">
-            <div className="relative h-full overflow-auto custom-scrollbar">
-                <Table>
-                    <TableHeader className="bg-muted/50 sticky top-0 z-10">
-                        <TableRow>
-                            <TableHead className="w-[60px] font-bold py-4 pl-6">
-                                {isSelectModeActive ? <Checkbox onCheckedChange={(checked) => handleSelectAll(!!checked)} /> : 'S.No.'}
-                            </TableHead>
-                            <TableHead className="font-bold py-4">
-                                <button onClick={() => requestSort('question')} className="group flex items-center gap-2">
-                                    Question
-                                    <div className="p-1 group-hover:bg-accent rounded-full transition-colors">{getSortIndicator('question')}</div>
-                                </button>
-                            </TableHead>
-                            <TableHead className="font-bold py-4">Type</TableHead>
-                            <TableHead className="font-bold py-4">Category</TableHead>
-                            <TableHead className="font-bold py-4">
-                                <button onClick={() => requestSort('difficulty')} className="group flex items-center gap-2">
-                                    Difficulty
-                                    <div className="p-1 group-hover:bg-accent rounded-full transition-colors">{getSortIndicator('difficulty')}</div>
-                                </button>
-                            </TableHead>
-                            {!isAssessmentContext && <TableHead className="font-bold py-4">Status</TableHead>}
-                             {displayCreatedBy && (
+            <div className="h-full w-full">
+                {loading ? (
+                    <Table>
+                        <TableHeader className="bg-muted/50 sticky top-0 z-10">
+                            <TableRow>
+                                <TableHead className="w-[60px] font-bold py-4 pl-6">
+                                    {isSelectModeActive ? <Checkbox onCheckedChange={(checked) => handleSelectAll(!!checked)} /> : 'S.No.'}
+                                </TableHead>
                                 <TableHead className="font-bold py-4">
-                                    <button onClick={() => requestSort('addedByName')} className="group flex items-center gap-2">
-                                        Created By
-                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">{getSortIndicator('addedByName')}</div>
+                                    <button onClick={() => requestSort('question')} className="group flex items-center gap-2">
+                                        Question
+                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">{getSortIndicator('question')}</div>
                                     </button>
                                 </TableHead>
-                            )}
-                            {!isAssessmentContext && (
+                                <TableHead className="font-bold py-4">Type</TableHead>
+                                <TableHead className="font-bold py-4">Category</TableHead>
                                 <TableHead className="font-bold py-4">
-                                    <button onClick={() => requestSort('createdAt')} className="group flex items-center gap-2">
-                                        Created At
-                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">{getSortIndicator('createdAt')}</div>
+                                    <button onClick={() => requestSort('difficulty')} className="group flex items-center gap-2">
+                                        Difficulty
+                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">{getSortIndicator('difficulty')}</div>
                                     </button>
                                 </TableHead>
-                            )}
-                            {isAssessmentContext && <TableHead className="font-bold py-4 text-right pr-6">Actions</TableHead>}
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {loading ? (
-                            Array.from({length: 7}).map((_, index) => (
+                                {!isAssessmentContext && <TableHead className="font-bold py-4">Status</TableHead>}
+                                    {displayCreatedBy && (
+                                    <TableHead className="font-bold py-4">
+                                        <button onClick={() => requestSort('addedByName')} className="group flex items-center gap-2">
+                                            Created By
+                                            <div className="p-1 group-hover:bg-accent rounded-full transition-colors">{getSortIndicator('addedByName')}</div>
+                                        </button>
+                                    </TableHead>
+                                )}
+                                {!isAssessmentContext && (
+                                    <TableHead className="font-bold py-4">
+                                        <button onClick={() => requestSort('createdAt')} className="group flex items-center gap-2">
+                                            Created At
+                                            <div className="p-1 group-hover:bg-accent rounded-full transition-colors">{getSortIndicator('createdAt')}</div>
+                                        </button>
+                                    </TableHead>
+                                )}
+                                {isAssessmentContext && <TableHead className="font-bold py-4 text-right pr-6">Actions</TableHead>}
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {Array.from({length: 7}).map((_, index) => (
                                 <TableRow key={index}>
                                     <TableCell colSpan={displayCreatedBy ? 8 : 7} className="p-2">
-                                      <Skeleton className="h-5 w-full" />
+                                        <Skeleton className="h-5 w-full" />
                                     </TableCell>
                                 </TableRow>
-                            ))
-                        ) : filteredAndSortedQuestions.length > 0 ? (
-                            filteredAndSortedQuestions.map((q, index) => {
-                                const difficulty = getDifficultyDisplay(q.difficulty);
-                                const firstCategory = q.category && q.category[0];
-                                const otherCategories = q.category && q.category.length > 1 ? q.category.slice(1) : [];
-
+                            ))}
+                        </TableBody>
+                    </Table>
+                ) : filteredAndSortedQuestions.length > 0 ? (
+                    <TableVirtuoso
+                        data={filteredAndSortedQuestions}
+                        components={{
+                            Table: (props) => <Table {...props} style={{ ...props.style, borderCollapse: 'collapse', width: '100%' }} />,
+                            TableHead: React.forwardRef((props, ref) => <TableHeader {...props} ref={ref} className="bg-muted/50 z-10" />),
+                            TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
+                            TableRow: (props) => {
+                                const index = props['data-index'];
+                                const q = filteredAndSortedQuestions[index];
+                                if (!q) return <TableRow {...props} />;
+                                
                                 return (
-                                <TableRow key={q.id} onClick={() => handleRowClick(q)} className="cursor-pointer" data-state={selectedQuestions.includes(q.id) && "selected"}>
+                                    <TableRow 
+                                        {...props} 
+                                        onClick={() => handleRowClick(q)} 
+                                        className="cursor-pointer"
+                                        data-state={selectedQuestions.includes(q.id) && "selected"}
+                                    />
+                                );
+                            },
+                        }}
+                        fixedHeaderContent={() => (
+                            <TableRow>
+                                <TableHead className="w-[60px] font-bold py-4 pl-6 h-12 bg-muted/50">
+                                    {isSelectModeActive ? <Checkbox onCheckedChange={(checked) => handleSelectAll(!!checked)} /> : 'S.No.'}
+                                </TableHead>
+                                <TableHead className="font-bold py-4 bg-muted/50">
+                                    <button onClick={() => requestSort('question')} className="group flex items-center gap-2">
+                                        Question
+                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">{getSortIndicator('question')}</div>
+                                    </button>
+                                </TableHead>
+                                <TableHead className="font-bold py-4 bg-muted/50">Type</TableHead>
+                                <TableHead className="font-bold py-4 bg-muted/50">Category</TableHead>
+                                <TableHead className="font-bold py-4 bg-muted/50">
+                                    <button onClick={() => requestSort('difficulty')} className="group flex items-center gap-2">
+                                        Difficulty
+                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">{getSortIndicator('difficulty')}</div>
+                                    </button>
+                                </TableHead>
+                                {!isAssessmentContext && <TableHead className="font-bold py-4 bg-muted/50">Status</TableHead>}
+                                    {displayCreatedBy && (
+                                    <TableHead className="font-bold py-4 bg-muted/50">
+                                        <button onClick={() => requestSort('addedByName')} className="group flex items-center gap-2">
+                                            Created By
+                                            <div className="p-1 group-hover:bg-accent rounded-full transition-colors">{getSortIndicator('addedByName')}</div>
+                                        </button>
+                                    </TableHead>
+                                )}
+                                {!isAssessmentContext && (
+                                    <TableHead className="font-bold py-4 bg-muted/50">
+                                        <button onClick={() => requestSort('createdAt')} className="group flex items-center gap-2">
+                                            Created At
+                                            <div className="p-1 group-hover:bg-accent rounded-full transition-colors">{getSortIndicator('createdAt')}</div>
+                                        </button>
+                                    </TableHead>
+                                )}
+                                {isAssessmentContext && <TableHead className="font-bold py-4 text-right pr-6 bg-muted/50">Actions</TableHead>}
+                            </TableRow>
+                        )}
+                        itemContent={(index, q) => {
+                            const difficulty = getDifficultyDisplay(q.difficulty);
+                            const firstCategory = q.category && q.category[0];
+                            const otherCategories = q.category && q.category.length > 1 ? q.category.slice(1) : [];
+
+                            return (
+                                <>
                                     <TableCell className="w-[60px] pl-6" onClick={(e) => {if(isSelectModeActive) e.stopPropagation()}}>
                                         {isSelectModeActive ? (
                                             <Checkbox checked={selectedQuestions.includes(q.id)} onCheckedChange={(checked) => handleRowSelect(q.id, !!checked)} />
@@ -557,7 +620,7 @@ export function QuestionsTable({ questions, loading, context, showAddButton = fa
                                                 <Tooltip>
                                                     <TooltipTrigger>
                                                         <Badge variant="default" className="rounded-full !px-2">
-                                                          <span>+{otherCategories.length}</span>
+                                                            <span>+{otherCategories.length}</span>
                                                         </Badge>
                                                     </TooltipTrigger>
                                                     <TooltipContent>
@@ -571,9 +634,9 @@ export function QuestionsTable({ questions, loading, context, showAddButton = fa
                                         <span className={cn('font-medium', difficulty.className)}>{difficulty.text}</span>
                                     </TableCell>
                                     {!isAssessmentContext && (
-                                      <TableCell>
-                                          <Badge variant={getStatusVariant(q.status)} className="capitalize">{q.status}</Badge>
-                                      </TableCell>
+                                        <TableCell>
+                                            <Badge variant={getStatusVariant(q.status)} className="capitalize">{q.status}</Badge>
+                                        </TableCell>
                                     )}
                                     {displayCreatedBy && <TableCell>{q.addedByName}</TableCell>}
                                     {!isAssessmentContext && <TableCell>{formatDate(q.createdAt)}</TableCell>}
@@ -591,17 +654,16 @@ export function QuestionsTable({ questions, loading, context, showAddButton = fa
                                             </Tooltip>
                                         </TableCell>
                                     )}
-                                </TableRow>
-                                )
-                            })
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={displayCreatedBy ? 8 : 7} className="text-center h-24">No questions found.</TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
-                </div>
+                                </>
+                            );
+                        }}
+                    />
+                ) : (
+                    <div className="flex items-center justify-center h-24 text-muted-foreground w-full">
+                        No questions found.
+                    </div>
+                )}
+            </div>
             </Card>
         {selectedQuestion && (
             <QuestionDetailSheet 

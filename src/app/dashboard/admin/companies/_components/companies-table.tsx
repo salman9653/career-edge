@@ -1,6 +1,7 @@
 
 'use client';
-import { useContext, useState, useMemo, useTransition, useEffect } from 'react';
+import React, { useContext, useState, useMemo, useTransition, useEffect } from 'react';
+import { TableVirtuoso } from 'react-virtuoso';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
@@ -417,66 +418,66 @@ export function CompaniesTable() {
             )}
         </div>
         <Card className="flex-1 overflow-hidden">
-            <div className="relative h-full overflow-auto custom-scrollbar">
-                <Table>
-                    <TableHeader className="bg-muted/50 sticky top-0">
-                        <TableRow>
-                            <TableHead className="w-[80px] font-bold py-4 pl-6">
-                                {isSelectModeActive ? (
-                                    <Checkbox 
-                                        checked={selectedCompanies.length > 0 && selectedCompanies.length === filteredAndSortedCompanies.length}
-                                        onCheckedChange={(checked) => handleSelectAll(!!checked)}
-                                        aria-label="Select all rows"
-                                    />
-                                ) : 'S.No.'}
-                            </TableHead>
-                            <TableHead className="font-bold py-4">
-                                <button onClick={() => requestSort('name')} className="group flex items-center gap-2">
-                                    Company Name
-                                    <div className="p-1 group-hover:bg-accent rounded-full transition-colors">
-                                        {getSortIndicator('name')}
-                                    </div>
-                                </button>
-                            </TableHead>
-                            <TableHead className="font-bold py-4">Status</TableHead>
-                            <TableHead className="font-bold py-4">Subscription</TableHead>
-                            <TableHead className="font-bold py-4">
-                                <button onClick={() => requestSort('size')} className="group flex items-center gap-2">
-                                    Company Size
-                                    <div className="p-1 group-hover:bg-accent rounded-full transition-colors">
-                                        {getSortIndicator('size')}
-                                    </div>
-                                </button>
-                            </TableHead>
-                             <TableHead className="font-bold py-4">
-                                <button onClick={() => requestSort('companyType')} className="group flex items-center gap-2">
-                                    Company Type
-                                    <div className="p-1 group-hover:bg-accent rounded-full transition-colors">
-                                        {getSortIndicator('companyType')}
-                                    </div>
-                                </button>
-                            </TableHead>
-                            <TableHead className="font-bold py-4">
-                                <button onClick={() => requestSort('jobsPosted')} className="group flex items-center gap-2">
-                                    Jobs Posted
-                                    <div className="p-1 group-hover:bg-accent rounded-full transition-colors">
-                                        {getSortIndicator('jobsPosted')}
-                                    </div>
-                                </button>
-                            </TableHead>
-                            <TableHead className="font-bold py-4">
-                                <button onClick={() => requestSort('createdAt')} className="group flex items-center gap-2">
-                                    Member Since
-                                    <div className="p-1 group-hover:bg-accent rounded-full transition-colors">
-                                        {getSortIndicator('createdAt')}
-                                    </div>
-                                </button>
-                            </TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {loading || jobsLoading ? (
-                            Array.from({length: 10}).map((_, index) => (
+            <div className="h-full w-full">
+                {(loading || jobsLoading) ? (
+                    <Table>
+                        <TableHeader className="bg-muted/50 sticky top-0">
+                            <TableRow>
+                                <TableHead className="w-[80px] font-bold py-4 pl-6">
+                                    {isSelectModeActive ? (
+                                        <Checkbox 
+                                            checked={selectedCompanies.length > 0 && selectedCompanies.length === filteredAndSortedCompanies.length}
+                                            onCheckedChange={(checked) => handleSelectAll(!!checked)}
+                                            aria-label="Select all rows"
+                                        />
+                                    ) : 'S.No.'}
+                                </TableHead>
+                                <TableHead className="font-bold py-4">
+                                    <button onClick={() => requestSort('name')} className="group flex items-center gap-2">
+                                        Company Name
+                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">
+                                            {getSortIndicator('name')}
+                                        </div>
+                                    </button>
+                                </TableHead>
+                                <TableHead className="font-bold py-4">Status</TableHead>
+                                <TableHead className="font-bold py-4">Subscription</TableHead>
+                                <TableHead className="font-bold py-4">
+                                    <button onClick={() => requestSort('size')} className="group flex items-center gap-2">
+                                        Company Size
+                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">
+                                            {getSortIndicator('size')}
+                                        </div>
+                                    </button>
+                                </TableHead>
+                                 <TableHead className="font-bold py-4">
+                                    <button onClick={() => requestSort('companyType')} className="group flex items-center gap-2">
+                                        Company Type
+                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">
+                                            {getSortIndicator('companyType')}
+                                        </div>
+                                    </button>
+                                </TableHead>
+                                <TableHead className="font-bold py-4">
+                                    <button onClick={() => requestSort('jobsPosted')} className="group flex items-center gap-2">
+                                        Jobs Posted
+                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">
+                                            {getSortIndicator('jobsPosted')}
+                                        </div>
+                                    </button>
+                                </TableHead>
+                                <TableHead className="font-bold py-4">
+                                    <button onClick={() => requestSort('createdAt')} className="group flex items-center gap-2">
+                                        Member Since
+                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">
+                                            {getSortIndicator('createdAt')}
+                                        </div>
+                                    </button>
+                                </TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {Array.from({length: 10}).map((_, index) => (
                                 <TableRow key={index}>
                                     <TableCell className="pl-6"><Skeleton className="h-5 w-5" /></TableCell>
                                     <TableCell><Skeleton className="h-5 w-48" /></TableCell>
@@ -487,54 +488,129 @@ export function CompaniesTable() {
                                     <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                                 </TableRow>
-                            ))
-                        ) : filteredAndSortedCompanies.length > 0 ? (
-                            filteredAndSortedCompanies.map((company, index) => (
-                                <TableRow key={company.id} onClick={() => handleRowClick(company.id)} className="cursor-pointer" data-state={selectedCompanies.includes(company.id) && "selected"}>
-                                    <TableCell className="w-[80px] pl-6" onClick={(e) => {if(isSelectModeActive) e.stopPropagation()}}>
-                                        {isSelectModeActive ? (
-                                            <Checkbox
-                                                checked={selectedCompanies.includes(company.id)}
-                                                onCheckedChange={(checked) => handleRowSelect(company.id, !!checked)}
-                                                aria-label={`Select row ${index + 1}`}
-                                            />
-                                        ) : (
-                                            index + 1
-                                        )}
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex items-center gap-3">
-                                            <Avatar className="h-10 w-10">
-                                                {company.displayImageUrl && <AvatarImage src={company.displayImageUrl} alt={`${company.name} logo`} data-ai-hint="company logo" />}
-                                                <AvatarFallback>{getInitials(company.name)}</AvatarFallback>
-                                            </Avatar>
-                                            <span className="font-medium">{company.name}</span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant={getStatusVariant(company.status)}>{company.status}</Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                      <div className={`flex items-center`}>
-                                        {getPlanIcon(company.plan)}
-                                        {company.plan}
-                                      </div>
-                                    </TableCell>
-                                    <TableCell>{company.size?.size || 'N/A'}</TableCell>
-                                    <TableCell>{company.companyType || 'N/A'}</TableCell>
-                                    <TableCell>{company.jobsPosted || 0}</TableCell>
-                                    <TableCell>{formatDate(company.createdAt)}</TableCell>
-                                </TableRow>
-                            ))
-                        ) : (
+                            ))}
+                        </TableBody>
+                    </Table>
+                ) : filteredAndSortedCompanies.length > 0 ? (
+                    <TableVirtuoso
+                        data={filteredAndSortedCompanies}
+                        components={{
+                            Table: (props) => <Table {...props} style={{ ...props.style, borderCollapse: 'collapse', width: '100%' }} />,
+                            TableHead: React.forwardRef((props, ref) => <TableHeader {...props} ref={ref} className="bg-muted/50 z-10" />),
+                            TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
+                            TableRow: (props) => {
+                                const index = props['data-index'];
+                                const company = filteredAndSortedCompanies[index];
+                                if (!company) return <TableRow {...props} />;
+                                
+                                return (
+                                    <TableRow 
+                                        {...props} 
+                                        onClick={() => handleRowClick(company.id)} 
+                                        className="cursor-pointer"
+                                        data-state={selectedCompanies.includes(company.id) && "selected"}
+                                    />
+                                );
+                            },
+                        }}
+                        fixedHeaderContent={() => (
                             <TableRow>
-                                <TableCell colSpan={8} className="text-center h-24">
-                                    {searchQuery ? `No companies found for "${searchQuery}"` : 'No companies found.'}
-                                </TableCell>
+                                <TableHead className="w-[80px] font-bold py-4 pl-6 h-12 bg-muted/50">
+                                    {isSelectModeActive ? (
+                                        <Checkbox 
+                                            checked={selectedCompanies.length > 0 && selectedCompanies.length === filteredAndSortedCompanies.length}
+                                            onCheckedChange={(checked) => handleSelectAll(!!checked)}
+                                            aria-label="Select all rows"
+                                        />
+                                    ) : 'S.No.'}
+                                </TableHead>
+                                <TableHead className="font-bold py-4 bg-muted/50">
+                                    <button onClick={() => requestSort('name')} className="group flex items-center gap-2">
+                                        Company Name
+                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">
+                                            {getSortIndicator('name')}
+                                        </div>
+                                    </button>
+                                </TableHead>
+                                <TableHead className="font-bold py-4 bg-muted/50">Status</TableHead>
+                                <TableHead className="font-bold py-4 bg-muted/50">Subscription</TableHead>
+                                <TableHead className="font-bold py-4 bg-muted/50">
+                                    <button onClick={() => requestSort('size')} className="group flex items-center gap-2">
+                                        Company Size
+                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">
+                                            {getSortIndicator('size')}
+                                        </div>
+                                    </button>
+                                </TableHead>
+                                 <TableHead className="font-bold py-4 bg-muted/50">
+                                    <button onClick={() => requestSort('companyType')} className="group flex items-center gap-2">
+                                        Company Type
+                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">
+                                            {getSortIndicator('companyType')}
+                                        </div>
+                                    </button>
+                                </TableHead>
+                                <TableHead className="font-bold py-4 bg-muted/50">
+                                    <button onClick={() => requestSort('jobsPosted')} className="group flex items-center gap-2">
+                                        Jobs Posted
+                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">
+                                            {getSortIndicator('jobsPosted')}
+                                        </div>
+                                    </button>
+                                </TableHead>
+                                <TableHead className="font-bold py-4 bg-muted/50">
+                                    <button onClick={() => requestSort('createdAt')} className="group flex items-center gap-2">
+                                        Member Since
+                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">
+                                            {getSortIndicator('createdAt')}
+                                        </div>
+                                    </button>
+                                </TableHead>
                             </TableRow>
                         )}
-                    </TableBody>
-                </Table>
+                        itemContent={(index, company) => (
+                            <>
+                                <TableCell className="w-[80px] pl-6" onClick={(e) => {if(isSelectModeActive) e.stopPropagation()}}>
+                                    {isSelectModeActive ? (
+                                        <Checkbox
+                                            checked={selectedCompanies.includes(company.id)}
+                                            onCheckedChange={(checked) => handleRowSelect(company.id, !!checked)}
+                                            aria-label={`Select row ${index + 1}`}
+                                        />
+                                    ) : (
+                                        index + 1
+                                    )}
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex items-center gap-3">
+                                        <Avatar className="h-10 w-10">
+                                            {company.displayImageUrl && <AvatarImage src={company.displayImageUrl} alt={`${company.name} logo`} data-ai-hint="company logo" />}
+                                            <AvatarFallback>{getInitials(company.name)}</AvatarFallback>
+                                        </Avatar>
+                                        <span className="font-medium">{company.name}</span>
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <Badge variant={getStatusVariant(company.status)}>{company.status}</Badge>
+                                </TableCell>
+                                <TableCell>
+                                    <div className={`flex items-center`}>
+                                    {getPlanIcon(company.plan)}
+                                    {company.plan}
+                                    </div>
+                                </TableCell>
+                                <TableCell>{company.size?.size || 'N/A'}</TableCell>
+                                <TableCell>{company.companyType || 'N/A'}</TableCell>
+                                <TableCell>{company.jobsPosted || 0}</TableCell>
+                                <TableCell>{formatDate(company.createdAt)}</TableCell>
+                            </>
+                        )}
+                    />
+                ) : (
+                    <div className="flex items-center justify-center h-24 text-muted-foreground">
+                        {searchQuery ? `No companies found for "${searchQuery}"` : 'No companies found.'}
+                    </div>
+                )}
             </div>
         </Card>
     </>

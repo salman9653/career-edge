@@ -234,11 +234,11 @@ export const JobDetailView = ({ job, company, applicantData, allJobs }: JobDetai
                                             className="w-12 h-12"
                                             onClick={handleToggleFavorite}
                                         >
-                                            <Bookmark className={cn("h-6 w-6", isFavorite && "fill-current text-dash-primary")} />
+                                            <Bookmark className={cn("h-6 w-6", optimisticFavorite && "fill-current text-dash-primary")} />
                                         </Button>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                        <p>{isFavorite ? "Remove from saved" : "Save this job"}</p>
+                                        <p>{optimisticFavorite ? "Remove from saved" : "Save this job"}</p>
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>

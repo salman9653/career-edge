@@ -4,6 +4,7 @@ import './globals.css';
 import './printable-resume.css';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/theme-provider';
+import { WebVitals } from '@/components/web-vitals';
 
 export const metadata: Metadata = {
   title: 'Career Edge',
@@ -34,6 +35,8 @@ export default function RootLayout({
               disableTransitionOnChange
           >
             {children}
+            <Toaster />
+            <WebVitals />
           </ThemeProvider>
         </Suspense>
       </body>

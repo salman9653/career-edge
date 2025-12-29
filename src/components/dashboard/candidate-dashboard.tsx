@@ -29,16 +29,21 @@ interface DashboardData {
   };
 }
 
-export function CandidateDashboardContent() {
+interface CandidateDashboardContentProps {
+  initialData?: DashboardData | null;
+}
+
+export function CandidateDashboardContent({ initialData }: CandidateDashboardContentProps) {
   const { session, loading } = useSession();
   const { toast, dismiss } = useToast();
   const router = useRouter();
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [loadingData, setLoadingData] = useState(true);
+  const [data, setData] = useState<DashboardData | null>(initialData || null);
+  const [loadingData, setLoadingData] = useState(!initialData);
   const [toastShown, setToastShown] = useState(false);
 
   const showVerificationToast = useCallback(() => {
     if (session && !session.emailVerified && !toastShown) {
+      // ... (keep existing toast logic)
       const hasDismissed = sessionStorage.getItem('hasDismissedVerificationToast');
       if (hasDismissed !== 'true') {
         const { id } = toast({
@@ -82,7 +87,7 @@ export function CandidateDashboardContent() {
 
   useEffect(() => {
     const loadData = async () => {
-      if (!session?.uid) return;
+      if (!session?.uid || initialData) return; // Skip if initialData is present
       try {
         setLoadingData(true);
         const dashboardData = await fetchCandidateDashboardData(session.uid);
@@ -99,10 +104,10 @@ export function CandidateDashboardContent() {
       }
     };
 
-    if (session?.uid) {
+    if (session?.uid && !initialData) {
       loadData();
     }
-  }, [session, toast]);
+  }, [session, toast, initialData]);
 
   const formatDate = (date: any) => {
     if (!date) return 'N/A';

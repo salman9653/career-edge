@@ -83,7 +83,7 @@ export default function AiInterviewDetailPage() {
             if (result.success) {
                 toast({ title: "Interview Saved!", description: "Your changes have been saved." });
                 setIsEditing(false);
-            } else {
+            } else if ('error' in result) {
                 throw new Error(result.error || "An unknown error occurred.");
             }
         } catch(e: any) {

@@ -1,5 +1,6 @@
 'use client';
-import { useState, useMemo, useTransition, useEffect } from 'react';
+import React, { useState, useMemo, useTransition, useEffect } from 'react';
+import { TableVirtuoso } from 'react-virtuoso';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -194,14 +195,14 @@ export function ApplicantsTable({ applicants, rounds, loading, jobId }: Applican
   const handleScheduleNextRound = (applicantId: string) => {
     startTransition(async () => {
         const result = await scheduleNextRoundAction(jobId, applicantId);
-        if (result.success && result.roundName) {
+        if ('success' in result && result.success && result.roundName) {
             setSuccessInfo({
                 roundName: result.roundName,
                 roundType: result.roundType,
                 dueDate: result.dueDate ? format(new Date(result.dueDate), 'dd MMM yyyy') : null,
             });
             setShowSuccessModal(true);
-        } else {
+        } else if ('error' in result) {
             toast({ variant: 'destructive', title: "Error", description: result.error || 'An unknown error occurred.' });
         }
     });
@@ -291,96 +292,127 @@ export function ApplicantsTable({ applicants, rounds, loading, jobId }: Applican
         )}
       </div>
       <Card className="flex-1 overflow-hidden">
-        <div className="relative h-full overflow-auto custom-scrollbar">
-          <Table>
-            <TableHeader className="bg-muted/50 sticky top-0 z-10">
-              <TableRow>
-                <TableHead className="w-[80px] font-bold py-4 pl-6">
-                    {isSelectModeActive ? (
-                        <Checkbox
-                            checked={selectedApplicants.length > 0 && selectedApplicants.length === filteredAndSortedApplicants.length}
-                            onCheckedChange={(checked) => handleSelectAll(!!checked)}
-                        />
-                    ) : 'S.No.'}
-                </TableHead>
-                <TableHead className="font-bold py-4">Name</TableHead>
-                <TableHead className="font-bold py-4">Email</TableHead>
-                <TableHead className="font-bold py-4">Current Stage</TableHead>
-                <TableHead className="font-bold py-4">Status</TableHead>
-                <TableHead className="font-bold py-4">
-                    <button onClick={() => requestSort('appliedAt')} className="group flex items-center gap-2">
-                        Applied On
-                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">{getSortIndicator('appliedAt')}</div>
-                    </button>
-                </TableHead>
-                 <TableHead><span className="sr-only">Actions</span></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                Array.from({ length: 3 }).map((_, index) => (
-                  <TableRow key={index}><TableCell colSpan={7}><Skeleton className="h-5 w-full" /></TableCell></TableRow>
-                ))
-              ) : filteredAndSortedApplicants.length > 0 ? (
-                filteredAndSortedApplicants.map((applicant, index) => {
+        <div className="h-full w-full">
+          {loading ? (
+             <Table>
+                <TableHeader className="bg-muted/50 sticky top-0 z-10">
+                  <TableRow>
+                     <TableHead className="w-[80px] font-bold py-4 pl-6">S.No.</TableHead>
+                     <TableHead className="font-bold py-4">Name</TableHead>
+                     <TableHead className="font-bold py-4">Email</TableHead>
+                     <TableHead className="font-bold py-4">Current Stage</TableHead>
+                     <TableHead className="font-bold py-4">Status</TableHead>
+                     <TableHead className="font-bold py-4">Applied On</TableHead>
+                     <TableHead><span className="sr-only">Actions</span></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                   {Array.from({ length: 3 }).map((_, index) => (
+                      <TableRow key={index}><TableCell colSpan={7}><Skeleton className="h-5 w-full" /></TableCell></TableRow>
+                   ))}
+                </TableBody>
+             </Table>
+          ) : filteredAndSortedApplicants.length > 0 ? (
+             <TableVirtuoso
+                data={filteredAndSortedApplicants}
+                   components={{
+                      Table: (props) => <Table {...props} style={{ ...props.style, borderCollapse: 'collapse', width: '100%' }} />,
+                      TableHead: React.forwardRef((props, ref) => <TableHeader {...props} ref={ref} className="bg-muted/50 z-10" />),
+                      TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
+                      TableRow: (props) => {
+                          const index = props['data-index'];
+                          const applicant = filteredAndSortedApplicants[index];
+                          if (!applicant) return <TableRow {...props} />;
+                          
+                          return (
+                              <TableRow 
+                                  {...props} 
+                                  onClick={() => handleRowClick(applicant)} 
+                                  className="cursor-pointer"
+                                  data-state={selectedApplicants.includes(applicant.id) && "selected"}
+                              />
+                          );
+                      },
+                   }}
+                fixedHeaderContent={() => (
+                   <TableRow>
+                     <TableHead className="w-[80px] font-bold py-4 pl-6 h-12 bg-muted/50">
+                         {isSelectModeActive ? (
+                             <Checkbox
+                                 checked={selectedApplicants.length > 0 && selectedApplicants.length === filteredAndSortedApplicants.length}
+                                 onCheckedChange={(checked) => handleSelectAll(!!checked)}
+                             />
+                         ) : 'S.No.'}
+                     </TableHead>
+                     <TableHead className="font-bold py-4 bg-muted/50">Name</TableHead>
+                     <TableHead className="font-bold py-4 bg-muted/50">Email</TableHead>
+                     <TableHead className="font-bold py-4 bg-muted/50">Current Stage</TableHead>
+                     <TableHead className="font-bold py-4 bg-muted/50">Status</TableHead>
+                     <TableHead className="font-bold py-4 bg-muted/50">
+                         <button onClick={() => requestSort('appliedAt')} className="group flex items-center gap-2">
+                             Applied On
+                             <div className="p-1 group-hover:bg-accent rounded-full transition-colors">{getSortIndicator('appliedAt')}</div>
+                         </button>
+                     </TableHead>
+                      <TableHead className="bg-muted/50"><span className="sr-only">Actions</span></TableHead>
+                   </TableRow>
+                )}
+                itemContent={(index, applicant) => {
                     const currentRound = rounds[applicant.activeRoundIndex];
                     const statusDisplay = getStatusDisplay(applicant.status);
                     const canScheduleNext = applicant.activeRoundIndex === 0 && (applicant.status === 'Screening Passed' || applicant.status === 'Screening Failed');
 
                     return (
-                    <TableRow key={applicant.id} onClick={() => handleRowClick(applicant)} className="cursor-pointer" data-state={selectedApplicants.includes(applicant.id) && "selected"}>
-                        <TableCell className="w-[80px] pl-6" onClick={(e) => {if(isSelectModeActive) e.stopPropagation()}}>
-                            {isSelectModeActive ? (
-                                <Checkbox checked={selectedApplicants.includes(applicant.id)} onCheckedChange={(checked) => handleRowSelect(applicant.id, !!checked)} />
-                            ) : ( index + 1 )}
-                        </TableCell>
-                        <TableCell>
-                            <div className="flex items-center gap-2">
-                                <Avatar className="h-10 w-10">
-                                    <AvatarFallback>{getInitials(applicant.candidateName)}</AvatarFallback>
-                                </Avatar>
-                                <span className="font-medium">{applicant.candidateName}</span>
-                            </div>
-                        </TableCell>
-                        <TableCell>{applicant.candidateEmail}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{currentRound?.name || 'N/A'}</Badge>
-                        </TableCell>
-                         <TableCell>
-                          <Badge variant={statusDisplay.variant} className={cn(statusDisplay.variant === 'success' && 'bg-green-500 hover:bg-green-600')}>{statusDisplay.text}</Badge>
-                        </TableCell>
-                        <TableCell>{formatDate(applicant.appliedAt)}</TableCell>
-                        <TableCell>
-                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                                        {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <MoreVertical className="h-4 w-4" />}
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                     {canScheduleNext && (
-                                        <DropdownMenuItem onSelect={() => handleScheduleNextRound(applicant.id)}>
-                                            <CalendarClock className="mr-2 h-4 w-4" />
-                                            Schedule Next Round
+                        <>
+                            <TableCell className="w-[80px] pl-6" onClick={(e) => {if(isSelectModeActive) e.stopPropagation()}}>
+                                {isSelectModeActive ? (
+                                    <Checkbox checked={selectedApplicants.includes(applicant.id)} onCheckedChange={(checked) => handleRowSelect(applicant.id, !!checked)} />
+                                ) : ( index + 1 )}
+                            </TableCell>
+                            <TableCell>
+                                <div className="flex items-center gap-2">
+                                    <Avatar className="h-10 w-10">
+                                        <AvatarFallback>{getInitials(applicant.candidateName)}</AvatarFallback>
+                                    </Avatar>
+                                    <span className="font-medium">{applicant.candidateName}</span>
+                                </div>
+                            </TableCell>
+                            <TableCell>{applicant.candidateEmail}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{currentRound?.name || 'N/A'}</Badge>
+                            </TableCell>
+                             <TableCell>
+                              <Badge variant={statusDisplay.variant} className={cn(statusDisplay.variant === 'success' && 'bg-green-500 hover:bg-green-600')}>{statusDisplay.text}</Badge>
+                            </TableCell>
+                            <TableCell>{formatDate(applicant.appliedAt)}</TableCell>
+                            <TableCell>
+                                 <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                                            {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <MoreVertical className="h-4 w-4" />}
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                         {canScheduleNext && (
+                                            <DropdownMenuItem onSelect={() => handleScheduleNextRound(applicant.id)}>
+                                                <CalendarClock className="mr-2 h-4 w-4" />
+                                                Schedule Next Round
+                                            </DropdownMenuItem>
+                                         )}
+                                        <DropdownMenuItem>
+                                            <UserPlus className="mr-2 h-4 w-4" />
+                                            Add to candidate pool
                                         </DropdownMenuItem>
-                                     )}
-                                    <DropdownMenuItem>
-                                        <UserPlus className="mr-2 h-4 w-4" />
-                                        Add to candidate pool
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </TableCell>
-                    </TableRow>
-                    )
-                })
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center h-24">No applicants yet.</TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </TableCell>
+                        </>
+                    );
+                }}
+             />
+          ) : (
+            <div className="flex items-center justify-center h-24 text-muted-foreground">No applicants yet.</div>
+          )}
         </div>
       </Card>
     </div>

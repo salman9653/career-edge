@@ -8,7 +8,8 @@ import { mockCrmCandidates } from '@/lib/mock-data';
 import { format, formatDistanceToNow, isThisMonth, isBefore, subMonths } from 'date-fns';
 import { File, PlusCircle, Search, ArrowUpDown, MoreVertical, ListTodo, X, ArrowUp, ArrowDown, Trash2, Users, UserPlus, EyeOff, Star, ArrowRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
+import { TableVirtuoso } from 'react-virtuoso';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -26,15 +27,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import type { CrmFilterState } from '../types';
 
 type SortKey = 'name' | 'lastContact' | 'email';
 
-export interface CrmFilterState {
-    tags: string[];
-    location: string[];
-    source: string[];
-    timeFilter?: 'newThisMonth' | 'uncontacted' | null;
-}
 
 export function TalentPoolTable() {
     const [searchQuery, setSearchQuery] = useState('');
@@ -161,11 +157,11 @@ export function TalentPoolTable() {
         }
     }
 
-    // ... Return JSX ...
     return (
         <div className="flex flex-col gap-6 h-full">
             <TooltipProvider>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+               {/* ... (Cards remain unchanged) ... */}
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Card className="hover:bg-accent transition-colors cursor-pointer" onClick={() => handleCardFilter(null)}>
@@ -213,7 +209,7 @@ export function TalentPoolTable() {
                             </CardContent>
                         </Card>
                     </TooltipTrigger>
-                     <TooltipContent>
+                    <TooltipContent>
                         <p>View uncontacted candidates</p>
                     </TooltipContent>
                 </Tooltip>
@@ -236,8 +232,10 @@ export function TalentPoolTable() {
                 </Tooltip>
             </div>
             </TooltipProvider>
+            
             <div className="flex flex-col gap-4 flex-1 min-h-0">
                 <div className="flex items-center gap-2">
+                     {/* ... (Toolbar remains unchanged) ... */}
                     {isSelectModeActive ? (
                         <>
                             <div className="flex items-center gap-4 flex-1">
@@ -308,11 +306,32 @@ export function TalentPoolTable() {
                     )}
                 </div>
                 <Card className="flex-1 overflow-hidden">
-                    <div className="relative h-full overflow-auto custom-scrollbar">
-                        <Table>
-                            <TableHeader className="sticky top-0 bg-muted/50">
+                     {/* Virtualized Table Container */}
+                    <div className="h-full w-full"> 
+                        <TableVirtuoso
+                            data={filteredAndSortedCandidates}
+                            components={{
+                                Table: (props) => <Table {...props} style={{ ...props.style, borderCollapse: 'collapse', width: '100%' }} />,
+                                TableHead: React.forwardRef((props, ref) => <TableHeader {...props} ref={ref} className="bg-muted/50 z-10" />),
+                                TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
+                                TableRow: (props) => {
+                                    const index = props['data-index'];
+                                    const candidate = filteredAndSortedCandidates[index];
+                                    if (!candidate) return <TableRow {...props} />;
+                                    
+                                    return (
+                                        <TableRow 
+                                            {...props} 
+                                            onClick={() => handleRowClick(candidate.id)} 
+                                            className="cursor-pointer"
+                                            data-state={selectedCandidates.includes(candidate.id) && "selected"}
+                                        />
+                                    );
+                                },
+                            }}
+                            fixedHeaderContent={() => (
                                 <TableRow>
-                                    <TableHead className="w-[60px] pl-6">
+                                    <TableHead className="w-[60px] pl-6 h-12 bg-muted/50">
                                         {isSelectModeActive ? (
                                             <Checkbox
                                                 checked={selectedCandidates.length > 0 && selectedCandidates.length === filteredAndSortedCandidates.length}
@@ -323,27 +342,26 @@ export function TalentPoolTable() {
                                             "S.No."
                                         )}
                                     </TableHead>
-                                    <TableHead>Candidate</TableHead>
-                                    <TableHead>Email</TableHead>
-                                    <TableHead>Phone</TableHead>
-                                    <TableHead>Location</TableHead>
-                                    <TableHead>Tags</TableHead>
-                                    <TableHead>
+                                    <TableHead className="bg-muted/50">Candidate</TableHead>
+                                    <TableHead className="bg-muted/50">Email</TableHead>
+                                    <TableHead className="bg-muted/50">Phone</TableHead>
+                                    <TableHead className="bg-muted/50">Location</TableHead>
+                                    <TableHead className="bg-muted/50">Tags</TableHead>
+                                    <TableHead className="bg-muted/50">
                                         <button onClick={() => requestSort('lastContact')} className="group flex items-center gap-2">
                                             Last Contact
                                             {getSortIndicator('lastContact')}
                                         </button>
                                     </TableHead>
-                                    <TableHead className="text-right pr-6">Actions</TableHead>
+                                    <TableHead className="text-right pr-6 bg-muted/50">Actions</TableHead>
                                 </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {filteredAndSortedCandidates.map((candidate, index) => {
-                                    const firstTag = candidate.tags?.[0];
-                                    const otherTags = candidate.tags?.slice(1) || [];
-
-                                    return (
-                                    <TableRow key={candidate.id} onClick={() => handleRowClick(candidate.id)} data-state={selectedCandidates.includes(candidate.id) && "selected"} className={cn(isSelectModeActive && "cursor-pointer")}>
+                            )}
+                            itemContent={(index, candidate) => {
+                                const firstTag = candidate.tags?.[0];
+                                const otherTags = candidate.tags?.slice(1) || [];
+                                
+                                return (
+                                    <>
                                         <TableCell className="w-[60px] pl-6" onClick={(e) => {if(isSelectModeActive) e.stopPropagation()}}>
                                             {isSelectModeActive ? (
                                                 <Checkbox
@@ -392,11 +410,10 @@ export function TalentPoolTable() {
                                                 <MoreVertical className="h-4 w-4" />
                                             </Button>
                                         </TableCell>
-                                    </TableRow>
-                                    )
-                                })}
-                            </TableBody>
-                        </Table>
+                                    </>
+                                );
+                            }}
+                        />
                     </div>
                 </Card>
             </div>

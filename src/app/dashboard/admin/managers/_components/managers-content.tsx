@@ -69,7 +69,7 @@ export function AdminManagersContent() {
         setInviteLink(fullInviteLink);
         setInviteLinkDialogOpen(true);
         toast({ title: 'Invitation link generated!' });
-      } else {
+      } else if ('error' in result) {
         toast({ variant: 'destructive', title: 'Invitation Failed', description: result.error });
       }
     });
@@ -79,7 +79,7 @@ export function AdminManagersContent() {
     const result = await updateManagerStatusAction(managerId, newStatus);
     if (result.success) {
         toast({ title: `Manager status updated.` });
-    } else {
+    } else if ('error' in result) {
         toast({ variant: 'destructive', title: 'Update failed', description: result.error });
     }
   };
@@ -88,7 +88,7 @@ export function AdminManagersContent() {
     const result = await updateManagerRoleAction(managerId, newRole);
     if (result.success) {
         toast({ title: 'Manager role updated.' });
-    } else {
+    } else if ('error' in result) {
         toast({ variant: 'destructive', title: 'Update failed', description: result.error });
     }
   };

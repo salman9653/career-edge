@@ -1,6 +1,7 @@
 
 'use client';
-import { useState, useMemo, useContext, useTransition } from 'react';
+import React, { useState, useMemo, useContext, useTransition } from 'react';
+import { VirtuosoGrid } from 'react-virtuoso';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Search, ListTodo, X, Trash2, Loader2, FileText, AlertTriangle } from 'lucide-react';
@@ -172,18 +173,34 @@ export function ResumesTable() {
                     ))}
                 </div>
             ) : filteredResumes.length > 0 ? (
-                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredResumes.map((resume) => (
-                       <ResumeCard 
-                            key={resume.id}
-                            resume={resume}
-                            isSelected={selectedResumes.includes(resume.id)}
-                            isSelectModeActive={isSelectModeActive}
-                            onCardClick={handleCardClick}
-                            onSelectChange={handleRowSelect}
-                            onDelete={handleDelete}
-                       />
-                    ))}
+                <div className="flex-1 min-h-0">
+                    <VirtuosoGrid
+                        data={filteredResumes}
+                        style={{ height: '100%' }}
+                        components={{
+                            List: React.forwardRef((props, ref) => (
+                                <div 
+                                    {...props} 
+                                    ref={ref} 
+                                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-4" 
+                                />
+                            )),
+                            Item: React.forwardRef((props, ref) => (
+                                <div {...props} ref={ref} className="h-full" />
+                            ))
+                        }}
+                        itemContent={(index, resume) => (
+                            <ResumeCard 
+                                key={resume.id}
+                                resume={resume}
+                                isSelected={selectedResumes.includes(resume.id)}
+                                isSelectModeActive={isSelectModeActive}
+                                onCardClick={handleCardClick}
+                                onSelectChange={handleRowSelect}
+                                onDelete={handleDelete}
+                            />
+                        )}
+                    />
                 </div>
             ) : (
                 <div className="flex-1 flex flex-col items-center justify-center text-center border-2 border-dashed rounded-lg">

@@ -1,6 +1,7 @@
 
 'use client';
-import { useState, useMemo, useContext } from 'react';
+import React, { useState, useMemo, useContext } from 'react';
+import { TableVirtuoso } from 'react-virtuoso';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -218,99 +219,130 @@ export function AiInterviewsTable({ onCreate }: AiInterviewsTableProps) {
             </div>
             
             <Card className="flex-1 overflow-hidden">
-                <div className="relative h-full overflow-auto custom-scrollbar">
-                    <Table>
-                        <TableHeader className="bg-muted/50 sticky top-0 z-10">
-                            <TableRow>
-                                <TableHead className="w-[80px] font-bold py-4 pl-6">
-                                     {isSelectModeActive ? (
-                                        <Checkbox 
-                                            checked={selectedInterviews.length > 0 && selectedInterviews.length === filteredAndSortedInterviews.length}
-                                            onCheckedChange={(checked) => handleSelectAll(!!checked)}
-                                            aria-label="Select all rows"
-                                        />
-                                    ) : 'S.No.'}
-                                </TableHead>
-                                <TableHead className="font-bold py-4">
-                                     <button onClick={() => requestSort('name')} className="group flex items-center gap-2">
-                                        Name
-                                        {getSortIndicator('name')}
-                                    </button>
-                                </TableHead>
-                                <TableHead className="font-bold py-4">
-                                     <button onClick={() => requestSort('createdAt')} className="group flex items-center gap-2">
-                                        Created On
-                                        {getSortIndicator('createdAt')}
-                                    </button>
-                                </TableHead>
-                                <TableHead className="font-bold py-4">
-                                    <button onClick={() => requestSort('duration')} className="group flex items-center gap-2">
-                                        Duration
-                                        {getSortIndicator('duration')}
-                                    </button>
-                                </TableHead>
-                                <TableHead className="font-bold py-4">
-                                    <button onClick={() => requestSort('questionCount')} className="group flex items-center gap-2">
-                                        Questions
-                                        {getSortIndicator('questionCount')}
-                                    </button>
-                                </TableHead>
-                                <TableHead className="font-bold py-4">
-                                    <button onClick={() => requestSort('difficulty')} className="group flex items-center gap-2">
-                                        Difficulty
-                                        {getSortIndicator('difficulty')}
-                                    </button>
-                                </TableHead>
-                                <TableHead className="font-bold py-4">
-                                    <button onClick={() => requestSort('tone')} className="group flex items-center gap-2">
-                                        Tone
-                                        {getSortIndicator('tone')}
-                                    </button>
-                                </TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                             {loading ? (
-                                Array.from({length: 3}).map((_, index) => (
+                <div className="h-full w-full">
+                    {loading ? (
+                        <Table>
+                            <TableHeader className="bg-muted/50 sticky top-0 z-10">
+                                <TableRow>
+                                    <TableHead className="w-[80px] font-bold py-4 pl-6">S.No.</TableHead>
+                                    <TableHead className="font-bold py-4">Name</TableHead>
+                                    <TableHead className="font-bold py-4">Created On</TableHead>
+                                    <TableHead className="font-bold py-4">Duration</TableHead>
+                                    <TableHead className="font-bold py-4">Questions</TableHead>
+                                    <TableHead className="font-bold py-4">Difficulty</TableHead>
+                                    <TableHead className="font-bold py-4">Tone</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {Array.from({length: 3}).map((_, index) => (
                                     <TableRow key={index}>
-                                        <TableCell colSpan={8} className="p-4">
+                                        <TableCell colSpan={7} className="p-4">
                                             <Skeleton className="h-5 w-full" />
                                         </TableCell>
                                     </TableRow>
-                                ))
-                            ) : filteredAndSortedInterviews.length > 0 ? (
-                                filteredAndSortedInterviews.map((interview, index) => (
-                                    <TableRow key={interview.id} onClick={() => handleRowClick(interview.id)} className="cursor-pointer" data-state={selectedInterviews.includes(interview.id) && "selected"}>
-                                        <TableCell className="w-[80px] pl-6" onClick={(e) => {if(isSelectModeActive) e.stopPropagation()}}>
-                                            {isSelectModeActive ? (
-                                                <Checkbox
-                                                    checked={selectedInterviews.includes(interview.id)}
-                                                    onCheckedChange={(checked) => handleRowSelect(interview.id, !!checked)}
-                                                    aria-label={`Select row ${index + 1}`}
-                                                />
-                                            ) : (
-                                                index + 1
-                                            )}
-                                        </TableCell>
-                                        <TableCell className="font-medium">
-                                            <span className="hover:underline">
-                                                {interview.name}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell>{formatDate(interview.createdAt)}</TableCell>
-                                        <TableCell>~{interview.duration} min</TableCell>
-                                        <TableCell>{interview.questionCount}</TableCell>
-                                        <TableCell><Badge variant="secondary">{interview.difficulty}</Badge></TableCell>
-                                        <TableCell><Badge variant="outline">{interview.tone}</Badge></TableCell>
-                                    </TableRow>
-                                ))
-                            ) : (
+                                ))}
+                            </TableBody>
+                        </Table>
+                    ) : filteredAndSortedInterviews.length > 0 ? (
+                        <TableVirtuoso
+                            data={filteredAndSortedInterviews}
+                            components={{
+                                Table: (props) => <Table {...props} style={{ ...props.style, borderCollapse: 'collapse', width: '100%' }} />,
+                                TableHead: React.forwardRef((props, ref) => <TableHeader {...props} ref={ref} className="bg-muted/50 z-10" />),
+                                TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
+                                TableRow: (props) => {
+                                    const index = props['data-index'];
+                                    const interview = filteredAndSortedInterviews[index];
+                                    if (!interview) return <TableRow {...props} />;
+                                    
+                                    return (
+                                        <TableRow 
+                                            {...props} 
+                                            onClick={() => handleRowClick(interview.id)} 
+                                            className="cursor-pointer"
+                                            data-state={selectedInterviews.includes(interview.id) && "selected"}
+                                        />
+                                    );
+                                },
+                            }}
+                            fixedHeaderContent={() => (
                                 <TableRow>
-                                    <TableCell colSpan={8} className="text-center h-24">No AI Interviews found.</TableCell>
+                                    <TableHead className="w-[80px] font-bold py-4 pl-6 h-12 bg-muted/50">
+                                            {isSelectModeActive ? (
+                                            <Checkbox 
+                                                checked={selectedInterviews.length > 0 && selectedInterviews.length === filteredAndSortedInterviews.length}
+                                                onCheckedChange={(checked) => handleSelectAll(!!checked)}
+                                                aria-label="Select all rows"
+                                            />
+                                        ) : 'S.No.'}
+                                    </TableHead>
+                                    <TableHead className="font-bold py-4 bg-muted/50">
+                                            <button onClick={() => requestSort('name')} className="group flex items-center gap-2">
+                                            Name
+                                            {getSortIndicator('name')}
+                                        </button>
+                                    </TableHead>
+                                    <TableHead className="font-bold py-4 bg-muted/50">
+                                            <button onClick={() => requestSort('createdAt')} className="group flex items-center gap-2">
+                                            Created On
+                                            {getSortIndicator('createdAt')}
+                                        </button>
+                                    </TableHead>
+                                    <TableHead className="font-bold py-4 bg-muted/50">
+                                        <button onClick={() => requestSort('duration')} className="group flex items-center gap-2">
+                                            Duration
+                                            {getSortIndicator('duration')}
+                                        </button>
+                                    </TableHead>
+                                    <TableHead className="font-bold py-4 bg-muted/50">
+                                        <button onClick={() => requestSort('questionCount')} className="group flex items-center gap-2">
+                                            Questions
+                                            {getSortIndicator('questionCount')}
+                                        </button>
+                                    </TableHead>
+                                    <TableHead className="font-bold py-4 bg-muted/50">
+                                        <button onClick={() => requestSort('difficulty')} className="group flex items-center gap-2">
+                                            Difficulty
+                                            {getSortIndicator('difficulty')}
+                                        </button>
+                                    </TableHead>
+                                    <TableHead className="font-bold py-4 bg-muted/50">
+                                        <button onClick={() => requestSort('tone')} className="group flex items-center gap-2">
+                                            Tone
+                                            {getSortIndicator('tone')}
+                                        </button>
+                                    </TableHead>
                                 </TableRow>
                             )}
-                        </TableBody>
-                    </Table>
+                            itemContent={(index, interview) => (
+                                <>
+                                    <TableCell className="w-[80px] pl-6" onClick={(e) => {if(isSelectModeActive) e.stopPropagation()}}>
+                                        {isSelectModeActive ? (
+                                            <Checkbox
+                                                checked={selectedInterviews.includes(interview.id)}
+                                                onCheckedChange={(checked) => handleRowSelect(interview.id, !!checked)}
+                                                aria-label={`Select row ${index + 1}`}
+                                            />
+                                        ) : (
+                                            index + 1
+                                        )}
+                                    </TableCell>
+                                    <TableCell className="font-medium">
+                                        <span className="hover:underline">
+                                            {interview.name}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell>{formatDate(interview.createdAt)}</TableCell>
+                                    <TableCell>~{interview.duration} min</TableCell>
+                                    <TableCell>{interview.questionCount}</TableCell>
+                                    <TableCell><Badge variant="secondary">{interview.difficulty}</Badge></TableCell>
+                                    <TableCell><Badge variant="outline">{interview.tone}</Badge></TableCell>
+                                </>
+                            )}
+                        />
+                    ) : (
+                        <div className="flex items-center justify-center h-24 text-muted-foreground">No AI Interviews found.</div>
+                    )}
                 </div>
             </Card>
         </div>

@@ -15,7 +15,7 @@ import { ListFilter, X } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import type { CrmFilterState } from '../page';
+import type { CrmFilterState } from '../types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface FilterSheetProps {

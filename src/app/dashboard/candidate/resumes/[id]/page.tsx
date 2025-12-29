@@ -66,7 +66,7 @@ export default function GeneratedResumePage() {
             if(result.success) {
                 toast({ title: "Resume deleted successfully!" });
                 router.push('/dashboard/candidate/resume-builder');
-            } else {
+            } else if ('error' in result) {
                 toast({ variant: 'destructive', title: 'Error', description: result.error });
             }
         })

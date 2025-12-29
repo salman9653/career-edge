@@ -1,6 +1,7 @@
 
 'use client';
-import { useState, useMemo, useEffect, useTransition } from 'react';
+import React, { useState, useMemo, useEffect, useTransition } from 'react';
+import { TableVirtuoso } from 'react-virtuoso';
 import Link from 'next/link';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -411,7 +412,8 @@ export function AssessmentsTable({ assessments, loading, onCreate }: Assessments
             
             {/* Desktop View - Table */}
             <Card className="hidden md:flex flex-1 flex-col overflow-hidden">
-                <div className="relative overflow-auto custom-scrollbar">
+            <div className="h-full w-full">
+                {loading ? (
                     <Table>
                         <TableHeader className="bg-muted/50 sticky top-0 z-10">
                             <TableRow>
@@ -452,51 +454,111 @@ export function AssessmentsTable({ assessments, loading, onCreate }: Assessments
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                             {loading ? (
-                                Array.from({length: 3}).map((_, index) => (
-                                    <TableRow key={index}>
-                                        <TableCell colSpan={6} className="p-4">
-                                            <Skeleton className="h-5 w-full" />
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            ) : filteredAndSortedAssessments.length > 0 ? (
-                                filteredAndSortedAssessments.map((assessment, index) => (
-                                    <TableRow key={assessment.id} onClick={() => handleRowClick(assessment.id)} className="cursor-pointer" data-state={selectedAssessments.includes(assessment.id) && "selected"}>
-                                        <TableCell className="w-[80px] pl-6" onClick={(e) => {if(isSelectModeActive) e.stopPropagation()}}>
-                                            {isSelectModeActive ? (
-                                                <Checkbox
-                                                    checked={selectedAssessments.includes(assessment.id)}
-                                                    onCheckedChange={(checked) => handleRowSelect(assessment.id, !!checked)}
-                                                    aria-label={`Select row ${index + 1}`}
-                                                />
-                                            ) : (
-                                                index + 1
-                                            )}
-                                        </TableCell>
-                                        <TableCell className="font-medium">
-                                            <span className="hover:underline">
-                                                {assessment.name}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell>{assessment.createdByName}</TableCell>
-                                        <TableCell>{formatDate(assessment.createdAt)}</TableCell>
-                                        <TableCell>{assessment.questionIds.length}</TableCell>
-                                        <TableCell>
-                                            <div className="flex gap-1">
-                                                <Badge variant="secondary" className="capitalize">{assessment.assessmentType}</Badge>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="text-center h-24">No assessments found.</TableCell>
+                             {Array.from({length: 3}).map((_, index) => (
+                                <TableRow key={index}>
+                                    <TableCell colSpan={6} className="p-4">
+                                        <Skeleton className="h-5 w-full" />
+                                    </TableCell>
                                 </TableRow>
-                            )}
+                            ))}
                         </TableBody>
                     </Table>
-                </div>
+                ) : filteredAndSortedAssessments.length > 0 ? (
+                    <TableVirtuoso
+                        data={filteredAndSortedAssessments}
+                        components={{
+                            Table: (props) => <Table {...props} style={{ ...props.style, borderCollapse: 'collapse', width: '100%' }} />,
+                            TableHead: React.forwardRef((props, ref) => <TableHeader {...props} ref={ref} className="bg-muted/50 z-10" />),
+                            TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
+                            TableRow: (props) => {
+                                const index = props['data-index'];
+                                const assessment = filteredAndSortedAssessments[index];
+                                if (!assessment) return <TableRow {...props} />;
+                                
+                                return (
+                                    <TableRow 
+                                        {...props} 
+                                        onClick={() => handleRowClick(assessment.id)} 
+                                        className="cursor-pointer" 
+                                        data-state={selectedAssessments.includes(assessment.id) && "selected"} 
+                                    />
+                                );
+                            },
+                        }}
+                        fixedHeaderContent={() => (
+                            <TableRow>
+                                <TableHead className="w-[80px] font-bold py-4 pl-6 h-12 bg-muted/50">
+                                     {isSelectModeActive ? (
+                                        <Checkbox 
+                                            checked={selectedAssessments.length > 0 && selectedAssessments.length === filteredAndSortedAssessments.length}
+                                            onCheckedChange={(checked) => handleSelectAll(!!checked)}
+                                            aria-label="Select all rows"
+                                        />
+                                    ) : 'S.No.'}
+                                </TableHead>
+                                <TableHead className="font-bold py-4 bg-muted/50">
+                                     <button onClick={() => requestSort('name')} className="group flex items-center gap-2">
+                                        Assessment Name
+                                        {getSortIndicator('name')}
+                                    </button>
+                                </TableHead>
+                                <TableHead className="font-bold py-4 bg-muted/50">
+                                     <button onClick={() => requestSort('createdByName')} className="group flex items-center gap-2">
+                                        Created By
+                                        {getSortIndicator('createdByName')}
+                                    </button>
+                                </TableHead>
+                                <TableHead className="font-bold py-4 bg-muted/50">
+                                     <button onClick={() => requestSort('createdAt')} className="group flex items-center gap-2">
+                                        Created On
+                                        {getSortIndicator('createdAt')}
+                                    </button>
+                                </TableHead>
+                                <TableHead className="font-bold py-4 bg-muted/50">
+                                    <button onClick={() => requestSort('questionIds')} className="group flex items-center gap-2">
+                                        No. of questions
+                                        {getSortIndicator('questionIds')}
+                                    </button>
+                                </TableHead>
+                                <TableHead className="font-bold py-4 bg-muted/50">Type</TableHead>
+                            </TableRow>
+                        )}
+                        itemContent={(index, assessment) => (
+                            <>
+                                <TableCell className="w-[80px] pl-6" onClick={(e) => {if(isSelectModeActive) e.stopPropagation()}}>
+                                    {isSelectModeActive ? (
+                                        <Checkbox
+                                            checked={selectedAssessments.includes(assessment.id)}
+                                            onCheckedChange={(checked) => handleRowSelect(assessment.id, !!checked)}
+                                            aria-label={`Select row ${index + 1}`}
+                                        />
+                                    ) : (
+                                        index + 1
+                                    )}
+                                </TableCell>
+                                <TableCell className="font-medium">
+                                    <span className="hover:underline">
+                                        {assessment.name}
+                                    </span>
+                                </TableCell>
+                                <TableCell>{assessment.createdByName}</TableCell>
+                                <TableCell>{formatDate(assessment.createdAt)}</TableCell>
+                                <TableCell>{assessment.questionIds.length}</TableCell>
+                                <TableCell>
+                                    <div className="flex gap-1">
+                                        <Badge variant="secondary" className="capitalize">{assessment.assessmentType}</Badge>
+                                    </div>
+                                </TableCell>
+                            </>
+                        )}
+
+                    />
+                ) : (
+                    <div className="flex items-center justify-center h-24 text-muted-foreground w-full">
+                        No assessments found.
+                    </div>
+                )}
+            </div>
             </Card>
         </div>
     );

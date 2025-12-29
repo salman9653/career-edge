@@ -34,15 +34,20 @@ function VerificationButton({ onVerify }: { onVerify: () => Promise<void> }) {
   );
 }
 
-export function CompanyDashboardContent() {
+interface CompanyDashboardContentProps {
+  initialData?: CompanyDashboardStats | null;
+}
+
+export function CompanyDashboardContent({ initialData }: CompanyDashboardContentProps) {
   const { session, loading: sessionLoading } = useSession();
   const { toast, dismiss } = useToast();
   const router = useRouter();
-  const [stats, setStats] = useState<CompanyDashboardStats | null>(null);
-  const [loadingData, setLoadingData] = useState(true);
+  const [stats, setStats] = useState<CompanyDashboardStats | null>(initialData || null);
+  const [loadingData, setLoadingData] = useState(!initialData);
   const [toastShown, setToastShown] = useState(false);
 
   const handleVerify = async () => {
+    // ... (keep existing verify logic)
     const user = auth.currentUser;
     if (!user) {
         toast({ title: "Error", description: "You must be logged in to verify your email.", variant: "destructive" });
@@ -98,7 +103,7 @@ export function CompanyDashboardContent() {
 
   useEffect(() => {
     const loadStats = async () => {
-      if (!session?.uid) return;
+      if (!session?.uid || initialData) return; // Skip if initialData provided
       try {
         setLoadingData(true);
         // If user is company, use uid. If manager, use company_uid?
@@ -121,12 +126,12 @@ export function CompanyDashboardContent() {
       }
     };
 
-    if (!sessionLoading && session) {
+    if (!sessionLoading && session && !initialData) {
       loadStats();
     }
-  }, [session, sessionLoading, toast]);
+  }, [session, sessionLoading, toast, initialData]);
 
-  if (sessionLoading) {
+  if (sessionLoading && !initialData) {
     return (
         <div className="flex flex-col max-h-screen">
         <header className="flex h-16 shrink-0 items-center justify-between gap-4 bg-background/30 backdrop-blur-md px-4 md:px-6 sticky top-0 z-30 md:static border-b border-white/10">

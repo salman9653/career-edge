@@ -110,8 +110,16 @@ export default function JobPipelinePage() {
                     <Skeleton className="h-8 w-64" />
                 </header>
                 <main className="flex flex-1 flex-col gap-4 overflow-hidden p-4 md:p-6">
-                    <div className="flex items-center justify-center h-full">
-                       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    <div className="flex flex-col h-full gap-4">
+                        <div className="flex gap-4">
+                            <Skeleton className="h-10 w-24" />
+                            <Skeleton className="h-10 w-24" />
+                        </div>
+                        <div className="flex-1 space-y-4">
+                             {Array.from({length: 5}).map((_, i) => (
+                                <Skeleton key={i} className="h-16 w-full" />
+                             ))}
+                        </div>
                     </div>
                 </main>
             </>
@@ -149,14 +157,14 @@ export default function JobPipelinePage() {
     const handleScheduleNextRound = (applicantId: string) => {
         startSchedulingTransition(async () => {
             const result = await scheduleNextRoundAction(jobId, applicantId);
-             if (result.success && result.roundName) {
+            if ('success' in result && result.success) {
                 setSuccessInfo({
                     roundName: result.roundName,
                     roundType: result.roundType,
                     dueDate: result.dueDate ? format(new Date(result.dueDate), 'dd MMM yyyy') : null,
                 });
                 setShowSuccessModal(true);
-            } else {
+            } else if ('error' in result) {
                 toast({ variant: 'destructive', title: "Error", description: result.error || 'An unknown error occurred.' });
             }
         });

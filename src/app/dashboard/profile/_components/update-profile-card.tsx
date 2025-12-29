@@ -850,7 +850,7 @@ useEffect(() => {
             onAvatarChange(result.url);
             updateSession({ displayImageUrl: result.url });
             toast({ title: 'Avatar updated!' });
-        } else {
+        } else if ('error' in result) {
             toast({ title: 'Upload failed', description: result.error, variant: 'destructive' });
         }
       });
@@ -865,7 +865,7 @@ useEffect(() => {
             onAvatarChange(null);
             updateSession({ displayImageUrl: null });
             toast({ title: 'Avatar removed!' });
-        } else {
+        } else if ('error' in result) {
             toast({ title: 'Failed to remove avatar', description: result.error, variant: 'destructive' });
         }
     });
@@ -917,7 +917,7 @@ useEffect(() => {
         if(result.success) {
             toast({ title: 'Resume removed' });
             setSelectedFile(null);
-        } else {
+        } else if ('error' in result) {
             toast({ title: 'Error', description: result.error, variant: 'destructive' });
         }
      });

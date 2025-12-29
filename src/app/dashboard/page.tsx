@@ -4,6 +4,7 @@ import { useSession } from '@/hooks/use-session';
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { GlassCard } from '@/components/ui/glass-card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Users, Briefcase, FileText, LineChart, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -13,8 +14,9 @@ import { useRouter } from 'next/navigation';
 import { MobileSearch } from '@/components/mobile-search';
 
 const AdminDashboard = () => {
-    const { candidates } = useContext(CandidateContext);
-    const { companies } = useContext(CompanyContext);
+    const { candidates, loading: candidatesLoading } = useContext(CandidateContext);
+    const { companies, loading: companiesLoading } = useContext(CompanyContext);
+    const { user } = useSession();
 
     return (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -24,8 +26,14 @@ const AdminDashboard = () => {
                     <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{candidates.length}</div>
-                    <p className="text-xs text-muted-foreground">+120 since last month</p>
+                    {candidatesLoading ? (
+                        <Skeleton className="h-8 w-16" />
+                    ) : (
+                        <>
+                            <div className="text-2xl font-bold">{candidates.length}</div>
+                            <p className="text-xs text-muted-foreground">+120 since last month</p>
+                        </>
+                    )}
                 </CardContent>
             </GlassCard>
             <GlassCard>
@@ -34,8 +42,14 @@ const AdminDashboard = () => {
                     <Briefcase className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{companies.length}</div>
-                    <p className="text-xs text-muted-foreground">+15 since last month</p>
+                    {companiesLoading ? (
+                        <Skeleton className="h-8 w-16" />
+                    ) : (
+                        <>
+                            <div className="text-2xl font-bold">{companies.length}</div>
+                            <p className="text-xs text-muted-foreground">+15 since last month</p>
+                        </>
+                    )}
                 </CardContent>
             </GlassCard>
             <GlassCard>

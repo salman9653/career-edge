@@ -1,6 +1,7 @@
 
 'use client';
-import { useContext, useState, useMemo } from 'react';
+import React, { useContext, useState, useMemo } from 'react';
+import { TableVirtuoso } from 'react-virtuoso';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -239,89 +240,157 @@ export function CouponsTable() {
             </>
         )}
       </div>
-      <Card className="flex-1 overflow-hidden">
-        <div className="relative h-full overflow-auto custom-scrollbar">
-          <Table>
-            <TableHeader className="bg-muted/50 sticky top-0">
-              <TableRow>
-                <TableHead className="w-[80px] font-bold py-4 pl-6">
-                  {isSelectModeActive ? (
-                      <Checkbox
-                          checked={selectedCoupons.length > 0 && selectedCoupons.length === filteredAndSortedCoupons.length}
-                          onCheckedChange={(checked) => handleSelectAll(!!checked)}
-                      />
-                  ) : 'S.No.'}
-                </TableHead>
-                <TableHead className="font-bold py-4">
-                  <button onClick={() => requestSort('code')} className="group flex items-center gap-2">
-                    Offer/Code
-                    {getSortIndicator('code')}
-                  </button>
-                </TableHead>
-                <TableHead>
-                  <button onClick={() => requestSort('type')} className="group flex items-center gap-2">
-                    Type
-                    {getSortIndicator('type')}
-                  </button>
-                </TableHead>
-                <TableHead>
-                  <button onClick={() => requestSort('discountValue')} className="group flex items-center gap-2">
-                    Discount
-                    {getSortIndicator('discountValue')}
-                  </button>
-                </TableHead>
-                <TableHead>
-                  <button onClick={() => requestSort('status')} className="group flex items-center gap-2">
-                    Status
-                    {getSortIndicator('status')}
-                  </button>
-                </TableHead>
-                <TableHead>
-                  <button onClick={() => requestSort('validFrom')} className="group flex items-center gap-2">
-                    Valid From
-                    {getSortIndicator('validFrom')}
-                  </button>
-                </TableHead>
-                <TableHead>
-                  <button onClick={() => requestSort('validUntil')} className="group flex items-center gap-2">
-                    Valid Until
-                    {getSortIndicator('validUntil')}
-                  </button>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                Array.from({length: 5}).map((_, index) => (
-                  <TableRow key={index}>
-                    <TableCell colSpan={7}><Skeleton className="h-5 w-full" /></TableCell>
-                  </TableRow>
-                ))
-              ) : filteredAndSortedCoupons.length > 0 ? (
-                filteredAndSortedCoupons.map((coupon, index) => (
-                  <TableRow key={coupon.id} onClick={() => handleRowClick(coupon)} className="cursor-pointer" data-state={selectedCoupons.includes(coupon.id) && "selected"}>
-                    <TableCell className="pl-6" onClick={(e) => {if(isSelectModeActive) e.stopPropagation()}}>
-                        {isSelectModeActive ? <Checkbox checked={selectedCoupons.includes(coupon.id)} onCheckedChange={(checked) => handleRowSelect(coupon.id, !!checked)} /> : index + 1}
-                    </TableCell>
-                    <TableCell className="font-medium">{coupon.type === 'offer' ? coupon.description : coupon.code}</TableCell>
-                    <TableCell className="capitalize">{coupon.type}</TableCell>
-                    <TableCell>{coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : `₹${coupon.discountValue}`}</TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusVariant(coupon.status)} className="capitalize">{coupon.status}</Badge>
-                    </TableCell>
-                    <TableCell>{formatDate(coupon.validFrom)}</TableCell>
-                    <TableCell>{formatDate(coupon.validUntil)}</TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center h-24">No promotions found.</TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </Card>
+      <div className="h-full w-full">
+        {loading ? (
+            <Table>
+                <TableHeader className="bg-muted/50 sticky top-0">
+                    <TableRow>
+                        <TableHead className="w-[80px] font-bold py-4 pl-6">
+                            {isSelectModeActive ? (
+                                <Checkbox
+                                    checked={selectedCoupons.length > 0 && selectedCoupons.length === filteredAndSortedCoupons.length}
+                                    onCheckedChange={(checked) => handleSelectAll(!!checked)}
+                                />
+                            ) : 'S.No.'}
+                        </TableHead>
+                        <TableHead className="font-bold py-4">
+                            <button onClick={() => requestSort('code')} className="group flex items-center gap-2">
+                                Offer/Code
+                                {getSortIndicator('code')}
+                            </button>
+                        </TableHead>
+                        <TableHead>
+                            <button onClick={() => requestSort('type')} className="group flex items-center gap-2">
+                                Type
+                                {getSortIndicator('type')}
+                            </button>
+                        </TableHead>
+                        <TableHead>
+                            <button onClick={() => requestSort('discountValue')} className="group flex items-center gap-2">
+                                Discount
+                                {getSortIndicator('discountValue')}
+                            </button>
+                        </TableHead>
+                        <TableHead>
+                            <button onClick={() => requestSort('status')} className="group flex items-center gap-2">
+                                Status
+                                {getSortIndicator('status')}
+                            </button>
+                        </TableHead>
+                        <TableHead>
+                            <button onClick={() => requestSort('validFrom')} className="group flex items-center gap-2">
+                                Valid From
+                                {getSortIndicator('validFrom')}
+                            </button>
+                        </TableHead>
+                        <TableHead>
+                            <button onClick={() => requestSort('validUntil')} className="group flex items-center gap-2">
+                                Valid Until
+                                {getSortIndicator('validUntil')}
+                            </button>
+                        </TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {Array.from({length: 5}).map((_, index) => (
+                        <TableRow key={index}>
+                            <TableCell colSpan={7}><Skeleton className="h-5 w-full" /></TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        ) : filteredAndSortedCoupons.length > 0 ? (
+            <TableVirtuoso
+                data={filteredAndSortedCoupons}
+                components={{
+                    Table: (props) => <Table {...props} style={{ ...props.style, borderCollapse: 'collapse', width: '100%' }} />,
+                    TableHead: React.forwardRef((props, ref) => <TableHeader {...props} ref={ref} className="bg-muted/50 z-10" />),
+                    TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
+                    TableRow: (props) => {
+                        const index = props['data-index'];
+                        const coupon = filteredAndSortedCoupons[index];
+                         if (!coupon) return <TableRow {...props} />;
+                         
+                         return (
+                            <TableRow 
+                                {...props} 
+                                onClick={() => handleRowClick(coupon)} 
+                                className="cursor-pointer" 
+                                data-state={selectedCoupons.includes(coupon.id) && "selected"} 
+                            />
+                         );
+                    },
+                }}
+                fixedHeaderContent={() => (
+                    <TableRow>
+                        <TableHead className="w-[80px] font-bold py-4 pl-6 h-12 bg-muted/50">
+                            {isSelectModeActive ? (
+                                <Checkbox
+                                    checked={selectedCoupons.length > 0 && selectedCoupons.length === filteredAndSortedCoupons.length}
+                                    onCheckedChange={(checked) => handleSelectAll(!!checked)}
+                                />
+                            ) : 'S.No.'}
+                        </TableHead>
+                        <TableHead className="font-bold py-4 bg-muted/50">
+                            <button onClick={() => requestSort('code')} className="group flex items-center gap-2">
+                                Offer/Code
+                                {getSortIndicator('code')}
+                            </button>
+                        </TableHead>
+                        <TableHead className="font-bold py-4 bg-muted/50">
+                            <button onClick={() => requestSort('type')} className="group flex items-center gap-2">
+                                Type
+                                {getSortIndicator('type')}
+                            </button>
+                        </TableHead>
+                        <TableHead className="font-bold py-4 bg-muted/50">
+                            <button onClick={() => requestSort('discountValue')} className="group flex items-center gap-2">
+                                Discount
+                                {getSortIndicator('discountValue')}
+                            </button>
+                        </TableHead>
+                        <TableHead className="font-bold py-4 bg-muted/50">
+                            <button onClick={() => requestSort('status')} className="group flex items-center gap-2">
+                                Status
+                                {getSortIndicator('status')}
+                            </button>
+                        </TableHead>
+                        <TableHead className="font-bold py-4 bg-muted/50">
+                            <button onClick={() => requestSort('validFrom')} className="group flex items-center gap-2">
+                                Valid From
+                                {getSortIndicator('validFrom')}
+                            </button>
+                        </TableHead>
+                        <TableHead className="font-bold py-4 bg-muted/50">
+                            <button onClick={() => requestSort('validUntil')} className="group flex items-center gap-2">
+                                Valid Until
+                                {getSortIndicator('validUntil')}
+                            </button>
+                        </TableHead>
+                    </TableRow>
+                )}
+                itemContent={(index, coupon) => (
+                    <>
+                        <TableCell className="pl-6 w-[80px]" onClick={(e) => {if(isSelectModeActive) e.stopPropagation()}}>
+                            {isSelectModeActive ? <Checkbox checked={selectedCoupons.includes(coupon.id)} onCheckedChange={(checked) => handleRowSelect(coupon.id, !!checked)} /> : index + 1}
+                        </TableCell>
+                        <TableCell className="font-medium">{coupon.type === 'offer' ? coupon.description : coupon.code}</TableCell>
+                        <TableCell className="capitalize">{coupon.type}</TableCell>
+                        <TableCell>{coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : `₹${coupon.discountValue}`}</TableCell>
+                        <TableCell>
+                            <Badge variant={getStatusVariant(coupon.status)} className="capitalize">{coupon.status}</Badge>
+                        </TableCell>
+                        <TableCell>{formatDate(coupon.validFrom)}</TableCell>
+                        <TableCell>{formatDate(coupon.validUntil)}</TableCell>
+                    </>
+                )}
+            />
+        ) : (
+          <div className="flex items-center justify-center h-24 text-muted-foreground">
+            No promotions found.
+          </div>
+        )}
+      </div>
       {selectedCoupon && (
         <CouponDetailSheet 
             open={isSheetOpen}

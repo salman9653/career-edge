@@ -1,6 +1,7 @@
 
 'use client';
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
+import { TableVirtuoso } from 'react-virtuoso';
 import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -160,42 +161,41 @@ export function SelectQuestionsTable({ questions, loading, existingQuestionIds, 
             />
             <FilterSheet filters={filters} onFilterChange={setFilters} availableCategories={uniqueCategories} availableCreators={uniqueCreators} />
         </div>
-        <Card className="flex-1 overflow-hidden">
-            <div className="relative h-full overflow-auto custom-scrollbar">
-                <Table>
-                    <TableHeader className="bg-muted/50 sticky top-0 z-10">
-                        <TableRow>
-                            <TableHead className="w-[60px] font-bold py-4 pl-6">
-                                <Checkbox 
-                                    onCheckedChange={(checked) => handleSelectAll(!!checked)}
-                                    checked={areAllVisibleSelected}
-                                    aria-label="Select all rows on this page"
-                                />
-                            </TableHead>
-                            <TableHead className="font-bold py-4">
-                                <button onClick={() => requestSort('question')} className="group flex items-center gap-2">
-                                    Question
-                                    <div className="p-1 group-hover:bg-accent rounded-full transition-colors">{getSortIndicator('question')}</div>
-                                </button>
-                            </TableHead>
-                            <TableHead className="font-bold py-4">Type</TableHead>
-                             <TableHead className="font-bold py-4">
-                                <button onClick={() => requestSort('category')} className="group flex items-center gap-2">
-                                    Category
-                                    <div className="p-1 group-hover:bg-accent rounded-full transition-colors">{getSortIndicator('category')}</div>
-                                </button>
-                            </TableHead>
-                            <TableHead className="font-bold py-4">
-                                <button onClick={() => requestSort('difficulty')} className="group flex items-center gap-2">
-                                    Difficulty
-                                    <div className="p-1 group-hover:bg-accent rounded-full transition-colors">{getSortIndicator('difficulty')}</div>
-                                </button>
-                            </TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {loading ? (
-                            Array.from({length: 5}).map((_, index) => (
+        <div className="h-full w-full">
+                {loading ? (
+                    <Table>
+                        <TableHeader className="bg-muted/50 sticky top-0 z-10">
+                            <TableRow>
+                                <TableHead className="w-[60px] font-bold py-4 pl-6">
+                                    <Checkbox 
+                                        onCheckedChange={(checked) => handleSelectAll(!!checked)}
+                                        checked={areAllVisibleSelected}
+                                        aria-label="Select all rows on this page"
+                                    />
+                                </TableHead>
+                                <TableHead className="font-bold py-4">
+                                    <button onClick={() => requestSort('question')} className="group flex items-center gap-2">
+                                        Question
+                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">{getSortIndicator('question')}</div>
+                                    </button>
+                                </TableHead>
+                                <TableHead className="font-bold py-4">Type</TableHead>
+                                <TableHead className="font-bold py-4">
+                                    <button onClick={() => requestSort('category')} className="group flex items-center gap-2">
+                                        Category
+                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">{getSortIndicator('category')}</div>
+                                    </button>
+                                </TableHead>
+                                <TableHead className="font-bold py-4">
+                                    <button onClick={() => requestSort('difficulty')} className="group flex items-center gap-2">
+                                        Difficulty
+                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">{getSortIndicator('difficulty')}</div>
+                                    </button>
+                                </TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {Array.from({length: 5}).map((_, index) => (
                                 <TableRow key={index}>
                                     <TableCell className="pl-6"><Skeleton className="h-5 w-5" /></TableCell>
                                     <TableCell><Skeleton className="h-5 w-full" /></TableCell>
@@ -203,44 +203,96 @@ export function SelectQuestionsTable({ questions, loading, existingQuestionIds, 
                                     <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                                 </TableRow>
-                            ))
-                        ) : filteredAndSortedQuestions.length > 0 ? (
-                            filteredAndSortedQuestions.map((q) => {
-                                const difficulty = getDifficultyDisplay(q.difficulty);
+                            ))}
+                        </TableBody>
+                    </Table>
+                ) : filteredAndSortedQuestions.length > 0 ? (
+                    <TableVirtuoso
+                        data={filteredAndSortedQuestions}
+                        components={{
+                            Table: (props) => <Table {...props} style={{ ...props.style, borderCollapse: 'collapse', width: '100%' }} />,
+                            TableHead: React.forwardRef((props, ref) => <TableHeader {...props} ref={ref} className="bg-muted/50 z-10" />),
+                            TableBody: React.forwardRef((props, ref) => <TableBody {...props} ref={ref} />),
+                            TableRow: (props) => {
+                                const index = props['data-index'];
+                                const q = filteredAndSortedQuestions[index];
+                                if (!q) return <TableRow {...props} />;
                                 const isExisting = existingQuestionIds.includes(q.id);
-                                const isNewlySelected = newlySelectedQuestionIds.includes(q.id);
-                                
+
                                 return (
-                                <TableRow key={q.id} onClick={(e) => handleRowClick(e, q)} className={cn(!isExisting && "cursor-pointer")}>
-                                    <TableCell className="w-[60px] pl-6">
+                                    <TableRow 
+                                        {...props} 
+                                        onClick={(e) => handleRowClick(e, q)} 
+                                        className={cn(!isExisting && "cursor-pointer")} 
+                                    />
+                                );
+                            },
+                        }}
+                        fixedHeaderContent={() => (
+                            <TableRow>
+                                <TableHead className="w-[60px] font-bold py-4 pl-6 h-12 bg-muted/50">
+                                    <Checkbox 
+                                        onCheckedChange={(checked) => handleSelectAll(!!checked)}
+                                        checked={areAllVisibleSelected}
+                                        aria-label="Select all rows on this page"
+                                    />
+                                </TableHead>
+                                <TableHead className="font-bold py-4 bg-muted/50">
+                                    <button onClick={() => requestSort('question')} className="group flex items-center gap-2">
+                                        Question
+                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">{getSortIndicator('question')}</div>
+                                    </button>
+                                </TableHead>
+                                <TableHead className="font-bold py-4 bg-muted/50">Type</TableHead>
+                                <TableHead className="font-bold py-4 bg-muted/50">
+                                    <button onClick={() => requestSort('category')} className="group flex items-center gap-2">
+                                        Category
+                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">{getSortIndicator('category')}</div>
+                                    </button>
+                                </TableHead>
+                                <TableHead className="font-bold py-4 bg-muted/50">
+                                    <button onClick={() => requestSort('difficulty')} className="group flex items-center gap-2">
+                                        Difficulty
+                                        <div className="p-1 group-hover:bg-accent rounded-full transition-colors">{getSortIndicator('difficulty')}</div>
+                                    </button>
+                                </TableHead>
+                            </TableRow>
+                        )}
+                        itemContent={(index, q) => {
+                            const difficulty = getDifficultyDisplay(q.difficulty);
+                            const isExisting = existingQuestionIds.includes(q.id);
+                            const isNewlySelected = newlySelectedQuestionIds.includes(q.id);
+                            
+                            return (
+                                <>
+                                    <TableCell className="w-[60px] pl-6" onClick={(e) => {if(!isExisting) e.stopPropagation()}}>
                                         {isExisting ? (
                                             <CheckCircle className="h-5 w-5 text-green-500" />
                                         ) : (
                                             <Checkbox 
                                                 checked={isNewlySelected}
                                                 onCheckedChange={(checked) => onSelectQuestion(q, !!checked)}
+                                                onClick={(e) => e.stopPropagation()}
                                                 aria-label={`Select question ${q.id}`}
                                             />
                                         )}
                                     </TableCell>
-                                    <TableCell className="font-medium truncate max-w-xs">{q.question}</TableCell>
-                                    <TableCell><span className="capitalize">{q.type}</span></TableCell>
-                                    <TableCell className="truncate max-w-xs">{Array.isArray(q.category) ? q.category.join(', ') : ''}</TableCell>
-                                    <TableCell>
+                                    <TableCell className="font-medium truncate max-w-xs" onClick={(e) => handleRowClick(e, q)} style={{cursor: !isExisting ? 'pointer' : 'default'}}>{q.question}</TableCell>
+                                    <TableCell onClick={(e) => handleRowClick(e, q)} style={{cursor: !isExisting ? 'pointer' : 'default'}}><span className="capitalize">{q.type}</span></TableCell>
+                                    <TableCell className="truncate max-w-xs" onClick={(e) => handleRowClick(e, q)} style={{cursor: !isExisting ? 'pointer' : 'default'}}>{Array.isArray(q.category) ? q.category.join(', ') : ''}</TableCell>
+                                    <TableCell onClick={(e) => handleRowClick(e, q)} style={{cursor: !isExisting ? 'pointer' : 'default'}}>
                                         <span className={cn('font-medium', difficulty.className)}>{difficulty.text}</span>
                                     </TableCell>
-                                </TableRow>
-                                )
-                            })
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={5} className="text-center h-24">No questions found.</TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
+                                </>
+                            );
+                        }}
+                    />
+                ) : (
+                    <div className="flex items-center justify-center h-24 text-muted-foreground w-full">
+                        No questions found.
+                    </div>
+                )}
             </div>
-        </Card>
         {viewedQuestion && (
             <QuestionDetailSheet 
                 open={isSheetOpen}
