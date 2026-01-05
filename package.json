@@ -11,6 +11,12 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
   },
+  "overrides": {
+    "@asteasolutions/zod-to-openapi": "^8.4.0",
+    "@genkit-ai/next": {
+      "next": "$next"
+    }
+  },
   "dependencies": {
     "@genkit-ai/googleai": "^1.14.1",
     "@genkit-ai/next": "^1.14.1",
